@@ -14,16 +14,6 @@ d3.csv("data/qsp1.csv", function(d) {
 	
 	}, function(data) {
 		populateTemplateCloud(data);
-	  var templateFilter = data[0].template;
-	  
-	  var filteredByTemplate = data.filter(function( obj ) {
-	    return obj.template == templateFilter;
-		});
-	  $("#template").text(JSON.stringify(templateFilter));
-	  $("#template-badge").text(filteredByTemplate.length);
- 	  //populateTemplate(data);
-	  populateColumnA(filteredByTemplate);
-	  
 	  $('#columnA').on('click', 'li', function() {
 	  	$( "#columnA div" ).removeClass( "alert-success" );
 	      $('#'+$(this).attr('id')+' div').toggleClass( 'alert-success' );
@@ -62,7 +52,11 @@ function populateTemplateCloud(data){
 		    return obj.template == value.template;
 			});
 		object.weight = filteredByTemplate.length;
-		object.handlers={click: function() { alert("you selected template "+value.template); }}
+		object.handlers={click: function() { 
+			  $("#template").text(value.template);
+			  $("#template-badge").text(filteredByTemplate.length);
+				  populateColumnA(filteredByTemplate);
+			}}
 		
 		templates[i] = object;
 		i++
