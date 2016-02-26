@@ -14,25 +14,26 @@ d3.csv("data/qsp1.csv", function(d) {
 	
 	}, function(data) {
 		populateTemplateCloud(data);
-	  $('#columnA').on('click', 'li', function() {
-	  	$( "#columnA div" ).removeClass( "alert-success" );
-	      $('#'+$(this).attr('id')+' div').toggleClass( 'alert-success' );
-	  	var colAlabel = $(this).attr('qspColA');
-	  	var templateFilter = JSON.parse($("#template").text());
-	  	var colBdata = data.filter(function( obj ) {
-	  	    return obj.template == templateFilter && obj.columnA.label== colAlabel;
-	  	});
-	  	populateColumnB(colBdata);
-	  });
-	  
+		$('#columnA').on('click', 'li', function() {
+			$( "#columnA div" ).removeClass( "alert-success" );
+		    $('#'+$(this).attr('id')+' div').toggleClass( 'alert-success' );
+			var colAlabel = $(this).attr('qspColA');
+			var templateFilter = JSON.parse($("#template").text());
+			var colBdata = data.filter(function( obj ) {
+			    return obj.template == templateFilter && obj.columnA.label== colAlabel;
+			});
+			populateColumnB(colBdata);
+		});
 });//end loading data
+
+
+
 
 //Helper functions
 
 function parseColumnSemantics(data, num){
 	var columnObject = [];
-	var objectElements = data.split(/[[\]]{1,2}/);
-	
+	var objectElements = data.split(/[[\]]{1,2}/);	
 	columnObject["label"] = objectElements[0];
 	columnObject["id"]= objectElements[1];
 	columnObject["abstractionLevel"]= objectElements[2];
@@ -53,7 +54,7 @@ function populateTemplateCloud(data){
 			});
 		object.weight = filteredByTemplate.length;
 		object.handlers={click: function() { 
-			  $("#template").text(value.template);
+			  $("#template").text('"'+value.template+'"');
 			  $("#template-badge").text(filteredByTemplate.length);
 				  populateColumnA(filteredByTemplate);
 			}}
@@ -65,28 +66,7 @@ function populateTemplateCloud(data){
 	$("#templatepicker").jQCloud(templates, {
   autoResize: true
 })
-
-	
 		
-}
-function populateTemplate(data){	
-
-
-
-	stroll.bind( '#datadiv ul' );
-	console.log(data.length)
-	var uniqueEntities = _.uniq(data, function (item, key, a) {return item.template;});
-	console.log(uniqueEntities.length)
-	uniqueEntities.sort(function(a, b){
-    	var a1= a.template, b1= b.template;
-    	if(a1 == b1) return 0;
-    	return a1 > b1? 1: -1;
-	});
-	$.each(uniqueEntities, function( index, value) {		
-  		$('#templatescroller').append('<li id="template_'+index+'" qsptemp="'+value.template+'" class="list-group-item">'+
-  		      '<div class="alert " role="alert"> <span class="badge">'+value.count+'</span>'+
-  		      '<span id="columnA" >'+value.template+'</span></div></li>');
-	});	
 }
 
 	
