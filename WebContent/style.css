@@ -10,7 +10,12 @@ article {
 	display: inline-block;
 	margin: 20px;
 }
-
+    .templatebrowser {
+      width: 400px;
+      height: 300px;
+      border: 1px solid #ccc;
+      margin: 20px;
+    }
 ul {
 	position: relative;
 	width: 330px;

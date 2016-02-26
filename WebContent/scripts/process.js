@@ -13,7 +13,7 @@ d3.csv("data/qsp1.csv", function(d) {
 	  return toReturn;
 	
 	}, function(data) {
-		
+		populateTemplateCloud(data);
 	  var templateFilter = data[0].template;
 	  
 	  var filteredByTemplate = data.filter(function( obj ) {
@@ -51,7 +51,32 @@ function parseColumnSemantics(data, num){
 	return columnObject;
 }
 
+function populateTemplateCloud(data){	
+	var templates = []
+	var i=0;
+	var uniqueEntities = _.uniq(data, function (item, key, a) {return item.template;});
+	$.each(uniqueEntities, function( index, value) {
+		object = {};
+		object.text = value.template;
+		var filteredByTemplate = data.filter(function( obj ) {
+		    return obj.template == value.template;
+			});
+		object.weight = filteredByTemplate.length;
+		templates[i] = object;
+		i++
+	});
+	
+	$("#templatepicker").jQCloud(templates, {
+  autoResize: true
+})
+
+	
+		
+}
 function populateTemplate(data){	
+
+
+
 	stroll.bind( '#datadiv ul' );
 	console.log(data.length)
 	var uniqueEntities = _.uniq(data, function (item, key, a) {return item.template;});
