@@ -62,6 +62,8 @@ function populateTemplateCloud(data){
 		    return obj.template == value.template;
 			});
 		object.weight = filteredByTemplate.length;
+		object.handlers={click: function() { alert("you selected template "+value.template); }}
+		
 		templates[i] = object;
 		i++
 	});
