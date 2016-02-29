@@ -1,22 +1,14 @@
-.explorer{
-	height: 400px;
-}
-
-.explorer tr td {
-	padding: 10px;
-}
-
 article {
 	display: inline-block;
 	margin: 20px;
 }
-    .templatebrowser {
+.templatebrowser {
       width: 400px;
       height: 300px;
       border: 1px solid #ccc;
       margin: 20px;
-    }
-ul {
+}
+article ul {
 	position: relative;
 	width: 330px;
 	height: 480px;
@@ -32,7 +24,7 @@ ul {
 	     -o-perspective: 400px;
 	        perspective: 400px;
 }
-ul li {
+article	ul li {
 		position: relative;
 		padding: 16px;
 		background: #eee;
@@ -46,6 +38,6 @@ ul li {
 		     -o-transform: translateZ(0px);
 		        transform: translateZ(0px);
 	}
-ul li:nth-child(odd) {
+article	ul li:nth-child(odd) {
 		background: #fff;
 	}

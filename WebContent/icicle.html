@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+rect {
+  stroke: #fff;
+}
+</style>
+<body>
+
+<script src="jquery/dist/jquery.js"></script>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script src="underscore/underscore-min.js"></script>
+
+<script>
+var id=0;
+var icicletemplates = {"templates":{}}
+
+var width = 960,
+    height = 500;
+var x = d3.scale.linear().range([0, width]);
+var y = d3.scale.linear().range([0, height]);
+
+
+var partition = d3.layout.partition()
+    .children(function(d) { return isNaN(d.value) ? d3.entries(d.value) : null; })
+    .value(function(d) { return d.value; });
+    
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+var rect = svg.selectAll("rect");
+
+
+d3.csv("data/qsp1.csv", function(d) {
+	id= id+1;	
+	var toReturn =  {
+		qspid : id,
+	    count : +d.count,
+	    template : d.template,
+	    columnA : parseColumnSemantics( d.columnA, 1),//columnAobject,
+	    columnB : d.columnB//parseColumnSemantics( d.columnB, 2)
+	  };	
+	  return toReturn;
+	}, function(data) {
+		var uniqueEntities = _.uniq(data, function (item, key, a) {return item.template;});
+		
+		$.each(uniqueEntities, function( index, value) {
+			var filteredByTemplate = data.filter(function( obj ) {
+			    return obj.template == value.template;
+				});
+			icicletemplates["templates"][value.template] = filteredByTemplate.length;
+		});
+		
+		  var c =  rect.data(partition(d3.entries(icicletemplates)[0]))
+	      .enter().append("rect")
+	      .attr("x", function(d) { return x(d.x); })
+	      .attr("y", function(d) { return y(d.y); })
+	      .attr("width", function(d) { return x(d.dx); })
+	      .attr("height", function(d) { return y(d.dy); })
+	      .attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
+	      .attr("name", function(d) { return d.name; })
+	      .on("click", clicked);
+		
+		c.append("svg:text")
+   		.attr("y",function(d) { d.y+20;})
+   		.attr("x",function(d) { d.x+15;})
+   		.text(function(d) { 
+   			return d.key;}
+   		);
+		
+		function clicked(d) {
+			  x.domain([d.x, d.x + d.dx]);
+			  y.domain([d.y, 1]).range([d.y ? 20 : 0, height]);
+			  
+			  c.transition()
+			      .duration(750)
+			      .attr("x", function(d) { return x(d.x); })
+			      .attr("y", function(d) { return y(d.y); })
+			      .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
+			      .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
+
+			}
+		
+});//end loading data
+function parseColumnSemantics(data, num){
+	var columnObject = [];
+	var objectElements = data.split(/[[\]]{1,2}/);	
+	columnObject["label"] = objectElements[0];
+	columnObject["id"]= objectElements[1];
+	columnObject["abstractionLevel"]= objectElements[2];
+	columnObject["columnCount"]= +objectElements[3];
+
+	return columnObject;
+}
+
+
+</script>
