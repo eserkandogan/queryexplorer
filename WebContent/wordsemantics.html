@@ -14,9 +14,9 @@ rect {
 <script>
 $.get("data/wordsemantics-2.20-json.txt",function(txt){
     var lines = txt.split("\n");
+    console.log(lines.length);
     for (var i = 0, len = lines.length; i < len; i++) {
     	line = lines[i];
-    	console.log(line);
     	lastindex = line.lastIndexOf('\}')
     	if(line.substring(lastindex-2, lastindex+1) !=='[]}'){
     		line = line.slice(0, -3)+'}]}';  
@@ -27,9 +27,12 @@ $.get("data/wordsemantics-2.20-json.txt",function(txt){
 	    			line = line.substr(0, index) + '"' + line.substr(index);
 	    		}
     		}
-    		console.log(line);
+    		groupindex = 0;
+    		while(line.indexOf("\{grouping", groupindex)!==-1){
+    			groupindex = line.indexOf("\{grouping", groupindex);
+    			line = line.substr(0, groupindex+1) + '"' + line.substr(groupindex+1);
+    		}
     	}
-    	debugger;
     	jsonSemantics = $.parseJSON(line);
         console.log(jsonSemantics.label);
     }
