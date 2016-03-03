@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+rect {
+  stroke: #fff;
+}
+</style>
+<body></body>
+
+<script src="jquery/dist/jquery.js"></script>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script src="underscore/underscore-min.js"></script>
+
+<script>
+$.get("data/wordsemantics-2.20-json.txt",function(txt){
+    var lines = txt.split("\n");
+    for (var i = 0, len = lines.length; i < len; i++) {
+    	line = lines[i];
+    	console.log(line);
+    	lastindex = line.lastIndexOf('\}')
+    	if(line.substring(lastindex-2, lastindex+1) !=='[]}'){
+    		line = line.slice(0, -3)+'}]}';  
+    		index0 = line.indexOf('derivedFrom');
+    		if(index0!=-1){
+    			index = line.indexOf('\]',index0);
+	    		if(index!=-1 && line[index-1]!=='['){
+	    			line = line.substr(0, index) + '"' + line.substr(index);
+	    		}
+    		}
+    		console.log(line);
+    	}
+    	debugger;
+    	jsonSemantics = $.parseJSON(line);
+        console.log(jsonSemantics.label);
+    }
+});	
+
+</script>

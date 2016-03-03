@@ -49,8 +49,8 @@ function displayTemplates(data){
 		var filteredByTemplate = data.filter(function( obj ) {
 		    return obj.template == value.template;
 			});
-		list.append('<li class="list-group-item" id="'+value.template+'" permutations = "'+filteredByTemplate.length+'"><span class ="badge">'+filteredByTemplate.length+'</span>'+value.template+'</li>');		
-		
+		list.append('<li class="list-group-item" id="'+value.template+'" permutations = "'+filteredByTemplate.length+
+				'"><span class ="badge">'+filteredByTemplate.length+'</span>'+value.template+'</li>');		
 	});
 }
 
