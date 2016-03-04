@@ -5,37 +5,79 @@ rect {
   stroke: #fff;
 }
 </style>
-<body></body>
+<body>
+<div><ul id="wordnetlist"></ul></div><div><ul id="taglist"></ul></div>
+</body>
 
 <script src="jquery/dist/jquery.js"></script>
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script src="underscore/underscore-min.js"></script>
 
 <script>
+var wordnet = [];
+var tags = [];
 $.get("data/wordsemantics-2.20-json.txt",function(txt){
     var lines = txt.split("\n");
     console.log(lines.length);
     for (var i = 0, len = lines.length; i < len; i++) {
     	line = lines[i];
-    	lastindex = line.lastIndexOf('\}')
-    	if(line.substring(lastindex-2, lastindex+1) !=='[]}'){
-    		line = line.slice(0, -3)+'}]}';  
-    		index0 = line.indexOf('derivedFrom');
-    		if(index0!=-1){
-    			index = line.indexOf('\]',index0);
-	    		if(index!=-1 && line[index-1]!=='['){
-	    			line = line.substr(0, index) + '"' + line.substr(index);
-	    		}
-    		}
-    		groupindex = 0;
-    		while(line.indexOf("\{grouping", groupindex)!==-1){
-    			groupindex = line.indexOf("\{grouping", groupindex);
-    			line = line.substr(0, groupindex+1) + '"' + line.substr(groupindex+1);
-    		}
+    	if(line.length>1){
+    	// check string ending
+    	if(/\[\]/.test(line.substr(line.length-3, line.length-2))){
+    		line = line+"}"
     	}
+    	else{
+    	
+	    	lastindex = line.lastIndexOf('\}')
+	    	//mallformed:  {[{"trend_3_3":0}, {"trend_2_1":1}
+	    	if(/[0-9]+\}/.test(line.substring(lastindex-1, lastindex+1))){
+	    		line = line.slice(0, -2)+'}]}';   
+	    	}
+	    	
+	    	else if( line.substring(lastindex-2, lastindex+1) !=='[]}'){
+	    		line = line.slice(0, -3)+'}]}';      		
+	    	}
+    	}
+    	
+    	//check internally
+    	index0 = line.indexOf('derivedFrom');
+		if(index0!=-1){
+			index = line.indexOf('\]',index0);
+    		if(index!=-1 && line[index-1]!=='['){
+    			line = line.substr(0, index) + '"' + line.substr(index);
+    		}
+		}
+		
+		groupindex = 0;
+		while(line.indexOf("\{grouping", groupindex)!==-1){
+			groupindex = line.indexOf("\{grouping", groupindex);
+			line = line.substr(0, groupindex+1) + '"' + line.substr(groupindex+1);
+		}
+			
+			
     	jsonSemantics = $.parseJSON(line);
-        console.log(jsonSemantics.label);
+    	if((jsonSemantics.uid).indexOf('wordnet')!==-1)
+    		wordnet.push(jsonSemantics);
+    	else
+    		tags.push(jsonSemantics);
+		}
     }
-});	
+ console.log(tags[0]);
+ console.log(wordnet[0]);
 
+ wordnet = _.sortBy(wordnet, function(o){ return - o.columnCount;})
+ createLabelList(wordnet);
+ createLabelList(tags);
+    		
+});	
+function createLabelList(wordsemantics){
+	$.each(wordsemantics, function(key, value){
+		if((value.uid).indexOf('wordnet')!==-1)
+			$("#wordnetlist").append('<li>'+value.label+', '+value.columnCount+'</li>');
+		else{
+			$("#taglist").append('<li>'+value.uid+'</li>');
+
+		}
+	});
+}
 </script>
