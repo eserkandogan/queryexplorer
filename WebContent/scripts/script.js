@@ -14,7 +14,7 @@ d3.csv("data/qsp1.csv", function(d) {
 	    count : +d.count,
 	    template : d.template,
 	    columnA : parseColumnSemantics( d.columnA, 1),//columnAobject,
-	    columnB : d.columnB//parseColumnSemantics( d.columnB, 2)
+	    columnB : parseColumnSemantics( d.columnB, 2)
 	  };	
 	  return toReturn;
 	}, function(data) {
@@ -24,21 +24,30 @@ d3.csv("data/qsp1.csv", function(d) {
 
 			$("#interface").css( "display","block");
 			displayTemplates(data);
-			populateColumnA(data, "");
+			populateColumn(data, 'columnA', "");
+			populateColumn(data, 'columnB', "");		
 			
 			$('#templateList').on('click', 'li', function() {
 			    $('#selectedTemplate').empty();
-			    $('#selectedTemplate').append(this.id);		    
-			    populateColumnA(data, this.id);
+			    $('#selectedTemplate').append('You selected template <b>'+this.id+'</b>');
+			    $('#colAprompt').empty();
+			    $('#colAprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+this.id+'</b>');
+			    $('#templateList li').removeClass( 'selectedListElement' );
+			    $(this).toggleClass('selectedListElement');
+			    populateColumn(data, 'columnA', this.id);
+			    populateColumn(data, 'columnB', this.id);
 			});
 			
 			$('#columnAlist').on('click', 'li', function() {
-				alert('Creating partition display for subtree of '+this.id+': '+$(this).attr('qspColA'));
+				$('#selectedSemTypeA').empty();
+			    $('#selectedSemTypeA').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspColA')+'</b>');
+				$('#columnAlist li').removeClass( 'selectedListElement' );
+				$(this).toggleClass('selectedListElement');
 				displaySemanticIcicle(this.id);
-
+			});	
+			$('#columnBlist').on('click', 'li', function() {
+				alert('functionality not implemented');
 			});
-		
-			
 		});
 			
 });//end loading data
@@ -46,13 +55,18 @@ d3.csv("data/qsp1.csv", function(d) {
 //Helper functions
 
 function parseColumnSemantics(data, num){
+	
 	var columnObject = [];
-	var objectElements = data.split(/[[\]]{1,2}/);	
-	columnObject["label"] = objectElements[0];
-	columnObject["id"]= objectElements[1];
-	columnObject["abstractionLevel"]= objectElements[2];
-	columnObject["columnCount"]= +objectElements[3];
-
+	
+	
+	if(data!==undefined){	
+		var objectElements = data.split(/[[\]]{1,2}/);	
+		columnObject["label"] = objectElements[0];
+		columnObject["id"]= objectElements[1];
+		columnObject["abstractionLevel"]= objectElements[2];
+		columnObject["columnCount"]= +objectElements[3];
+	}
+	else debugger;
 	return columnObject;
 }
 function displayTemplates(data){
@@ -85,8 +99,8 @@ function displayTemplates(data){
 }
 
 
-function populateColumnA(data,  template){
-	$('#columnAlist').empty();
+function populateColumn(data, column, template){
+	$('#'+column+'list').empty();
 	
 	
 	var filtereddata = data;
@@ -97,19 +111,18 @@ function populateColumnA(data,  template){
 	}
 	
 	filtereddata.sort(function(a, b){
-    	var a1= a.columnA.columnCount, b1= b.columnA.columnCount;
+    	var a1= a[column].columnCount, b1= b[column].columnCount;
     	if(a1 == b1) return 0;
     	return b1 > a1? 1: -1;
 	});	
 
-	var uniqueSemantics = _.uniq(filtereddata, function (item, key, a) {return item.columnA.label;});		
-	
+	var uniqueSemantics = _.uniq(filtereddata, function (item, key, a) {return item[column].label;});
 	
 	$.each(uniqueSemantics, function( index, value) {
-		thislabel= value.columnA.label;
-		if(!isNaN(value.columnA.columnCount)){
-  			$('#columnAlist').append('<li id='+value.columnA.id+' qspColA="'+thislabel+'" class="list-group-item">'+
-  		      '<span id="columnA" >'+thislabel+'</span><span class="badge">'+value.columnA.columnCount+'</span></li>');
+		thislabel= value[column].label;
+		if(!isNaN(value[column].columnCount)){
+  			$('#'+column+'list').append('<li id='+value[column].id+' qspColA="'+thislabel+'" class="list-group-item">'+
+  		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+value[column].columnCount+'</span></li>');
 		}
   	});	
 }

@@ -42,6 +42,9 @@
 	padding:10px;
 	margin:10px;
 }
+.selectedListElement{
+	background-color:yellow;
+}
 /* #semanticExplorerPanel{ */
 /* 	display:none; */
 /* } */
