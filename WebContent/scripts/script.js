@@ -4,20 +4,7 @@ var tags = [];
 
 
 var icicle;
-var width = 960,
-height = 500;
-var x = d3.scale.linear().range([0, width]);
-var y = d3.scale.linear().range([0, height]);
 
-
-var partition = d3.layout.partition()
-.children(function(d) { return isNaN(d.value) ? d3.entries(d.value) : null; })
-.value(function(d) { return d.value; });
-
-var svg = d3.select("#semanticExplorer").append("svg")
-.attr("width", width)
-.attr("height", height);
-var rect = svg.selectAll("rect");
 
 
 d3.csv("data/qsp1.csv", function(d) {
@@ -46,17 +33,9 @@ d3.csv("data/qsp1.csv", function(d) {
 			});
 			
 			$('#columnAlist').on('click', 'li', function() {
-				alert(this.id);
+				alert('Creating partition display for subtree of '+this.id+': '+$(this).attr('qspColA'));
 				displaySemanticIcicle(this.id);
-				
-	//			$( "#columnA div" ).removeClass( "alert-success" );
-	//		    $('#'+$(this).attr('id')+' div').toggleClass( 'alert-success' );
-	//			var colAlabel = $(this).attr('qspColA');
-	//			var templateFilter = JSON.parse($("#template").text());
-	//			var colBdata = data.filter(function( obj ) {
-	//			    return obj.template == templateFilter && obj.columnA.label== colAlabel;
-	//			});
-	//			populateColumnB(colBdata);
+
 			});
 		
 			
@@ -108,6 +87,8 @@ function displayTemplates(data){
 
 function populateColumnA(data,  template){
 	$('#columnAlist').empty();
+	
+	
 	var filtereddata = data;
 	if(template!=""){
 	 filtereddata = filtereddata.filter(function( obj ) {
@@ -202,7 +183,21 @@ function createLabelList(wordsemantics){
 		}
 	});
 }
+
 function displaySemanticIcicle(uid){
+	
+	$("#semanticExplorer").empty();
+	var width = 960,
+	height = 500;
+	var x = d3.scale.linear().range([0, width]);
+	var y = d3.scale.linear().range([0, height]);
+
+
+	
+	
+	
+	
+	//create data for zoomable partition
 	icicle = {}
 	var semanticobject = _.select(wordnet, function (obj) {
 		  return obj.uid === uid;
@@ -211,50 +206,104 @@ function displaySemanticIcicle(uid){
 	var key = semanticobject[0].label;
 	icicle[key] = {};
 	processObject(semanticobject[0], recursiondepth, icicle[key]);
-	console.log(JSON.stringify(icicle));
+//	console.log(JSON.stringify(icicle));
+	$("#iciclePrintout").empty();
+	$("#iciclePrintout").append(JSON.stringify(icicle));
 
 	
 	
 	
 	
 	
+	var partition = d3.layout.partition()
+					.children(function(d) { return isNaN(d.value) ? d3.entries(d.value) : null; })
+					.value(function(d) { return d.value; });
+
+	var svg = d3.select("#semanticExplorer").append("svg")
+	.attr("width", width)
+	.attr("height", height);
+	
+	var rect = svg.selectAll("rect");
 	
 	
-	 var c =  rect.data(partition(d3.entries(icicle)[0]))
-     .enter().append("rect")
-     .attr("x", function(d) { return x(d.x); })
-     .attr("y", function(d) { return y(d.y); })
-     .attr("width", function(d) { return x(d.dx); })
-     .attr("height", function(d) { return y(d.dy); })
-//     .attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
-     .attr("name", function(d) { return d.name; })
-     .on("click", clicked);
-	
-	c.append("svg:text")
-		.attr("y",function(d) { d.y+20;})
-		.attr("x",function(d) { d.x+15;})
-		.text(function(d) { 
-			return d.key;}
-		);
+	//add rectangles to the rect container
+	var rectangles =  rect.data(partition(d3.entries(icicle)[0]))
+							.enter()
+							.append("rect");
+     
+     var rectangleAttributes = rectangles
+     		.attr("x", function(d) { return x(d.x); })
+     		.attr("y", function(d) { return y(d.y); })
+     		.attr("width", function(d) { return x(d.dx); })
+     		.attr("height", function(d) { return y(d.dy); })
+     		//.attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
+     		.attr("fill", "#B4CFEC")
+     		.attr("name", function(d) { return d.name; })
+     		.on("click", clicked);
+     debugger;
+	//Add the SVG Text Element to the svgContainer
+	 var text = svg.selectAll("text")
+	 				.data(partition(d3.entries(icicle)[0]))
+	                .enter()
+	                .append("text");
+	 
+	//Add SVG Text Element Attributes
+	 var textLabels = text
+	                  .attr("x", function(d) { return x(d.x)+20; })
+	                  .attr("y", function(d) { return y(d.y)+40; })
+	                  .text( function (d) { return d.key; })
+	                  .attr("font-family", "sans-serif")
+	                  .attr("font-size", "20px")
+	                  .attr("fill", "red");
+	 
+	 
+//	c.append("svg:text")
+//		.attr("y",function(d) { d.y+20;})
+//		.attr("x",function(d) { d.x+15;})
+//		.text(function(d) { 
+////			console.log(d.key);
+//			return d.key;
+//			}
+//		);
 	
 	function clicked(d) {
+		alert('You clicked on '+d.key);
+		console.log('You clicked on '+d.key);
+
+		debugger;
 		  x.domain([d.x, d.x + d.dx]);
 		  y.domain([d.y, 1]).range([d.y ? 20 : 0, height]);
 		  
-		  c.transition()
+		  rectangles.transition()
 		      .duration(750)
 		      .attr("x", function(d) { return x(d.x); })
 		      .attr("y", function(d) { return y(d.y); })
 		      .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
 		      .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
-
+		  
+		  text.transition()
+		    .duration(750)
+		    .attr("x", function(d) { return x(d.x)+20; })
+		    .attr("y", function(d) { return y(d.y)+40; })
+		    .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
+		    .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
 		}
 	
-	
-	
-	
-	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //create data structure like https://gist.github.com/tchaymore/1255176
 // for zoomable partition
