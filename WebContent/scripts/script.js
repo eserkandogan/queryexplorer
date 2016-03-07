@@ -192,7 +192,9 @@ function displaySemanticIcicle(uid){
 	recursiondepth = 0;
 	var key = semanticobject[0].label;
 	icicle[key] = {};
-	icicle[key] = processObject(semanticobject[0], recursiondepth, icicle);
+	processObject(semanticobject[0], recursiondepth, icicle[key]);
+//	icicle[key] = processObject(semanticobject[0], recursiondepth, icicle[key]);
+
 }
 
 //create data structure like https://gist.github.com/tchaymore/1255176
