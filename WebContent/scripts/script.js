@@ -193,7 +193,7 @@ function displaySemanticIcicle(uid){
 	var key = semanticobject[0].label;
 	icicle[key] = {};
 	processObject(semanticobject[0], recursiondepth, icicle[key]);
-//	icicle[key] = processObject(semanticobject[0], recursiondepth, icicle[key]);
+	console.log(icicle);
 
 }
 
@@ -202,10 +202,7 @@ function displaySemanticIcicle(uid){
 
 function processObject(parent, recursiondepth, parentIcicle){
 	recursiondepth++;
-    elementAtDepth= {};
     parentIcicle[parent.label] = {}	;
-//	console.log(parent[0].uid + " " +parent[0].label)
-//	console.log(parent[0].derivedFrom);
 	
 	$.each(parent.derivedFrom, function(index, value){
 		var depth ="-";
@@ -224,7 +221,6 @@ function processObject(parent, recursiondepth, parentIcicle){
 			childSemantics = o[0];
 			console.log("TAG "+depth+" "+childSemantics.label);
 			parentIcicle[parent.label][childSemantics.label] = childSemantics.columnCount;
-			console.log(parentIcicle);
 			return parentIcicle;
 
 			}
@@ -233,10 +229,8 @@ function processObject(parent, recursiondepth, parentIcicle){
 				depth = depth+"-";
 			}
 			childSemantics = o[0]
-			console.log(parentIcicle);
 			console.log(depth+" "+ childSemantics.label);
 			parentIcicle[parent.label][childSemantics.label] = processObject(childSemantics, recursiondepth, parentIcicle);
-			console.log(parentIcicle);
 			return parentIcicle;
 		}
 	});
