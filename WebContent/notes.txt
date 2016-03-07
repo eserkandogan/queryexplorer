@@ -1,0 +1,48 @@
+wordnet_14955716 time_unit_unit_of_time
+script.js:218 ["wordnet_15028658", "wordnet_14956162", "wordnet_15007086", "wordnet_15035576", "wordnet_15035938", "wordnet_14957706", "wordnet_15037150"]
+script.js:242 -- hour_hr_60_minutes
+script.js:217 wordnet_15028658 hour_hr_60_minutes
+script.js:218 ["tag_hour", "tag_hr"]
+script.js:233 TAG - hour
+script.js:233 TAG - hr
+script.js:242 -- day_twenty-four_hours_twenty-four_hour_period_24-hour_interval_solar_day_mean_solar_day
+script.js:217 wordnet_14956162 day_twenty-four_hours_twenty-four_hour_period_24-hour_interval_solar_day_mean_solar_day
+script.js:218 ["wordnet_14960543", "tag_day", "tag_morrow", "tag_yesterday", "tag_eve", "tag_today", "tag_tomorrow", "tag_date"]
+script.js:242 - date_day_of_the_month
+script.js:217 wordnet_14960543 date_day_of_the_month
+script.js:218 ["tag_date", "tag_birthday", "tag_maturity"]
+script.js:233 TAG - date
+script.js:233 TAG - birthday
+script.js:233 TAG - maturity
+script.js:233 TAG - day
+script.js:233 TAG - morrow
+script.js:233 TAG - yesterday
+script.js:233 TAG - eve
+script.js:233 TAG - today
+script.js:233 TAG - tomorrow
+script.js:233 TAG - date
+script.js:242 -- month
+script.js:217 wordnet_15007086 month
+script.js:218 ["tag_month", "tag_moon"]
+script.js:233 TAG - month
+script.js:233 TAG - moon
+script.js:242 -- minute_min
+script.js:217 wordnet_15035576 minute_min
+script.js:218 ["tag_min", "tag_minute"]
+script.js:233 TAG - min
+script.js:233 TAG - minute
+script.js:242 -- second_sec_s
+script.js:217 wordnet_15035938 second_sec_s
+script.js:218 ["tag_sec", "tag_second"]
+script.js:233 TAG - sec
+script.js:233 TAG - second
+script.js:242 -- terrestrial_time_TT_terrestrial_dynamical_time_TDT_ephemeris_time
+script.js:217 wordnet_14957706 terrestrial_time_TT_terrestrial_dynamical_time_TDT_ephemeris_time
+script.js:218 ["tag_tt", "tag_tdt"]
+script.js:233 TAG - tt
+script.js:233 TAG - tdt
+script.js:242 -- millisecond_msec
+script.js:217 wordnet_15037150 millisecond_msec
+script.js:218 ["tag_msec", "tag_millisecond"]
+script.js:233 TAG - msec
+script.js:233 TAG - millisecond

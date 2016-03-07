@@ -27,46 +27,10 @@
 }
 
 
-article {
-	display: inline-block;
-	margin: 20px;
-}
+
 .templatebrowser {
       width: 400px;
       height: 300px;
       border: 1px solid #ccc;
       margin: 20px;
 }
-article ul {
-	position: relative;
-	width: 330px;
-	height: 480px;
-	margin: 0;
-	padding: 0;
-	overflow-x: hidden;
-	overflow-y: scroll;
-	list-style: none;
-
-	-webkit-perspective: 400px;
-	   -moz-perspective: 400px;
-	    -ms-perspective: 400px;
-	     -o-perspective: 400px;
-	        perspective: 400px;
-}
-article	ul li {
-		position: relative;
-		padding: 16px;
-		background: #eee;
-		color: #252525;
-		font-size: 18px;
-		z-index: 2;
-
-		-webkit-transform: translateZ(0px);
-		   -moz-transform: translateZ(0px);
-		    -ms-transform: translateZ(0px);
-		     -o-transform: translateZ(0px);
-		        transform: translateZ(0px);
-	}
-article	ul li:nth-child(odd) {
-		background: #fff;
-	}
