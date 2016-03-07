@@ -1,4 +1,24 @@
 var id=0;
+var wordnet = [];
+var tags = [];
+
+
+var icicle;
+var width = 960,
+height = 500;
+var x = d3.scale.linear().range([0, width]);
+var y = d3.scale.linear().range([0, height]);
+
+
+var partition = d3.layout.partition()
+.children(function(d) { return isNaN(d.value) ? d3.entries(d.value) : null; })
+.value(function(d) { return d.value; });
+
+var svg = d3.select("#semanticExplorer").append("svg")
+.attr("width", width)
+.attr("height", height);
+var rect = svg.selectAll("rect");
+
 
 d3.csv("data/qsp1.csv", function(d) {
 	id= id+1;	
@@ -116,8 +136,7 @@ function populateColumnA(data,  template){
 
 
 
-var wordnet = [];
-var tags = [];
+
 	
 function processSemanticTxt(txt){
 
@@ -183,7 +202,6 @@ function createLabelList(wordsemantics){
 		}
 	});
 }
-var icicle;
 function displaySemanticIcicle(uid){
 	icicle = {}
 	var semanticobject = _.select(wordnet, function (obj) {
@@ -193,8 +211,49 @@ function displaySemanticIcicle(uid){
 	var key = semanticobject[0].label;
 	icicle[key] = {};
 	processObject(semanticobject[0], recursiondepth, icicle[key]);
-	console.log(icicle);
+	console.log(JSON.stringify(icicle));
 
+	
+	
+	
+	
+	
+	
+	
+	 var c =  rect.data(partition(d3.entries(icicle)[0]))
+     .enter().append("rect")
+     .attr("x", function(d) { return x(d.x); })
+     .attr("y", function(d) { return y(d.y); })
+     .attr("width", function(d) { return x(d.dx); })
+     .attr("height", function(d) { return y(d.dy); })
+//     .attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
+     .attr("name", function(d) { return d.name; })
+     .on("click", clicked);
+	
+	c.append("svg:text")
+		.attr("y",function(d) { d.y+20;})
+		.attr("x",function(d) { d.x+15;})
+		.text(function(d) { 
+			return d.key;}
+		);
+	
+	function clicked(d) {
+		  x.domain([d.x, d.x + d.dx]);
+		  y.domain([d.y, 1]).range([d.y ? 20 : 0, height]);
+		  
+		  c.transition()
+		      .duration(750)
+		      .attr("x", function(d) { return x(d.x); })
+		      .attr("y", function(d) { return y(d.y); })
+		      .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
+		      .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
+
+		}
+	
+	
+	
+	
+	
 }
 
 //create data structure like https://gist.github.com/tchaymore/1255176
@@ -202,8 +261,7 @@ function displaySemanticIcicle(uid){
 
 function processObject(parent, recursiondepth, parentIcicle){
 	recursiondepth++;
-	if(parent.label == 'deviation_divergence_departure_difference')
-		debugger;
+	
 	$.each(parent.derivedFrom, function(index, value){
 		var depth ="-";
 		var o = _.select(wordnet, function (obj) {
@@ -223,7 +281,7 @@ function processObject(parent, recursiondepth, parentIcicle){
 				depth = depth+"-";
 			}
 			childSemantics = o[0];
-			console.log("TAG "+depth+" "+childSemantics.label);
+//			console.log("TAG "+depth+" "+childSemantics.label);
 			parentIcicle[parent.label][childSemantics.label] = childSemantics.columnCount;
 			return parentIcicle;
 
@@ -235,10 +293,10 @@ function processObject(parent, recursiondepth, parentIcicle){
 				depth = depth+"-";
 			}
 			childSemantics = o[0];
-			console.log(depth+" "+ childSemantics.label);
-			parentIcicle[parent.label] = processObject(childSemantics, recursiondepth, parentIcicle);
+//			console.log(depth+" "+ childSemantics.label);
+			parentIcicle[parent.label]= processObject(childSemantics, recursiondepth, parentIcicle);
 			
 		}
 	});
-	return parentIcicle;
+//	return parentIcicle;
 }
