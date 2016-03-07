@@ -202,8 +202,8 @@ function displaySemanticIcicle(uid){
 
 function processObject(parent, recursiondepth, parentIcicle){
 	recursiondepth++;
-    parentIcicle[parent.label] = {}	;
-	
+	if(parent.label == 'deviation_divergence_departure_difference')
+		debugger;
 	$.each(parent.derivedFrom, function(index, value){
 		var depth ="-";
 		var o = _.select(wordnet, function (obj) {
@@ -211,6 +211,10 @@ function processObject(parent, recursiondepth, parentIcicle){
 			});
 		
 		if(o.length==0){//reached a leaf (tag)
+			//initialize if this is the first tag
+			if(parentIcicle[parent.label]===undefined)
+				parentIcicle[parent.label]= {};
+			
 			o = _.select(tags, function (obj) {
 			  return obj.uid === value;
 			});
@@ -225,13 +229,16 @@ function processObject(parent, recursiondepth, parentIcicle){
 
 			}
 		else{
+			if(parentIcicle[parent.label]===undefined)
+				parentIcicle[parent.label]= {};
 			for(var i= 0; i<recursiondepth; i++){
 				depth = depth+"-";
 			}
-			childSemantics = o[0]
+			childSemantics = o[0];
 			console.log(depth+" "+ childSemantics.label);
-			parentIcicle[parent.label][childSemantics.label] = processObject(childSemantics, recursiondepth, parentIcicle);
-			return parentIcicle;
+			parentIcicle[parent.label] = processObject(childSemantics, recursiondepth, parentIcicle);
+			
 		}
 	});
+	return parentIcicle;
 }
