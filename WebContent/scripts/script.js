@@ -183,27 +183,29 @@ function createLabelList(wordsemantics){
 		}
 	});
 }
+var icicle;
 function displaySemanticIcicle(uid){
-
+	icicle = {}
 	var semanticobject = _.select(wordnet, function (obj) {
 		  return obj.uid === uid;
 		});
-	var semanticIcicles = {};
-	var semobj = semanticIcicles[semanticobject.label] = {};
-	console.log(semanticobject);
 	recursiondepth = 0;
-	processObject(semanticobject, recursiondepth);
+	var key = semanticobject[0].label;
+	icicle[key] = {};
+	icicle[key] = processObject(semanticobject[0], recursiondepth, icicle);
 }
 
 //create data structure like https://gist.github.com/tchaymore/1255176
 // for zoomable partition
 
-function processObject(parent, recursiondepth){
+function processObject(parent, recursiondepth, parentIcicle){
 	recursiondepth++;
-
-	console.log(parent[0].uid + " " +parent[0].label)
-	console.log(parent[0].derivedFrom)
-	$.each(parent[0].derivedFrom, function(index, value){
+    elementAtDepth= {};
+    parentIcicle[parent.label] = {}	;
+//	console.log(parent[0].uid + " " +parent[0].label)
+//	console.log(parent[0].derivedFrom);
+	
+	$.each(parent.derivedFrom, function(index, value){
 		var depth ="-";
 		var o = _.select(wordnet, function (obj) {
 			  return obj.uid === value;
@@ -217,17 +219,23 @@ function processObject(parent, recursiondepth){
 			for(var i= 0; i<recursiondepth; i++){
 				depth = depth+"-";
 			}
-			console.log("TAG "+depth+" "+o[0].label);
-//			create key value pair  o[0].label : o[0].count
-			//push it to parent icicleobject
-			
-			//return recursive function
-		}else{
+			childSemantics = o[0];
+			console.log("TAG "+depth+" "+childSemantics.label);
+			parentIcicle[parent.label][childSemantics.label] = childSemantics.columnCount;
+			console.log(parentIcicle);
+			return parentIcicle;
+
+			}
+		else{
 			for(var i= 0; i<recursiondepth; i++){
 				depth = depth+"-";
 			}
-			console.log(depth+" "+o[0].label);
-			processObject(o);
+			childSemantics = o[0]
+			console.log(parentIcicle);
+			console.log(depth+" "+ childSemantics.label);
+			parentIcicle[parent.label][childSemantics.label] = processObject(childSemantics, recursiondepth, parentIcicle);
+			console.log(parentIcicle);
+			return parentIcicle;
 		}
 	});
 }
