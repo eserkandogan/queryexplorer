@@ -4,16 +4,15 @@ var tags = [];
 
 
 var icicle;
+
 $("#semanticExplorerPanel").hide();
-
-
 d3.csv("data/qsp1.csv", function(d) {
 	id= id+1;	
 	var toReturn =  {
 		qspid : id,
 	    count : +d.count,
 	    template : d.template,
-	    columnA : parseColumnSemantics( d.columnA, 1),//columnAobject,
+	    columnA : parseColumnSemantics( d.columnA, 1),
 	    columnB : parseColumnSemantics( d.columnB, 2)
 	  };	
 	  return toReturn;
@@ -57,7 +56,6 @@ d3.csv("data/qsp1.csv", function(d) {
 function parseColumnSemantics(data, num){
 	
 	var columnObject = [];
-	
 	
 	if(data!==undefined){	
 		var objectElements = data.split(/[[\]]{1,2}/);	
@@ -126,11 +124,6 @@ function populateColumn(data, column, template){
 		}
   	});	
 }
-
-
-
-
-
 	
 function processSemanticTxt(txt){
 
@@ -213,7 +206,7 @@ function displaySemanticIcicle(uid){
 		});
 	recursiondepth = 0;
 	var key = semanticobject[0].label;
-	$("#semanticExplorer").append('Displaying zoomable partition for semantic type = "'+key+'", with id="'+uid+'"');
+	$("#semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key+'", with id="'+uid+'"</p>');
 	icicle[key] = {};
 	processObject(semanticobject[0], recursiondepth, icicle[key]);
 	$("#iciclePrintout").empty();
