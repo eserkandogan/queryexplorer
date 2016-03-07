@@ -175,8 +175,6 @@ function processSemanticTxt(txt){
 
 
  wordnet = _.sortBy(wordnet, function(o){ return - o.columnCount;})
-// createLabelList(wordnet);
-// createLabelList(tags);
 	
 }
 function createLabelList(wordsemantics){
@@ -328,6 +326,8 @@ function processObject(parent, recursiondepth, parentIcicle){
 			childSemantics = o[0];
 //			console.log(depth+" "+ childSemantics.label);
 			parentIcicle[parent.label]= processObject(childSemantics, recursiondepth, parentIcicle);
+//			parentIcicle[parent.label][childSemantics.label]= processObject(childSemantics, recursiondepth, parentIcicle);
+
 			
 		}
 	});
