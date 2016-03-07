@@ -25,7 +25,7 @@ rect {
 <body>
 
 <div class="panel panel-default">
-<div class="panel-heading"><h3 class="panel-title">Query Explorer</h3></div>
+<div class="panel-heading"><h1 class="panel-title">Query Explorer</h1></div>
 <div class="panel-body">
 <div id="loader">Loading data, please wait.<br>
 <img alt="" src="images/progress_bar.gif">
@@ -37,7 +37,7 @@ rect {
 		<tr>
 			<td>
 				<div class="testlayout " id="templateDisplay">
-					<div class="well well-lg" id = "selectedTemplate">this is the selected template</div>
+					<div class="well well-lg" id = "selectedTemplate">You have not selected a template yet.</div>
 					<div>Select a template from the list of query templates:</div>
 					<div class = "well well-lg scrollable">
 						<ul id="templateList" class="list-group"></ul>
@@ -57,9 +57,16 @@ rect {
 		</tr>
 	</tbody>
 </table>
+<hr>
+<div class="panel panel-default" id="semanticExplorerPanel">
+	
+	<div class="panel-heading"><h3 class="panel-title">Semantic Hierarchy Viewer</h3></div>
+	<div class="panel-body" id="semanticExplorer"></div>
 
-<div id="semanticExplorer"></div>
-<div id="iciclePrintout"></div>
+</div>
+
+<hr>
+<div  class="well well-lg" id="iciclePrintout"></div>
 </div>
 </div>
 

@@ -34,4 +34,14 @@
       border: 1px solid #ccc;
       margin: 20px;
 }
-
+#semanticExplorer{
+	padding:10px;
+	margin:10px;
+}
+#iciclePrintout{
+	padding:10px;
+	margin:10px;
+}
+/* #semanticExplorerPanel{ */
+/* 	display:none; */
+/* } */

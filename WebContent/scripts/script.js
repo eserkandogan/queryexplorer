@@ -4,7 +4,7 @@ var tags = [];
 
 
 var icicle;
-
+$("#semanticExplorerPanel").hide();
 
 
 d3.csv("data/qsp1.csv", function(d) {
@@ -185,18 +185,14 @@ function createLabelList(wordsemantics){
 }
 
 function displaySemanticIcicle(uid){
-	
+	$("#semanticExplorerPanel").show();
 	$("#semanticExplorer").empty();
+	
 	var width = 960,
 	height = 500;
 	var x = d3.scale.linear().range([0, width]);
 	var y = d3.scale.linear().range([0, height]);
 
-
-	
-	
-	
-	
 	//create data for zoomable partition
 	icicle = {}
 	var semanticobject = _.select(wordnet, function (obj) {
@@ -204,16 +200,12 @@ function displaySemanticIcicle(uid){
 		});
 	recursiondepth = 0;
 	var key = semanticobject[0].label;
+	$("#semanticExplorer").append('Displaying zoomable partition for semantic type = "'+key+'", with id="'+uid+'"');
 	icicle[key] = {};
 	processObject(semanticobject[0], recursiondepth, icicle[key]);
-//	console.log(JSON.stringify(icicle));
 	$("#iciclePrintout").empty();
 	$("#iciclePrintout").append(JSON.stringify(icicle));
 
-	
-	
-	
-	
 	
 	var partition = d3.layout.partition()
 					.children(function(d) { return isNaN(d.value) ? d3.entries(d.value) : null; })
@@ -240,7 +232,6 @@ function displaySemanticIcicle(uid){
      		.attr("fill", "#B4CFEC")
      		.attr("name", function(d) { return d.name; })
      		.on("click", clicked);
-     debugger;
 	//Add the SVG Text Element to the svgContainer
 	 var text = svg.selectAll("text")
 	 				.data(partition(d3.entries(icicle)[0]))
@@ -254,23 +245,10 @@ function displaySemanticIcicle(uid){
 	                  .text( function (d) { return d.key; })
 	                  .attr("font-family", "sans-serif")
 	                  .attr("font-size", "20px")
-	                  .attr("fill", "red");
-	 
-	 
-//	c.append("svg:text")
-//		.attr("y",function(d) { d.y+20;})
-//		.attr("x",function(d) { d.x+15;})
-//		.text(function(d) { 
-////			console.log(d.key);
-//			return d.key;
-//			}
-//		);
+	                  .attr("fill", "black");
 	
 	function clicked(d) {
-		alert('You clicked on '+d.key);
-		console.log('You clicked on '+d.key);
 
-		debugger;
 		  x.domain([d.x, d.x + d.dx]);
 		  y.domain([d.y, 1]).range([d.y ? 20 : 0, height]);
 		  
