@@ -280,10 +280,10 @@ function displaySemanticIcicle(uid){
 
 function processObject(parent, recursiondepth, parentIcicle){
 	recursiondepth++;
-	console.log("Processing: <"+ parent.label+", "+parent.uid+">");
-	console.log("Has children: ["+parent.derivedFrom+"]");
+//	console.log("Processing: <"+ parent.label+", "+parent.uid+">");
+//	console.log("Has children: ["+parent.derivedFrom+"]");
 	$.each(parent.derivedFrom, function(index, value){
-		console.log("parentIcicle: "+JSON.stringify(parentIcicle));
+//		console.log("parentIcicle: "+JSON.stringify(parentIcicle));
 
 		var depth ="-";
 		var o = _.select(wordnet, function (obj) {
@@ -291,24 +291,17 @@ function processObject(parent, recursiondepth, parentIcicle){
 			});
 		
 		if(o.length==0){//reached a leaf (tag)
-			
-			
 			o = _.select(tags, function (obj) {
 			  return obj.uid === value;
 			});
-
 			childSemantics = o[0];
-			console.log("Processing child of "+parent.label+": <"+ childSemantics.label+", "+childSemantics.uid+">");
-
+//			console.log("Processing child of "+parent.label+": <"+ childSemantics.label+", "+childSemantics.uid+">");
 			recursiondepth--;
 			parentIcicle[childSemantics.label] = childSemantics.columnCount;
-
 			}
 		else{
 			childSemantics = o[0];
-			console.log("Processing child of "+parent.label+": <"+ childSemantics.label+", "+childSemantics.uid+">");
-
-			
+//			console.log("Processing child of "+parent.label+": <"+ childSemantics.label+", "+childSemantics.uid+">");
 			if(parentIcicle[childSemantics.label]===undefined)
 				parentIcicle[childSemantics.label]= {};
 			
