@@ -207,6 +207,10 @@ function displaySemanticIcicle(uid){
 	$("#semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key+'", with id="'+uid+'"</p>');
 	icicle[key] = {};
 	processObject(semanticobject[0], recursiondepth, icicle[key]);
+//	processObject(semanticobject[0], recursiondepth, icicle);
+
+	
+	
 	$("#iciclePrintout").empty();
 	$("#iciclePrintout").append(JSON.stringify(icicle));
 
@@ -274,62 +278,41 @@ function displaySemanticIcicle(uid){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-//create data structure like https://gist.github.com/tchaymore/1255176
-// for zoomable partition
-
 function processObject(parent, recursiondepth, parentIcicle){
 	recursiondepth++;
-	
+	console.log("Processing: <"+ parent.label+", "+parent.uid+">");
+	console.log("Has children: ["+parent.derivedFrom+"]");
 	$.each(parent.derivedFrom, function(index, value){
+		console.log("parentIcicle: "+JSON.stringify(parentIcicle));
+
 		var depth ="-";
 		var o = _.select(wordnet, function (obj) {
 			  return obj.uid === value;
 			});
 		
 		if(o.length==0){//reached a leaf (tag)
-			//initialize if this is the first tag
-			if(parentIcicle[parent.label]===undefined)
-				parentIcicle[parent.label]= {};
+			
 			
 			o = _.select(tags, function (obj) {
 			  return obj.uid === value;
 			});
-			recursiondepth--;
-			for(var i= 0; i<recursiondepth; i++){
-				depth = depth+"-";
-			}
+
 			childSemantics = o[0];
-//			console.log("TAG "+depth+" "+childSemantics.label);
-			parentIcicle[parent.label][childSemantics.label] = childSemantics.columnCount;
-			return parentIcicle;
+			console.log("Processing child of "+parent.label+": <"+ childSemantics.label+", "+childSemantics.uid+">");
+
+			recursiondepth--;
+			parentIcicle[childSemantics.label] = childSemantics.columnCount;
 
 			}
 		else{
-			if(parentIcicle[parent.label]===undefined)
-				parentIcicle[parent.label]= {};
-			for(var i= 0; i<recursiondepth; i++){
-				depth = depth+"-";
-			}
 			childSemantics = o[0];
-//			console.log(depth+" "+ childSemantics.label);
-			parentIcicle[parent.label]= processObject(childSemantics, recursiondepth, parentIcicle);
-//			parentIcicle[parent.label][childSemantics.label]= processObject(childSemantics, recursiondepth, parentIcicle);
+			console.log("Processing child of "+parent.label+": <"+ childSemantics.label+", "+childSemantics.uid+">");
 
 			
+			if(parentIcicle[childSemantics.label]===undefined)
+				parentIcicle[childSemantics.label]= {};
+			
+			processObject(childSemantics, recursiondepth, parentIcicle[childSemantics.label]);
 		}
 	});
-//	return parentIcicle;
 }
