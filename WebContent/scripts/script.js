@@ -115,7 +115,6 @@ function displayTemplates(data){
 function populateColumn(data, column, template){
 	$('#'+column+'list').empty();
 	
-	
 	var filtereddata = data;
 	if(template!=""){
 	 filtereddata = filtereddata.filter(function( obj ) {
@@ -147,36 +146,6 @@ function populateColumn(data, column, template){
 		}
   	});	
 }
-//function populateColumn(data, column, template){
-//	$('#'+column+'list').empty();
-//	
-//	
-//	var filtereddata = data;
-//	if(template!=""){
-//	 filtereddata = filtereddata.filter(function( obj ) {
-//	    return obj.template == template;
-//		});
-//	}
-//	
-//	filtereddata.sort(function(a, b){
-//    	var a1= a[column].columnCount, b1= b[column].columnCount;
-//    	if(a1 == b1) return 0;
-//    	return b1 > a1? 1: -1;
-//	});	
-//
-//	var uniqueSemantics = _.uniq(filtereddata, function (item, key, a) {return item[column].label;});
-//	
-//	$.each(uniqueSemantics, function( index, value) {
-//		thislabel= value[column].label;
-//		if(!isNaN(value[column].columnCount)){
-//			querycount = fetchQC(value[column].id,column,template);
-//  			$('#'+column+'list').append('<li id='+value[column].id+' qspCol="'+thislabel+'" class="list-group-item">'+
-////  		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+value[column].columnCount+'</span></li>');
-//		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+querycount+'</span></li>');
-//
-//		}
-//  	});	
-//}
 function fetchQC(uid,column,template){var o;
 totalcount = 0;
 var id;
