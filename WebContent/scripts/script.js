@@ -249,10 +249,9 @@ function displaySemanticIcicle(uid){
 	$("#semanticExplorerPanel").show();
 	$("#semanticExplorer").empty();
 	
-	var width = 960,
-	height = 500;
-	var x = d3.scale.linear().range([0, width]);
-	var y = d3.scale.linear().range([0, height]);
+	var w = 900,h = 600;
+	var x = d3.scale.linear().range([0, w]);
+	var y = d3.scale.linear().range([0, h]);
 
 	//create data for zoomable partition
 	icicle = {}
@@ -264,7 +263,7 @@ function displaySemanticIcicle(uid){
 	$("#semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key+'", with id="'+uid+'"</p>');
 	icicle[key] = {};
 	processObject(semanticobject[0], recursiondepth, icicle[key]);
-
+	var root = d3.entries(icicle)[0];
 	
 	
 	$("#iciclePrintout").empty();
@@ -272,73 +271,65 @@ function displaySemanticIcicle(uid){
 
 	
 	var partition = d3.layout.partition()
-					.children(function(d) { return isNaN(d.value) ? d3.entries(d.value) : null; })
-					.value(function(d) { return d.value; });
+					.children(function(d) { 
+						return isNaN(d.value) ? d3.entries(d.value) : null; 
+						})
+					.value(function(d) { 
+						console.log(d);
+						return d.value; });
 
 	var svg = d3.select("#semanticExplorer").append("svg")
-	.attr("width", width)
-	.attr("height", height);
+	.attr("width", w)
+	.attr("height", h);
 	
-	var rect = svg.selectAll("rect");
+	var g = svg.selectAll("g")
+    .data(partition.nodes(root))
+    .enter().append("svg:g")
+    .attr("transform", function(d) { 
+    	return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
+    .on("click", clicked);
 	
-	 var kx = width / d3.entries(icicle)[0].dx,
-     ky = height / 1;
-	//add rectangles to the rect container
-	var rectangles =  rect.data(partition(d3.entries(icicle)[0]))
-							.enter()
-							.append("rect");
-     
-     var rectangleAttributes = rectangles
-     		.attr("x", function(d) { return x(d.x); })
-     		.attr("y", function(d) { return y(d.y); })
-     		.attr("width", function(d) { return x(d.dx); })
-     		.attr("height", function(d) { return y(d.dy); })
-     		//.attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
-//     		.attr("fill",  function(d) {
-//     			console.log(d);
-//     			return "#B4CFEC"; })
-//     		.attr("stroke", "gray")
-//     		.attr("stroke-width", "1")
-     		.attr("name", function(d) { return d.name; })
-     		.attr("class", function(d) { return d.children ? "parent" : "child"; })
-     		.on("click", clicked);
-	//Add the SVG Text Element to the svgContainer
-	 var text = svg.selectAll("text")
-	 				.data(partition(d3.entries(icicle)[0]))
-	                .enter()
-	                .append("text");
+	
 	 
-	//Add SVG Text Element Attributes
-	 var textLabels = text
-	                  .attr("x", function(d) { return x(d.x)+20; })
-	                  .attr("y", function(d) { return y(d.y)+40; })
-//	 				  .attr("dy", ".35em")
-//	 				  .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; })
-	                  .text( function (d) { return d.key; })
-	                  .attr("font-family", "sans-serif")
-	                  .attr("font-size", "15px")//function (d) { if(d.x<return d.key; }"15px")
-	                  .attr("fill", "black");
-	
-	function clicked(d) {
+	 g.append("svg:rect")
+     .attr("width", root.dy * kx)
+     .attr("height", function(d) { return d.dx * ky; })
+     .attr("class", function(d) { return d.children ? "parent" : "child"; });
 
-		  x.domain([d.x, d.x + d.dx]);
-		  y.domain([d.y, 1]).range([d.y ? 20 : 0, height]);
-		  
-		  rectangles.transition()
-		      .duration(750)
-		      .attr("x", function(d) { return x(d.x); })
-		      .attr("y", function(d) { return y(d.y); })
-		      .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
-		      .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
-		  
-		  text.transition()
-		    .duration(750)
-		    .attr("x", function(d) { return x(d.x)+20; })
-		    .attr("y", function(d) { return y(d.y)+40; })
-		    .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
-		    .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
-		}
+     g.append("svg:text")
+     .attr("transform", transform)
+     .attr("dy", ".35em")
+     .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; })
+     .text(function(d) { return d.key; })
+
+ d3.select(window)
+     .on("click", function() { clicked(root); })
 	
+     
+    function transform(d) {
+        return "translate(8," + d.dx * ky / 2 + ")";
+    }function clicked(d) {
+        if (!d.children) return;
+
+        kx = (d.y ? w - 40 : w) / (1 - d.y);
+        ky = h / d.dx;
+        x.domain([d.y, 1]).range([d.y ? 40 : 0, w]);
+        y.domain([d.x, d.x + d.dx]);
+
+        var t = g.transition()
+            .duration(d3.event.altKey ? 7500 : 750)
+            .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; });
+
+        t.select("rect")
+            .attr("width", d.dy * kx)
+            .attr("height", function(d) { return d.dx * ky; });
+
+        t.select("text")
+            .attr("transform", transform)
+            .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; });
+
+        d3.event.stopPropagation();
+      }	
 }
 
 
