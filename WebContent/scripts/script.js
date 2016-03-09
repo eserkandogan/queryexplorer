@@ -281,7 +281,8 @@ function displaySemanticIcicle(uid){
 	
 	var rect = svg.selectAll("rect");
 	
-	
+	 var kx = width / d3.entries(icicle)[0].dx,
+     ky = height / 1;
 	//add rectangles to the rect container
 	var rectangles =  rect.data(partition(d3.entries(icicle)[0]))
 							.enter()
@@ -293,11 +294,11 @@ function displaySemanticIcicle(uid){
      		.attr("width", function(d) { return x(d.dx); })
      		.attr("height", function(d) { return y(d.dy); })
      		//.attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
-     		.attr("fill",  function(d) {
-     			console.log(d);
-     			return "#B4CFEC"; })
-     		.attr("stroke", "gray")
-     		.attr("stroke-width", "1")
+//     		.attr("fill",  function(d) {
+//     			console.log(d);
+//     			return "#B4CFEC"; })
+//     		.attr("stroke", "gray")
+//     		.attr("stroke-width", "1")
      		.attr("name", function(d) { return d.name; })
      		.attr("class", function(d) { return d.children ? "parent" : "child"; })
      		.on("click", clicked);
@@ -311,9 +312,11 @@ function displaySemanticIcicle(uid){
 	 var textLabels = text
 	                  .attr("x", function(d) { return x(d.x)+20; })
 	                  .attr("y", function(d) { return y(d.y)+40; })
+//	 				  .attr("dy", ".35em")
+//	 				  .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; })
 	                  .text( function (d) { return d.key; })
 	                  .attr("font-family", "sans-serif")
-	                  .attr("font-size", "20px")
+	                  .attr("font-size", "15px")//function (d) { if(d.x<return d.key; }"15px")
 	                  .attr("fill", "black");
 	
 	function clicked(d) {
