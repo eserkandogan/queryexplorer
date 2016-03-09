@@ -286,7 +286,8 @@ function displaySemanticIcicle(uid){
 					.value(function(d) { 
 						console.log(d);
 						return d.value; });
-
+	
+	
 	var svg = d3.select("#semanticExplorer").append("svg")
 	.attr("width", w)
 	.attr("height", h);
@@ -298,7 +299,8 @@ function displaySemanticIcicle(uid){
     	return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
     .on("click", clicked);
 	
-	
+	var kx = w / root.dx,
+    ky = h / 1;
 	 
 	 g.append("svg:rect")
      .attr("width", root.dy * kx)
