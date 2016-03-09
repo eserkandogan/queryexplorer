@@ -1,7 +1,7 @@
 var id=0;
 var wordnet = [];
 var tags = [];
-
+var queryTemplateCounts = {};
 
 var icicle;
 
@@ -19,38 +19,58 @@ d3.csv("data/qsp1.csv", function(d) {
 	}, function(data) {
 		$.get("data/wordsemantics-2.20-json.txt",function(txt){
 			processSemanticTxt(txt);
-			$("#loader").css( "display","none");
-
-			$("#interface").css( "display","block");
-			displayTemplates(data);
-			populateColumn(data, 'columnA', "");
-			populateColumn(data, 'columnB', "");		
-			
-			$('#templateList').on('click', 'li', function() {
-			    $('#selectedTemplate').empty();
-			    $('#selectedTemplate').append('You selected template <b>'+this.id+'</b>');
-			    $('#colAprompt').empty();
-			    $('#colAprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+this.id+'</b>');
-			    $('#templateList li').removeClass( 'selectedListElement' );
-			    $(this).toggleClass('selectedListElement');
-			    populateColumn(data, 'columnA', this.id);
-			    populateColumn(data, 'columnB', this.id);
+			$.get("data/templateQC.txt",function(txt){
+			    var lines = txt.split("\n");
+			    for (var i = 0, len = lines.length; i < len; i++) {
+			    	line = lines[i];
+			    	var res = line.split(" ");	    	
+			    	queryTemplateCounts[res[1]] = res[0];
+			    }
+				console.log(queryTemplateCounts);
+				$("#loader").css( "display","none");
+	
+				$("#interface").css( "display","block");
+				displayTemplates(data);
+				populateColumn(data, 'columnA', "");
+				populateColumn(data, 'columnB', "");		
+				
+				$('#templateList').on('click', 'li', function() {
+				    $('#selectedTemplate').empty();
+				    $('#selectedTemplate').append('You selected template <b>'+this.id+'</b>');
+				    $('#colAprompt').empty();
+				    $('#colAprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+this.id+'</b>');
+				    $('#templateList li').removeClass( 'selectedListElement' );
+				    $(this).toggleClass('selectedListElement');
+				    populateColumn(data, 'columnA', this.id);
+				    populateColumn(data, 'columnB', this.id);
+				});
+				
+				$('#columnAlist').on('click', 'li', function() {
+					$('#selectedSemTypeA').empty();
+				    $('#selectedSemTypeA').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspColA')+'</b>');
+					$('#columnAlist li').removeClass( 'selectedListElement' );
+					$(this).toggleClass('selectedListElement');
+					displaySemanticIcicle(this.id);
+				});	
+				$('#columnBlist').on('click', 'li', function() {
+					alert('functionality not implemented');
+				});
 			});
-			
-			$('#columnAlist').on('click', 'li', function() {
-				$('#selectedSemTypeA').empty();
-			    $('#selectedSemTypeA').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspColA')+'</b>');
-				$('#columnAlist li').removeClass( 'selectedListElement' );
-				$(this).toggleClass('selectedListElement');
-				displaySemanticIcicle(this.id);
-			});	
-			$('#columnBlist').on('click', 'li', function() {
-				alert('functionality not implemented');
-			});
-		});
-			
+		})	;
 });//end loading data
-
+function loadQTC(filename){
+	var qtc = {}; 
+	$.get(filename,function(txt){
+	    var lines = txt.split("\n");
+	    for (var i = 0, len = lines.length; i < len; i++) {
+	    	line = lines[i];
+	    	var res = line.split(" ");	    	
+	    	qtc[res[1]] = res[0];
+	    }
+	    return qtc;
+	});
+	
+}
 //Helper functions
 
 function parseColumnSemantics(data, num){
@@ -64,7 +84,6 @@ function parseColumnSemantics(data, num){
 		columnObject["abstractionLevel"]= objectElements[2];
 		columnObject["columnCount"]= +objectElements[3];
 	}
-	else debugger;
 	return columnObject;
 }
 function displayTemplates(data){
@@ -77,16 +96,17 @@ function displayTemplates(data){
 	$.each(uniqueEntities, function( index, value) {
 		var element = {};
 		var template = value.template;
-		var filteredByTemplate = data.filter(function( obj ) {
-		    return obj.template == template;
-		});
-		var templatecount = 0;
-		$.each(data, function(index, value){
-			if(value.template == template)
-				templatecount= templatecount + value.count;
-		});
+//		var filteredByTemplate = data.filter(function( obj ) {
+//		    return obj.template == template;
+//		});
+//		var templatecount = 0;
+//		$.each(data, function(index, value){
+//			if(value.template == template)
+//				templatecount= templatecount + value.count;
+//		});
 		element.template = template;
-		element.templatecount = templatecount;
+		element.templatecount = queryTemplateCounts[template];
+//		element.templatecount = templatecount;
 		listelements.push(element);		
 	});
 	listelements = _.sortBy(listelements, function(element){ return - element.templatecount;})
@@ -207,7 +227,6 @@ function displaySemanticIcicle(uid){
 	$("#semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key+'", with id="'+uid+'"</p>');
 	icicle[key] = {};
 	processObject(semanticobject[0], recursiondepth, icicle[key]);
-//	processObject(semanticobject[0], recursiondepth, icicle);
 
 	
 	
