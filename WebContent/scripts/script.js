@@ -5,6 +5,9 @@ var queryTemplateCounts = {};
 
 var icicle;
 
+var selectedTemplateID = "",selectedColumnAID = "";
+
+
 $("#semanticExplorerPanel").hide();
 d3.csv("data/qsp1.csv", function(d) {
 	id= id+1;	
@@ -31,26 +34,37 @@ d3.csv("data/qsp1.csv", function(d) {
 	
 				$("#interface").css( "display","block");
 				displayTemplates(data);
-				populateColumn(data, 'columnA', "");
-				populateColumn(data, 'columnB', "");		
+				populateColumn(data, 'columnA');
+				populateColumn(data, 'columnB');		
 				
 				$('#templateList').on('click', 'li', function() {
 				    $('#selectedTemplate').empty();
-				    $('#selectedTemplate').append('You selected template <b>'+this.id+'</b>');
+				    $('#selectedTemplate').append('You selected template <b>'+this.id+'</b>'+
+				    		'<button id="clearTemplate" class="btn btn-info" type="button"> <span class="glyphicon glyphicon-refresh"></span> </button>');
+				    selectedTemplateID = this.id;
 				    $('#colAprompt').empty();
-				    $('#colAprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+this.id+'</b>');
+				    $('#colAprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+selectedTemplateID+'</b>');
 				    $('#templateList li').removeClass( 'selectedListElement' );
 				    $(this).toggleClass('selectedListElement');
-				    populateColumn(data, 'columnA', this.id);
-				    populateColumn(data, 'columnB', this.id);
+				    populateColumn(data, 'columnA');
+				    populateColumn(data, 'columnB');
 				});
 				
 				$('#columnAlist').on('click', 'li', function() {
+					selectedColumnAID = this.id;
 					$('#selectedSemTypeA').empty();
-				    $('#selectedSemTypeA').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspCol')+'</b>');
+				    $('#selectedSemTypeA').append('You selected semantic type <b>'+selectedColumnAID+': '+$(this).attr('qspCol')+'</b>'+
+				    		'<button id="clearColA" class="btn btn-info" type="button"> <span class="glyphicon glyphicon-refresh"></span> </button>');
+				    
+				    $('#selectedSemTypeB').empty();
+				    $('#selectedSemTypeB').append('Displaying semantic types used in queries where template is <b>'+selectedTemplateID+'</b> and columnA is <b>'
+				    		+$(this).attr('qspCol')+'</b>. ');
+				    
 					$('#columnAlist li').removeClass( 'selectedListElement' );
 					$(this).toggleClass('selectedListElement');
-					displaySemanticIcicle(this.id);
+					displaySemanticIcicle(selectedColumnAID);
+					
+					populateColumn(data, 'columnB');
 				});	
 				$('#columnBlist').on('click', 'li', function() {
 					$('#selectedSemTypeB').empty();
@@ -62,6 +76,18 @@ d3.csv("data/qsp1.csv", function(d) {
 			});
 		})	;
 });//end loading data
+
+$('#clearColA').on('click', 'li', function() {
+	selectedColumnAID = "";
+	$('#columnAlist li').removeClass( 'selectedListElement' );
+	populateColumn(data, 'columnB');
+});
+$('#clearTemplate').on('click', 'li', function() {
+	selectedColumnAID = "";
+	$('#templateList li').removeClass( 'selectedListElement' );
+	populateColumn(data, 'columnA');
+	populateColumn(data, 'columnB');
+});
 function loadQTC(filename){
 	var qtc = {}; 
 	$.get(filename,function(txt){
@@ -76,6 +102,50 @@ function loadQTC(filename){
 	
 }
 //Helper functions
+function populateColumn(data, column){
+	selectedColumnAID
+	$('#'+column+'list').empty();
+	
+	var filtereddata = data;
+	
+	if(selectedTemplateID!=""){
+	 filtereddata = filtereddata.filter(function( obj ) {
+	    return obj.template == selectedTemplateID;
+		});
+	}
+	
+	if(selectedColumnAID!=""){
+		filtereddata = filtereddata.filter(function( obj ) {
+	    return obj.columnA.id == selectedColumnAID;
+		});
+	}
+	
+	var uniqueEntities = _.uniq(filtereddata, function (item, key, a) {
+		return item[column].label;}
+	);
+	var listelements = []
+
+	$.each(uniqueEntities, function( index, value) {
+		if(value[column].id!=undefined){
+			var element = {};
+		element.semobject = value;
+		element.querycount = fetchQC(value[column].id,column,value.template);
+		listelements.push(element);	
+		}
+	});
+	listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
+
+	
+	$.each(listelements, function( index, element) {
+		thislabel= element.semobject[column].label;
+		if(!isNaN(element.querycount)){
+			querycount = fetchQC(element.semobject[column].id,column,selectedTemplateID);
+  			$('#'+column+'list').append('<li id='+element.semobject[column].id+' qspCol="'+thislabel+'" class="list-group-item">'+
+		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+element.querycount+'</span></li>');
+		}
+  	});	
+}
+
 
 function parseColumnSemantics(data, num){
 	
@@ -112,40 +182,7 @@ function displayTemplates(data){
 }
 
 
-function populateColumn(data, column, template){
-	$('#'+column+'list').empty();
-	
-	var filtereddata = data;
-	if(template!=""){
-	 filtereddata = filtereddata.filter(function( obj ) {
-	    return obj.template == template;
-		});
-	}
-	var uniqueEntities = _.uniq(filtereddata, function (item, key, a) {
-		return item[column].label;}
-	);
-	var listelements = []
 
-	$.each(uniqueEntities, function( index, value) {
-		if(value[column].id!=undefined){
-			var element = {};
-		element.semobject = value;
-		element.querycount = fetchQC(value[column].id,column,value.template);
-		listelements.push(element);	
-		}
-	});
-	listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
-
-	
-	$.each(listelements, function( index, element) {
-		thislabel= element.semobject[column].label;
-		if(!isNaN(element.querycount)){
-			querycount = fetchQC(element.semobject[column].id,column,template);
-  			$('#'+column+'list').append('<li id='+element.semobject[column].id+' qspCol="'+thislabel+'" class="list-group-item">'+
-		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+element.querycount+'</span></li>');
-		}
-  	});	
-}
 function fetchQC(uid,column,template){var o;
 totalcount = 0;
 var id;
@@ -269,7 +306,8 @@ function displaySemanticIcicle(uid){
 		});
 	recursiondepth = 0;
 	var key = semanticobject[0].label;
-	$("#semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key+'", with id="'+uid+'"</p>');
+	$("#semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key
+			+'", with id="'+uid+'" Visualization is based on <b>ColumnCount</b></p>');
 	icicle[key] = {};
 	processObject(semanticobject[0], recursiondepth, icicle[key]);
 	var root = d3.entries(icicle)[0];
