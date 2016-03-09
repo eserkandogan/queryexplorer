@@ -39,8 +39,8 @@ d3.csv("data/qsp1.csv", function(d) {
 				
 				$('#templateList').on('click', 'li', function() {
 				    $('#selectedTemplate').empty();
-				    $('#selectedTemplate').append('You selected template <b>'+this.id+'</b>'+
-				    		'<button id="clearTemplate" class="btn btn-info" type="button"> <span class="glyphicon glyphicon-refresh"></span> </button>');
+				    $('#selectedTemplate').append('You selected template <b>'+this.id+'</b> '+
+				    		'<button id="clearTemplate" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
 				    selectedTemplateID = this.id;
 				    $('#colAprompt').empty();
 				    $('#colAprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+selectedTemplateID+'</b>');
@@ -53,8 +53,8 @@ d3.csv("data/qsp1.csv", function(d) {
 				$('#columnAlist').on('click', 'li', function() {
 					selectedColumnAID = this.id;
 					$('#selectedSemTypeA').empty();
-				    $('#selectedSemTypeA').append('You selected semantic type <b>'+selectedColumnAID+': '+$(this).attr('qspCol')+'</b>'+
-				    		'<button id="clearColA" class="btn btn-info" type="button"> <span class="glyphicon glyphicon-refresh"></span> </button>');
+				    $('#selectedSemTypeA').append('You selected semantic type <b>'+selectedColumnAID+': '+$(this).attr('qspCol')+'</b> '+
+				    		'<button id="clearColA" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
 				    
 				    $('#selectedSemTypeB').empty();
 				    $('#selectedSemTypeB').append('Displaying semantic types used in queries where template is <b>'+selectedTemplateID+'</b> and columnA is <b>'
@@ -73,21 +73,31 @@ d3.csv("data/qsp1.csv", function(d) {
 					$(this).toggleClass('selectedListElement');
 					displaySemanticIcicle(this.id);
 				});
+				
+				$(document).on("click", "#clearTemplate", function(){
+					$('#selectedTemplate').empty();
+				    $('#selectedTemplate').append('You have not selected a template yet.');
+
+					selectedColumnAID = "";
+					$('#templateList li').removeClass( 'selectedListElement' );
+					populateColumn(data, 'columnA');
+					populateColumn(data, 'columnB');
+				});
+
+				$(document).on("click", "#clearColA", function(){
+					$('#selectedSemTypeA').empty();
+				    $('#selectedSemTypeA').append('You have not selected a semantic type yet.');
+					selectedColumnAID = "";
+					$('#columnAlist li').removeClass( 'selectedListElement' );
+					populateColumn(data, 'columnB');
+				});
+				
 			});
 		})	;
 });//end loading data
 
-$('#clearColA').on('click', 'li', function() {
-	selectedColumnAID = "";
-	$('#columnAlist li').removeClass( 'selectedListElement' );
-	populateColumn(data, 'columnB');
-});
-$('#clearTemplate').on('click', 'li', function() {
-	selectedColumnAID = "";
-	$('#templateList li').removeClass( 'selectedListElement' );
-	populateColumn(data, 'columnA');
-	populateColumn(data, 'columnB');
-});
+
+
 function loadQTC(filename){
 	var qtc = {}; 
 	$.get(filename,function(txt){
