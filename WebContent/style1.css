@@ -26,8 +26,22 @@
     -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
 }
 
+rect {
+  stroke: #eee;
+  fill: #aaa;
+  fill-opacity: .8;
+}
+
+rect.parent {
+  cursor: pointer;
+  fill: steelblue;
+}
 
 
+line {
+  stroke: #000;
+  stroke-width: 1.5px;
+}
 .templatebrowser {
       width: 400px;
       height: 300px;

@@ -293,8 +293,13 @@ function displaySemanticIcicle(uid){
      		.attr("width", function(d) { return x(d.dx); })
      		.attr("height", function(d) { return y(d.dy); })
      		//.attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
-     		.attr("fill", "#B4CFEC")
+     		.attr("fill",  function(d) {
+     			console.log(d);
+     			return "#B4CFEC"; })
+     		.attr("stroke", "gray")
+     		.attr("stroke-width", "1")
      		.attr("name", function(d) { return d.name; })
+     		.attr("class", function(d) { return d.children ? "parent" : "child"; })
      		.on("click", clicked);
 	//Add the SVG Text Element to the svgContainer
 	 var text = svg.selectAll("text")
