@@ -122,27 +122,61 @@ function populateColumn(data, column, template){
 	    return obj.template == template;
 		});
 	}
-	
-	filtereddata.sort(function(a, b){
-    	var a1= a[column].columnCount, b1= b[column].columnCount;
-    	if(a1 == b1) return 0;
-    	return b1 > a1? 1: -1;
-	});	
+	var uniqueEntities = _.uniq(filtereddata, function (item, key, a) {
+		return item[column].label;}
+	);
+	var listelements = []
 
-	var uniqueSemantics = _.uniq(filtereddata, function (item, key, a) {return item[column].label;});
-	
-	$.each(uniqueSemantics, function( index, value) {
-		thislabel= value[column].label;
-		if(!isNaN(value[column].columnCount)){
-			querycount = fetchQC(value[column].id,column,template);
-  			$('#'+column+'list').append('<li id='+value[column].id+' qspCol="'+thislabel+'" class="list-group-item">'+
-//  		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+value[column].columnCount+'</span></li>');
-		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+querycount+'</span></li>');
+	$.each(uniqueEntities, function( index, value) {
+		if(value[column].id!=undefined){
+			var element = {};
+		element.semobject = value;
+		element.querycount = fetchQC(value[column].id,column,value.template);
+		listelements.push(element);	
+		}
+	});
+	listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
 
+	
+	$.each(listelements, function( index, element) {
+		thislabel= element.semobject[column].label;
+		if(!isNaN(element.querycount)){
+			querycount = fetchQC(element.semobject[column].id,column,template);
+  			$('#'+column+'list').append('<li id='+element.semobject[column].id+' qspCol="'+thislabel+'" class="list-group-item">'+
+		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+element.querycount+'</span></li>');
 		}
   	});	
 }
-
+//function populateColumn(data, column, template){
+//	$('#'+column+'list').empty();
+//	
+//	
+//	var filtereddata = data;
+//	if(template!=""){
+//	 filtereddata = filtereddata.filter(function( obj ) {
+//	    return obj.template == template;
+//		});
+//	}
+//	
+//	filtereddata.sort(function(a, b){
+//    	var a1= a[column].columnCount, b1= b[column].columnCount;
+//    	if(a1 == b1) return 0;
+//    	return b1 > a1? 1: -1;
+//	});	
+//
+//	var uniqueSemantics = _.uniq(filtereddata, function (item, key, a) {return item[column].label;});
+//	
+//	$.each(uniqueSemantics, function( index, value) {
+//		thislabel= value[column].label;
+//		if(!isNaN(value[column].columnCount)){
+//			querycount = fetchQC(value[column].id,column,template);
+//  			$('#'+column+'list').append('<li id='+value[column].id+' qspCol="'+thislabel+'" class="list-group-item">'+
+////  		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+value[column].columnCount+'</span></li>');
+//		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+querycount+'</span></li>');
+//
+//		}
+//  	});	
+//}
 function fetchQC(uid,column,template){var o;
 totalcount = 0;
 var id;
@@ -159,7 +193,13 @@ var id;
 			filteredQueryStats  = (_.uniq(o.queryStats, function (item) {
 				return Object.keys(item)[0]==id;
 				}));
-			return filteredQueryStats[1][id];// NO IDEA WHY TWO ARE RETURNED
+			if(filteredQueryStats[1]==undefined){
+//				console.log(uid+" "+column+" "+template);
+				return 0;
+			}
+			else{			
+				return filteredQueryStats[1][id];// NO IDEA WHY TWO ARE RETURNED
+}	
 		}
 	}
 	else{
