@@ -1,48 +1,74 @@
-wordnet_14955716 time_unit_unit_of_time
-script.js:218 ["wordnet_15028658", "wordnet_14956162", "wordnet_15007086", "wordnet_15035576", "wordnet_15035938", "wordnet_14957706", "wordnet_15037150"]
-script.js:242 -- hour_hr_60_minutes
-script.js:217 wordnet_15028658 hour_hr_60_minutes
-script.js:218 ["tag_hour", "tag_hr"]
-script.js:233 TAG - hour
-script.js:233 TAG - hr
-script.js:242 -- day_twenty-four_hours_twenty-four_hour_period_24-hour_interval_solar_day_mean_solar_day
-script.js:217 wordnet_14956162 day_twenty-four_hours_twenty-four_hour_period_24-hour_interval_solar_day_mean_solar_day
-script.js:218 ["wordnet_14960543", "tag_day", "tag_morrow", "tag_yesterday", "tag_eve", "tag_today", "tag_tomorrow", "tag_date"]
-script.js:242 - date_day_of_the_month
-script.js:217 wordnet_14960543 date_day_of_the_month
-script.js:218 ["tag_date", "tag_birthday", "tag_maturity"]
-script.js:233 TAG - date
-script.js:233 TAG - birthday
-script.js:233 TAG - maturity
-script.js:233 TAG - day
-script.js:233 TAG - morrow
-script.js:233 TAG - yesterday
-script.js:233 TAG - eve
-script.js:233 TAG - today
-script.js:233 TAG - tomorrow
-script.js:233 TAG - date
-script.js:242 -- month
-script.js:217 wordnet_15007086 month
-script.js:218 ["tag_month", "tag_moon"]
-script.js:233 TAG - month
-script.js:233 TAG - moon
-script.js:242 -- minute_min
-script.js:217 wordnet_15035576 minute_min
-script.js:218 ["tag_min", "tag_minute"]
-script.js:233 TAG - min
-script.js:233 TAG - minute
-script.js:242 -- second_sec_s
-script.js:217 wordnet_15035938 second_sec_s
-script.js:218 ["tag_sec", "tag_second"]
-script.js:233 TAG - sec
-script.js:233 TAG - second
-script.js:242 -- terrestrial_time_TT_terrestrial_dynamical_time_TDT_ephemeris_time
-script.js:217 wordnet_14957706 terrestrial_time_TT_terrestrial_dynamical_time_TDT_ephemeris_time
-script.js:218 ["tag_tt", "tag_tdt"]
-script.js:233 TAG - tt
-script.js:233 TAG - tdt
-script.js:242 -- millisecond_msec
-script.js:217 wordnet_15037150 millisecond_msec
-script.js:218 ["tag_msec", "tag_millisecond"]
-script.js:233 TAG - msec
-script.js:233 TAG - millisecond
+223331,compare_2,How do the values of <b>X</b> <b>compare by</b> <b>Y</b>?                       
+120235,compare_3,How do the values of <b>X</b> <b>compare by</b> <b>Y</b> and <b>Z</b>?                      
+102189,breakdown_2,What is the <b>breakdown</b> of <b>X</b> by <b>Y</b> and <b>Z</b>?                     
+82217,relationship_3,                  
+80114,trend_3,What is the <b>trend</b> of <b>X</b> over <b>Y</b>?                         
+72297,breakdown_3,                     
+44310,trend_2,What is the <b>trend of <b>X</b> over <b>Y</b>?                         
+42843,values_3,                        
+39738,values_2,                        
+27270,contribution_3,                  
+12789,Undetermined_2,                  
+11947,contribution_2,                  
+9698,Undetermined_1,                  
+9107,values_4,                        
+7746,relate_3,                        
+6563,relate_2,                        
+6028,breakdown_4,                     
+5320,relationship_2,                  
+2678,trend_1,What is the <b>trend of <b>X</b>?                         
+1567,breakdown_1,What is the <b>breakdown</b> of <b>X</b>                   
+1476,compare_1,                       
+1086,Undetermined_-1,                 
+897,breakdown_5,                     
+892,contribution_1,                  
+801,values_1,                        
+465,Undetermined_0,                  
+7,grouping_3,
+
+
+function populateColumn(data, column, template){
+	$('#'+column+'list').empty();
+	
+	
+	var filtereddata = data;
+	if(template!=""){
+	 filtereddata = filtereddata.filter(function( obj ) {
+	    return obj.template == template;
+		});
+	}
+	var listelements = []
+	$.each(filtereddata, function( index, value) {
+		var element = {};
+		element.semobject = value;
+		if(value[column].id!==undefined)
+			element.querycount = fetchQC(value[column].id,column,template);
+		else
+			element.querycount = 0;
+		listelements.push(element);		
+	});
+	
+//	filtereddata.sort(function(a, b){
+//    	var a1= a[column].columnCount, b1= b[column].columnCount;
+//    	if(a1 == b1) return 0;
+//    	return b1 > a1? 1: -1;
+//	});	
+	listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
+	
+//	var uniqueSemantics = _.uniq(filtereddata, function (item, key, a) {return item[column].label;});
+
+//	$.each(uniqueSemantics, function( index, value) {
+	$.each(listelements, function( index, value) {
+
+		thislabel= value.semobject[column].label;
+		if(!isNaN(value[column].columnCount)){
+			querycount = fetchQC(value[column].id,column,template);
+//  			$('#'+column+'list').append('<li id='+value[column].id+' qspColA="'+thislabel+'" class="list-group-item">'+
+//  		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+value[column].columnCount+'</span></li>');
+  		  		$('#'+column+'list').append('<li id='+value.semobject[column].id+' qspColA="'+thislabel+'" class="list-group-item">'+
+
+		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+value.querycount+'</span></li>');
+
+		}
+  	});	
+}

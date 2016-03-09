@@ -96,17 +96,8 @@ function displayTemplates(data){
 	$.each(uniqueEntities, function( index, value) {
 		var element = {};
 		var template = value.template;
-//		var filteredByTemplate = data.filter(function( obj ) {
-//		    return obj.template == template;
-//		});
-//		var templatecount = 0;
-//		$.each(data, function(index, value){
-//			if(value.template == template)
-//				templatecount= templatecount + value.count;
-//		});
 		element.template = template;
 		element.templatecount = queryTemplateCounts[template];
-//		element.templatecount = templatecount;
 		listelements.push(element);		
 	});
 	listelements = _.sortBy(listelements, function(element){ return - element.templatecount;})
@@ -139,12 +130,54 @@ function populateColumn(data, column, template){
 	$.each(uniqueSemantics, function( index, value) {
 		thislabel= value[column].label;
 		if(!isNaN(value[column].columnCount)){
+			querycount = fetchQC(value[column].id,column,template);
   			$('#'+column+'list').append('<li id='+value[column].id+' qspColA="'+thislabel+'" class="list-group-item">'+
-  		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+value[column].columnCount+'</span></li>');
+//  		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+value[column].columnCount+'</span></li>');
+		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+querycount+'</span></li>');
+
 		}
   	});	
 }
-	
+
+function fetchQC(uid,column,template){var o;
+totalcount = 0;
+var id;
+	if(template!==""){
+		if(column == "columnA")
+			id = template+"_1";
+		else if(column == "columnB")
+			id = template+"_2";
+		if(uid.indexOf('wordnet')!==-1){
+			o = _.select(wordnet, function (obj) {
+				  return obj.uid === uid;
+				})[0];
+			
+			filteredQueryStats  = (_.uniq(o.queryStats, function (item) {
+				return Object.keys(item)[0]==id;
+				}));
+			return filteredQueryStats[1][id];// NO IDEA WHY TWO ARE RETURNED
+		}
+	}
+	else{
+		totalcount = 0;
+		if(uid.indexOf('wordnet')!==-1){
+			o = _.select(wordnet, function (obj) {
+			  return obj.uid === uid;
+			})[0];
+		}
+		else{
+			o = _.select(tags, function (obj) {
+				  return obj.uid === uid;
+				})[0];
+			}
+		$.each(o.queryStats, function( index, value) {
+			totalcount = totalcount+value[Object.keys(value)[0]];
+		});
+		return totalcount;
+	}
+}	
+
+
 function processSemanticTxt(txt){
 
     var lines = txt.split("\n");
