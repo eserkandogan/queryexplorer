@@ -47,13 +47,17 @@ d3.csv("data/qsp1.csv", function(d) {
 				
 				$('#columnAlist').on('click', 'li', function() {
 					$('#selectedSemTypeA').empty();
-				    $('#selectedSemTypeA').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspColA')+'</b>');
+				    $('#selectedSemTypeA').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspCol')+'</b>');
 					$('#columnAlist li').removeClass( 'selectedListElement' );
 					$(this).toggleClass('selectedListElement');
 					displaySemanticIcicle(this.id);
 				});	
 				$('#columnBlist').on('click', 'li', function() {
-					alert('functionality not implemented');
+					$('#selectedSemTypeB').empty();
+				    $('#selectedSemTypeB').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspCol')+'</b>');
+					$('#columnBlist li').removeClass( 'selectedListElement' );
+					$(this).toggleClass('selectedListElement');
+					displaySemanticIcicle(this.id);
 				});
 			});
 		})	;
@@ -131,7 +135,7 @@ function populateColumn(data, column, template){
 		thislabel= value[column].label;
 		if(!isNaN(value[column].columnCount)){
 			querycount = fetchQC(value[column].id,column,template);
-  			$('#'+column+'list').append('<li id='+value[column].id+' qspColA="'+thislabel+'" class="list-group-item">'+
+  			$('#'+column+'list').append('<li id='+value[column].id+' qspCol="'+thislabel+'" class="list-group-item">'+
 //  		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+value[column].columnCount+'</span></li>');
 		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+querycount+'</span></li>');
 
