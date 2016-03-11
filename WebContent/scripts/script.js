@@ -204,7 +204,7 @@ function displayTemplates(data){
 	$.each(uniqueEntities, function( index, value) {
 		var element = {};
 		var template = value.template;
-		if(queryTemplates[template]!=undefined && queryTemplates[template].text!="Ignore"){
+		if(queryTemplates[template]!=undefined && (queryTemplates[template].text).indexOf('Ignore')!==-1){
 			element.template = template;
 			element.templatecount = queryTemplates[template].count;
 			element.text = queryTemplates[template].text;
