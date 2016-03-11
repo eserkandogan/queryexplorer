@@ -137,7 +137,7 @@ function loadQTC(filename){
 }
 //Helper functions
 function populateColumn(data, column){
-	selectedColumnAID
+	
 	$('#'+column+'list').empty();
 	
 	var filtereddata = data;
@@ -220,7 +220,8 @@ function displayTemplates(data){
 
 
 
-function fetchQC(uid,column,template){var o;
+function fetchQC(uid,column,template){
+	var o;
 totalcount = 0;
 var id;
 	if(template!==""){
@@ -323,7 +324,6 @@ function createLabelList(wordsemantics){
 			$("#wordnetlist").append('<li>'+value.label+', '+value.columnCount+'</li>');
 		else{
 			$("#taglist").append('<li>'+value.uid+'</li>');
-
 		}
 	});
 }
@@ -465,7 +465,7 @@ function processObject(parent, recursiondepth, parentIcicle){
 			childSemantics = o[0];
 //			console.log("Processing child of "+parent.label+": <"+ childSemantics.label+", "+childSemantics.uid+">");
 			recursiondepth--;
-			parentIcicle[childSemantics.label] = childSemantics.columnCount;
+			parentIcicle[childSemantics.label] = fetchQC(childSemantics.uid,selectedColumnAID,selectedTemplateID)//childSemantics.columnCount;
 			}
 		else{
 			childSemantics = o[0];
