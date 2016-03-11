@@ -51,6 +51,12 @@ d3.csv("data/qsp1.csv", function(d) {
 				    $('#colBprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+selectedTemplateID+'</b>');
 				    $('#templateList li').removeClass( 'selectedListElement' );
 				    $(this).toggleClass('selectedListElement');
+				    
+				    
+				    $("#columnAsemanticExplorer").hide();
+				    $("#columnBsemanticExplorer").hide();
+					$("#columnAlist").show();
+					$("#columnBlist").show();
 				    populateColumn(data, 'columnA');
 				    populateColumn(data, 'columnB');
 				});
@@ -84,9 +90,10 @@ d3.csv("data/qsp1.csv", function(d) {
 				$(document).on("click", "#clearTemplate", function(){
 					$('#selectedTemplate').empty();
 				    $('#selectedTemplate').append('You have not selected a template yet.');
+				    selectedTemplateID = "";
+					$('#templateList li').removeClass( 'selectedListElement' );
 
 					selectedColumnAID = "";
-					$('#templateList li').removeClass( 'selectedListElement' );
 					populateColumn(data, 'columnA');
 					populateColumn(data, 'columnB');
 				});
@@ -105,6 +112,7 @@ d3.csv("data/qsp1.csv", function(d) {
 					else	
 						$('#selectedSemTypeB').append('Displaying semantic types used in queries where template is <b>'+selectedTemplateID+'</b> ');
 //					$('#columnAlist li').removeClass( 'selectedListElement' );
+					populateColumn(data, 'columnA');
 					populateColumn(data, 'columnB');
 				});
 				$(document).on("click", "#clearColB", function(){
@@ -329,7 +337,7 @@ function createLabelList(wordsemantics){
 }
 
 function displaySemanticIcicle(uid, column){
-	$("#semanticExplorerPanel").show();
+//	$("#"+column+"semanticExplorerPanel").show();
 	$("#"+column+"list").hide();
 	$("#"+column+"semanticExplorer").empty();
 	$("#"+column+"semanticExplorer").show();
