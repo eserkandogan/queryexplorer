@@ -12,7 +12,7 @@
 }
 .scrollable{
 	overflow-y: scroll; 
-	height:300px;
+	height:800px;
 	width:400px;
 }
 
@@ -46,6 +46,7 @@ line {
   stroke-width: 1.5px;
 }
 
+
 .string, .regexp {
   color: #f39;
 }
@@ -73,13 +74,14 @@ line {
 
 .templatebrowser {
       width: 400px;
-      height: 300px;
+      height: 600px;
       border: 1px solid #ccc;
       margin: 20px;
 }
 #semanticExplorer{
 	padding:10px;
 	margin:10px;
+	display:none;
 }
 #iciclePrintout{
 	padding:10px;

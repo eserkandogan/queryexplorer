@@ -60,18 +60,19 @@ d3.csv("data/qsp1.csv", function(d) {
 				    $('#selectedSemTypeB').append('Displaying semantic types used in queries where template is <b>'+selectedTemplateID+'</b> and columnA is <b>'
 				    		+$(this).attr('qspCol')+'</b>. ');
 				    
-					$('#columnAlist li').removeClass( 'selectedListElement' );
-					$(this).toggleClass('selectedListElement');
-					displaySemanticIcicle(selectedColumnAID);
+//					$('#columnAlist li').removeClass( 'selectedListElement' );
+//					$(this).toggleClass('selectedListElement');
+					displaySemanticIcicle(selectedColumnAID, 'columnA');
 					
 					populateColumn(data, 'columnB');
 				});	
 				$('#columnBlist').on('click', 'li', function() {
 					$('#selectedSemTypeB').empty();
 				    $('#selectedSemTypeB').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspCol')+'</b>');
-					$('#columnBlist li').removeClass( 'selectedListElement' );
-					$(this).toggleClass('selectedListElement');
-					displaySemanticIcicle(this.id);
+				    
+//					$('#columnBlist li').removeClass( 'selectedListElement' );
+//					$(this).toggleClass('selectedListElement');
+					displaySemanticIcicle(this.id, 'columnB');
 				});
 				
 				$(document).on("click", "#clearTemplate", function(){
@@ -301,11 +302,13 @@ function createLabelList(wordsemantics){
 	});
 }
 
-function displaySemanticIcicle(uid){
+function displaySemanticIcicle(uid, column){
 	$("#semanticExplorerPanel").show();
+	$("#"+column+"list").hide();
 	$("#semanticExplorer").empty();
+	$("#"+column+"semanticExplorer").show();
 	
-	var w = 900,h = 600;
+	var w = 1200,h = 600;
 	var x = d3.scale.linear().range([0, w]);
 	var y = d3.scale.linear().range([0, h]);
 
@@ -322,9 +325,9 @@ function displaySemanticIcicle(uid){
 	processObject(semanticobject[0], recursiondepth, icicle[key]);
 	var root = d3.entries(icicle)[0];
 	
-	
-	$("#iciclePrintout").empty();
-	$("#iciclePrintout").append(JSON.stringify(icicle));
+	//debug only
+//	$("#iciclePrintout").empty();
+//	$("#iciclePrintout").append(JSON.stringify(icicle));
 
 	
 	var partition = d3.layout.partition()
@@ -335,11 +338,11 @@ function displaySemanticIcicle(uid){
 						return d.value; });
 	
 	
-	var svg = d3.select("#semanticExplorer").append("svg")
+	var svg = d3.select("#"+column+"semanticExplorer").append("svg")
 	.attr("width", w)
 	.attr("height", h);
 	
-	var g = svg.selectAll("g")
+	var g = svg.selectAll("#"+column+"semanticExplorer g")
     .data(partition.nodes(root))
     .enter().append("svg:g")
     .attr("transform", function(d) { 
@@ -384,7 +387,7 @@ function displaySemanticIcicle(uid){
         x.domain([d.y, 1]).range([d.y ? 40 : 0, w]);
         y.domain([d.x, d.x + d.dx]);
         
-        d3.selectAll("g").each( function(d1, i){
+        d3.selectAll("#"+column+"semanticExplorer g").each( function(d1, i){
         	
         		  if($(this).css("display")=="none" && d1.depth==d.depth-1){// the element is hidden and before the element i clicked on
         			  console.log("the element is hidden and before the element i clicked on");
@@ -404,7 +407,7 @@ function displaySemanticIcicle(uid){
         		});
          
    
-        var g = svg.selectAll("g");
+        var g = svg.selectAll("#"+column+"semanticExplorer g");
         var t = g.transition()
             .duration(d3.event.altKey ? 7500 : 750)
             .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; });
