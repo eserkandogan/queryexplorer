@@ -334,7 +334,7 @@ function displaySemanticIcicle(uid, column){
 	$("#"+column+"semanticExplorer").empty();
 	$("#"+column+"semanticExplorer").show();
 	
-	var w = 1200,h = 600;
+	var w = 500,h = 600;
 	var x = d3.scale.linear().range([0, w]);
 	var y = d3.scale.linear().range([0, h]);
 
