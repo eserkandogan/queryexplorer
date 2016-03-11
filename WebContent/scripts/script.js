@@ -44,6 +44,9 @@ d3.csv("data/qsp1.csv", function(d) {
 				    selectedTemplateID = this.id;
 				    $('#colAprompt').empty();
 				    $('#colAprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+selectedTemplateID+'</b>');
+				    
+				    $('#colBprompt').empty();
+				    $('#colBprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+selectedTemplateID+'</b>');
 				    $('#templateList li').removeClass( 'selectedListElement' );
 				    $(this).toggleClass('selectedListElement');
 				    populateColumn(data, 'columnA');
@@ -68,7 +71,8 @@ d3.csv("data/qsp1.csv", function(d) {
 				});	
 				$('#columnBlist').on('click', 'li', function() {
 					$('#selectedSemTypeB').empty();
-				    $('#selectedSemTypeB').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspCol')+'</b>');
+				    $('#selectedSemTypeB').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspCol')+'</b> '+
+		    		'<button id="clearColB" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
 				    
 //					$('#columnBlist li').removeClass( 'selectedListElement' );
 //					$(this).toggleClass('selectedListElement');
@@ -89,8 +93,25 @@ d3.csv("data/qsp1.csv", function(d) {
 					$('#selectedSemTypeA').empty();
 				    $('#selectedSemTypeA').append('You have not selected a semantic type yet.');
 					selectedColumnAID = "";
-					$('#columnAlist li').removeClass( 'selectedListElement' );
+					$("#columnAlist").show();
+					$("#columnAsemanticExplorer").hide();
+					
+					$('#selectedSemTypeB').empty();
+					if(selectedTemplateID=="")
+						$('#selectedSemTypeB').append('You have not selected a semantic type yet.');
+
+					else	
+						$('#selectedSemTypeB').append('Displaying semantic types used in queries where template is <b>'+selectedTemplateID+'</b> ');
+//					$('#columnAlist li').removeClass( 'selectedListElement' );
 					populateColumn(data, 'columnB');
+				});
+				$(document).on("click", "#clearColB", function(){
+					$('#selectedSemTypeB').empty();
+				    $('#selectedSemTypeB').append('You have not selected a semantic type yet.');
+				    $("#columnBlist").show();
+					$("#columnBsemanticExplorer").hide();
+					selectedColumnAID = "";
+//					$('#columnAlist li').removeClass( 'selectedListElement' );
 				});
 				
 			});
@@ -305,7 +326,7 @@ function createLabelList(wordsemantics){
 function displaySemanticIcicle(uid, column){
 	$("#semanticExplorerPanel").show();
 	$("#"+column+"list").hide();
-	$("#semanticExplorer").empty();
+	$("#"+column+"semanticExplorer").empty();
 	$("#"+column+"semanticExplorer").show();
 	
 	var w = 1200,h = 600;
@@ -319,7 +340,7 @@ function displaySemanticIcicle(uid, column){
 		});
 	recursiondepth = 0;
 	var key = semanticobject[0].label;
-	$("#semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key
+	$("#"+column+"semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key
 			+'", with id="'+uid+'" Visualization is based on <b>ColumnCount</b></p>');
 	icicle[key] = {};
 	processObject(semanticobject[0], recursiondepth, icicle[key]);
@@ -390,15 +411,11 @@ function displaySemanticIcicle(uid, column){
         d3.selectAll("#"+column+"semanticExplorer g").each( function(d1, i){
         	
         		  if($(this).css("display")=="none" && d1.depth==d.depth-1){// the element is hidden and before the element i clicked on
-        			  console.log("the element is hidden and before the element i clicked on");
         			  $(this).css("display","block");//show element
         			  
         		  }
         		  else if (d1.depth ==d.depth+1 || d1.key==d.key) {//the element is the element i clicked on or a depth ahead.
-        			  console.log("d1.key="+d1.key);
-        			  console.log("d.depth="+d.depth);
-        			  console.log("d1.depth="+d1.depth);
-        			  console.log("the element is the element i clicked on or a depth ahead.");
+        			  
         			  $(this).css("display","block");//show element
                   }
                   else {                    	
