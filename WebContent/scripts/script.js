@@ -242,7 +242,7 @@ var id;
 				return 0;
 			}
 			else{			
-				return filteredQueryStats[1][id];// NO IDEA WHY TWO ARE RETURNED
+				return filteredQueryStats[1][id];// NO IDEA WHY TWO ARE RETURNED!!!! :/
 }	
 		}
 	}
@@ -346,7 +346,7 @@ function displaySemanticIcicle(uid, column){
 	recursiondepth = 0;
 	var key = semanticobject[0].label;
 	$("#"+column+"semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key
-			+'", with id="'+uid+'" Visualization is based on <b>ColumnCount</b></p>');
+			+'", with id="'+uid+'"</p>');
 	icicle[key] = {};
 	processObject(semanticobject[0], recursiondepth, icicle[key]);
 	var root = d3.entries(icicle)[0];
