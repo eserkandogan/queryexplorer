@@ -386,9 +386,9 @@ function displaySemanticIcicle(uid){
         
         d3.selectAll("g").each( function(d1, i){
         	
-        		  if($(this).attr("display")=="none" && d1.depth==d.depth-1){// the element is hidden and before the element i clicked on
+        		  if($(this).css("display")=="none" && d1.depth==d.depth-1){// the element is hidden and before the element i clicked on
         			  console.log("the element is hidden and before the element i clicked on");
-        			  $(this).attr("display","block");//show element
+        			  $(this).css("display","block");//show element
         			  
         		  }
         		  else if (d1.depth ==d.depth+1 || d1.key==d.key) {//the element is the element i clicked on or a depth ahead.
@@ -396,10 +396,10 @@ function displaySemanticIcicle(uid){
         			  console.log("d.depth="+d.depth);
         			  console.log("d1.depth="+d1.depth);
         			  console.log("the element is the element i clicked on or a depth ahead.");
-        			  $(this).attr("display","block");//show element
+        			  $(this).css("display","block");//show element
                   }
                   else {                    	
-                    	$(this).attr("display", "none");
+                    	$(this).css("display", "none");
                     }
         		});
          
