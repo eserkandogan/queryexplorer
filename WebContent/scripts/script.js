@@ -44,19 +44,22 @@ d3.csv("data/qsp1.csv", function(d) {
 				    $('#selectedTemplate').append('You selected template <b>'+this.id+'</b> '+
 				    		'<button id="clearTemplate" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
 				    selectedTemplateID = this.id;
+				    
 				    $('#colAprompt').empty();
 				    $('#colAprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+selectedTemplateID+'</b>');
 				    
 				    $('#colBprompt').empty();
 				    $('#colBprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+selectedTemplateID+'</b>');
+				    
 				    $('#templateList li').removeClass( 'selectedListElement' );
 				    $(this).toggleClass('selectedListElement');
 				    
 				    
 				    $("#columnAsemanticExplorer").hide();
-				    $("#columnBsemanticExplorer").hide();
 					$("#columnAlist").show();
+				    $("#columnBsemanticExplorer").hide();
 					$("#columnBlist").show();
+					
 				    populateColumn(data, 'columnA');
 				    populateColumn(data, 'columnB');
 				});
@@ -342,7 +345,7 @@ function displaySemanticIcicle(uid, column){
 	$("#"+column+"semanticExplorer").empty();
 	$("#"+column+"semanticExplorer").show();
 	
-	var w = 500,h = 600;
+	var w = 700,h = 600;
 	var x = d3.scale.linear().range([0, w]);
 	var y = d3.scale.linear().range([0, h]);
 
@@ -444,11 +447,13 @@ function displaySemanticIcicle(uid, column){
 
         t.select("rect")
             .attr("width", d.dy * kx)
-            .attr("height", function(d) { return d.dx * ky; });
+            .attr("height", function(d) { 
+            	return d.dx * ky; });
 
         t.select("text")
             .attr("transform", transform)
-            .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; });
+            .style("opacity", function(d) { 
+            	return d.dx * ky > 12 ? 1 : 0; });
           d3.event.stopPropagation();
       }	
 }
