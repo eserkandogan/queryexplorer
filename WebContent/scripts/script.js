@@ -1,7 +1,7 @@
 var id=0;
 var wordnet = [];
 var tags = [];
-var queryTemplateCounts = {};
+var queryTemplates = {};
 
 var icicle;
 
@@ -26,10 +26,12 @@ d3.csv("data/qsp1.csv", function(d) {
 			    var lines = txt.split("\n");
 			    for (var i = 0, len = lines.length; i < len; i++) {
 			    	line = lines[i];
-			    	var res = line.split(" ");	    	
-			    	queryTemplateCounts[res[1]] = res[0];
+			    	var res = line.split(",");
+			    	queryTemplates[res[1]] = {}
+			    	queryTemplates[res[1]].count = res[0];
+			    	queryTemplates[res[1]].text = res[2];
 			    }
-				console.log(queryTemplateCounts);
+				console.log(queryTemplates);
 				$("#loader").css( "display","none");
 	
 				$("#interface").css( "display","block");
@@ -202,14 +204,17 @@ function displayTemplates(data){
 	$.each(uniqueEntities, function( index, value) {
 		var element = {};
 		var template = value.template;
-		element.template = template;
-		element.templatecount = queryTemplateCounts[template];
-		listelements.push(element);		
+		if(queryTemplates[template]!=undefined && queryTemplates[template].text!="Ignore"){
+			element.template = template;
+			element.templatecount = queryTemplates[template].count;
+			element.text = queryTemplates[template].text;
+			listelements.push(element);		
+		}
 	});
 	listelements = _.sortBy(listelements, function(element){ return - element.templatecount;})
 	$.each(listelements, function( index, value) {
 	list.append('<li class="list-group-item" id="'+value.template+'" permutations = "'+value.templatecount+
-			'"><span class ="badge">'+value.templatecount+'</span>'+value.template+'</li>');
+			'"><span class ="badge">'+value.templatecount+'</span>'+value.text+'</li>');
 	});
 }
 

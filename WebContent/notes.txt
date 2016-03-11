@@ -1,31 +1,58 @@
 223331,compare_2,How do the values of <b>X</b> <b>compare by</b> <b>Y</b>?                       
 120235,compare_3,How do the values of <b>X</b> <b>compare by</b> <b>Y</b> and <b>Z</b>?                      
 102189,breakdown_2,What is the <b>breakdown</b> of <b>X</b> by <b>Y</b> and <b>Z</b>?                     
-82217,relationship_3,                  
+82217,relationship_3,What is the relationship between <b>X</b> <b>and</b> <b>Y</b> by <b>Z</b>?                 
 80114,trend_3,What is the <b>trend</b> of <b>X</b> over <b>Y</b>?                         
-72297,breakdown_3,                     
+72297,breakdown_3,What is the breakdown of <b>X</b> <b>by</b> <b>Y</b> and <b>Z</b>?                     
 44310,trend_2,What is the <b>trend of <b>X</b> over <b>Y</b>?                         
-42843,values_3,                        
-39738,values_2,                        
-27270,contribution_3,                  
-12789,Undetermined_2,                  
+42843,values_3,What are the values of <b>X</b> <b>for</b> <b>Y</b> and <b>Z</b>?                        
+39738,values_2, What are the values of <b>X</b> <b>for</b>?                        
+27270,contribution_3,What is the contribution of <b>X</b> <b>over</b> <b>Y</b> by <b>Z</b>?                  
+12789,Undetermined_2,Ignore                  
 11947,contribution_2,                  
-9698,Undetermined_1,                  
-9107,values_4,                        
-7746,relate_3,                        
-6563,relate_2,                        
-6028,breakdown_4,                     
-5320,relationship_2,                  
+9698,Undetermined_1,Ignore                  
+9107,values_4,What are the values of <b>X</b> <b>and</b> <b>Y</b> for <b>Z</b> and <b>A</B>?                        
+7746,relate_3,How does <b>X</b> relate to <b>Y</b> and <b>Z</b>?                        
+6563,relate_2,How does <b>X</b> relate to <b>Y</b>?                         
+6028,breakdown_4,What is the breakdown of <b>X</b> <b>by</b> <b>Y</b>, <b>Z</b> and <b>A</B>?                     
+5320,relationship_2,What is the relationship between <b>X</b> <b>and</b> <b>Y</b>?                  
 2678,trend_1,What is the <b>trend of <b>X</b>?                         
 1567,breakdown_1,What is the <b>breakdown</b> of <b>X</b>                   
-1476,compare_1,                       
+1476,compare_1,How do the values of <b>X</b> <b>compare?                       
 1086,Undetermined_-1,                 
-897,breakdown_5,                     
-892,contribution_1,                  
-801,values_1,                        
-465,Undetermined_0,                  
-7,grouping_3,
+897,breakdown_5, What is the breakdown of <b>X</b> <b>by</b> <b>Y</b>, <b>Z</b>, <b>A</B> and <b>B</b>?                     
+892,contribution_1,What is the contribution of <b>X</b>                  
+801,values_1,What are the values of <b>X</b>?                        
+465,Undetermined_0,Ignore                  
+7,grouping_3,What is the grouping of <b>X</b> <b>by</b> <b>Y</b> and <b>Z</b>?
 
+223331 compare_2                       
+120235 compare_3                       
+102189 breakdown_2                     
+82217 relationship_3                  
+80114 trend_3                         
+72297 breakdown_3                     
+44310 trend_2                         
+42843 values_3                        
+39738 values_2                        
+27270 contribution_3                  
+12789 Undetermined_2                  
+11947 contribution_2                  
+9698 Undetermined_1                  
+9107 values_4                        
+7746 relate_3                        
+6563 relate_2                        
+6028 breakdown_4                     
+5320 relationship_2                  
+2678 trend_1                         
+1567 breakdown_1                     
+1476 compare_1                       
+1086 Undetermined_-1                 
+897 breakdown_5                     
+892 contribution_1                  
+801 values_1                        
+465 Undetermined_0                  
+7 grouping_3
 
 function populateColumn(data, column, template){
 	$('#'+column+'list').empty();
