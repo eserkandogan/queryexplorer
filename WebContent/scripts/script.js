@@ -1,7 +1,9 @@
 var id=0;
+var queryPermutations= [];
 var wordnet = [];
 var tags = [];
 var queryTemplates = {};
+var parsetdata = [];
 
 var icicle;
 
@@ -20,6 +22,7 @@ d3.csv("data/qsp1.csv", function(d) {
 	  };	
 	  return toReturn;
 	}, function(data) {
+		queryPermutations = data;
 		$.get("data/wordsemantics-2.20-json.txt",function(txt){
 			processSemanticTxt(txt);
 			$.get("data/templateQC.txt",function(txt){
@@ -31,7 +34,14 @@ d3.csv("data/qsp1.csv", function(d) {
 			    	queryTemplates[res[1]].count = res[0];
 			    	queryTemplates[res[1]].text = res[2];
 			    }
-				console.log(queryTemplates);
+				
+				
+				
+				displayParsets();
+				console.log(parsetdata[0]);
+				
+				
+				
 				$("#loader").css( "display","none");
 	
 				$("#interface").css( "display","block");
@@ -131,8 +141,44 @@ d3.csv("data/qsp1.csv", function(d) {
 		})	;
 });//end loading data
 
+function displayParsets(){
+	var semanticAid = "wordnet_28105" //event
+	var semanticBid = "wordnet_26074" //location
+	var chart = d3.parsets().dimensions(["Semantic Type","Position", "Template"]);
+	
+	var vis = d3.select("#parallelsets").append("svg")
+     .attr("width", chart.width())
+     .attr("height", chart.height());
 
+ 
+	addToParsetData(semanticAid);
+	addToParsetData(semanticBid);
+	vis.datum(parsetdata).call(chart);
 
+}
+function addToParsetData(semanticid){
+	$.each(queryPermutations, function(key, value){
+		if(value.columnA.id == semanticid){
+			parsetelement = {}
+			parsetelement["Semantic Type"] = _.select(wordnet, function (obj) {
+			  return obj.uid === semanticid;
+			})[0].label;
+			parsetelement.Position = "columnA";
+			parsetelement.Template = value.template;
+			parsetdata.push(parsetelement);
+		}
+		else if (value.columnB.id == semanticid){
+			parsetelement = {}
+			parsetelement["Semantic Type"] = _.select(wordnet, function (obj) {
+				  return obj.uid === semanticid;
+				})[0].label;
+			parsetelement.Position = "columnB";
+			parsetelement.Template = value.template;
+			parsetdata.push(parsetelement);
+		}
+	});
+	
+}
 function loadQTC(filename){
 	var qtc = {}; 
 	$.get(filename,function(txt){
