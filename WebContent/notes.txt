@@ -9,7 +9,7 @@
 39738,values_2, What are the values of <b>X</b> <b>for</b>?                        
 27270,contribution_3,What is the contribution of <b>X</b> <b>over</b> <b>Y</b> by <b>Z</b>?                  
 12789,Undetermined_2,Ignore                  
-11947,contribution_2,                  
+11947,contribution_2,Ignore                 
 9698,Undetermined_1,Ignore                  
 9107,values_4,What are the values of <b>X</b> <b>and</b> <b>Y</b> for <b>Z</b> and <b>A</B>?                        
 7746,relate_3,How does <b>X</b> relate to <b>Y</b> and <b>Z</b>?                        

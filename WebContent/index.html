@@ -14,19 +14,12 @@
     <link rel="stylesheet" href="style1.css">    
     <link rel="stylesheet" href="stroll/stroll.min.css">
     <link rel="stylesheet" href="jQCloud/jqcloud.css">
+    <link rel="stylesheet" href="d3.parsets.css">
+    
 
     
   </head>
-  <script>var chart = d3.parsets()
-  .dimensions(["Survived", "Sex", "Age", "Class"]);
 
-  var vis = d3.select("#parallelsets").append("svg")
-      .attr("width", chart.width())
-      .attr("height", chart.height());
-
-  d3.csv("data/titanic.csv", function(error, csv) {
-    vis.datum(csv).call(chart);
-  });</script>
 <body>
 
 <div class="panel panel-default">
@@ -90,5 +83,19 @@
     <script src="underscore/underscore-min.js"></script>
 	<script src="stroll/stroll.min.js"></script>
     <script src="scripts/script.js"></script>
+    
+    <script src="d3.parsets.js"></script>
+    
+      <script>
+  var chart = d3.parsets()
+  .dimensions(["Survived", "Sex", "Age", "Class"]);
+
+  var vis = d3.select("#parallelsets").append("svg")
+      .attr("width", chart.width())
+      .attr("height", chart.height());
+
+  d3.csv("data/titanic.csv", function(error, csv) {
+    vis.datum(csv).call(chart);
+  });</script>
   </body>
 </html>
