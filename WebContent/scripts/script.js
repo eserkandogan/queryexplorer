@@ -10,6 +10,8 @@ var icicle;
 var selectedTemplateID = "",selectedColumnAID = "";
 
 
+
+
 $("#semanticExplorerPanel").hide();
 d3.csv("data/qsp1.csv", function(d) {
 	id= id+1;	
@@ -34,8 +36,7 @@ d3.csv("data/qsp1.csv", function(d) {
 			    	queryTemplates[res[1]].count = res[0];
 			    	queryTemplates[res[1]].text = res[2];
 			    }				
-				
-				
+								
 				$("#loader").css( "display","none");
 	
 				$("#interface").css( "display","block");
@@ -57,8 +58,7 @@ d3.csv("data/qsp1.csv", function(d) {
 				    
 				    $('#templateList li').removeClass( 'selectedListElement' );
 				    $(this).toggleClass('selectedListElement');
-				    
-				    
+				    			    
 				    $("#columnAsemanticExplorer").hide();
 					$("#columnAlist").show();
 				    $("#columnBsemanticExplorer").hide();
@@ -68,7 +68,7 @@ d3.csv("data/qsp1.csv", function(d) {
 				    populateColumn(data, 'columnB');
 				});
 				
-				$('#columnAlist').on('click', 'li', function() {
+				$(document).on("click", "#columnAlist tr", function() {
 					selectedColumnAID = this.id;
 					$('#selectedSemTypeA').empty();
 				    $('#selectedSemTypeA').append('You selected semantic type <b>'+selectedColumnAID+': '+$(this).attr('qspCol')+'</b> '+
@@ -77,29 +77,41 @@ d3.csv("data/qsp1.csv", function(d) {
 				    $('#selectedSemTypeB').empty();
 				    $('#selectedSemTypeB').append('Displaying semantic types used in queries where template is <b>'+selectedTemplateID+'</b> and columnA is <b>'
 				    		+$(this).attr('qspCol')+'</b>. ');
-				    
-//					$('#columnAlist li').removeClass( 'selectedListElement' );
-//					$(this).toggleClass('selectedListElement');
+
 					displaySemanticIcicle(selectedColumnAID, 'columnA');
 					
 					populateColumn(data, 'columnB');
 				});	
-				$('#columnBlist').on('click', 'li', function() {
+				$(document).on("click", "#columnBlist tr", function() {
 					$('#selectedSemTypeB').empty();
 				    $('#selectedSemTypeB').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspCol')+'</b> '+
 		    		'<button id="clearColB" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
 				    
-//					$('#columnBlist li').removeClass( 'selectedListElement' );
-//					$(this).toggleClass('selectedListElement');
 					displaySemanticIcicle(this.id, 'columnB');
 					
 					if(selectedColumnAID!=""){
-						
 						displayParsets(selectedColumnAID, this.id);
 					}
 
 				});
-				
+				$(document).on("keyup","#columnAfilter", function () {
+
+		            var rex = new RegExp($(this).val(), 'i');
+		            $('#columnAcontainer .searchable tr').hide();
+		            $('#columnAcontainer .searchable tr').filter(function () {
+		                return rex.test($(this).text());
+		            }).show();
+
+		        });
+				$(document).on("keyup","#columnBfilter", function () {
+
+		            var rex = new RegExp($(this).val(), 'i');
+		            $('#columnBcontainer .searchable tr').hide();
+		            $('#columnBcontainer .searchable tr').filter(function () {
+		                return rex.test($(this).text());
+		            }).show();
+
+		        })
 				$(document).on("click", "#clearTemplate", function(){
 					$('#selectedTemplate').empty();
 				    $('#selectedTemplate').append('You have not selected a template yet.');
@@ -115,7 +127,7 @@ d3.csv("data/qsp1.csv", function(d) {
 					$('#selectedSemTypeA').empty();
 				    $('#selectedSemTypeA').append('You have not selected a semantic type yet.');
 					selectedColumnAID = "";
-					$("#columnAlist").show();
+					$("#columnAcontainer").show();
 					$("#columnAsemanticExplorer").hide();
 					
 					$('#selectedSemTypeB').empty();
@@ -124,17 +136,15 @@ d3.csv("data/qsp1.csv", function(d) {
 
 					else	
 						$('#selectedSemTypeB').append('Displaying semantic types used in queries where template is <b>'+selectedTemplateID+'</b> ');
-//					$('#columnAlist li').removeClass( 'selectedListElement' );
 					populateColumn(data, 'columnA');
 					populateColumn(data, 'columnB');
 				});
 				$(document).on("click", "#clearColB", function(){
 					$('#selectedSemTypeB').empty();
 				    $('#selectedSemTypeB').append('You have not selected a semantic type yet.');
-				    $("#columnBlist").show();
+				    $("#columnBcontainer").show();
 					$("#columnBsemanticExplorer").hide();
 					selectedColumnAID = "";
-//					$('#columnAlist li').removeClass( 'selectedListElement' );
 				});
 				
 			});
@@ -144,8 +154,6 @@ d3.csv("data/qsp1.csv", function(d) {
 function displayParsets(semanticAid, semanticBid){
 	$("#parallelsets").empty();
 	parsetdata=[];
-//	var semanticAid = "wordnet_28105" //event
-//	var semanticBid = "wordnet_5761049" //idea_thought
 	var chart = d3.parsets().dimensions(["Semantic Type","Position", "Template"]);
 	
 	var vis = d3.select("#parallelsets").append("svg")
@@ -276,6 +284,11 @@ function loadQTC(filename){
 }
 //Helper functions
 function populateColumn(data, column){
+	$('#'+column+'container').empty();
+	$('#'+column+'container').append('<div class="input-group" id="input'+column+'"> '+
+			'<span class="input-group-addon">Filter</span>'+
+	'<input id="'+column+'filter" type="text" class="form-control" placeholder="Type here..."></div>'+
+	'<table class="table table-striped semanticlist"><tbody class="searchable" id="'+column+'list"></tbody></table>');
 	
 	$('#'+column+'list').empty();
 	
@@ -313,8 +326,8 @@ function populateColumn(data, column){
 		thislabel= element.semobject[column].label;
 		if(!isNaN(element.querycount)){
 			querycount = fetchQC(element.semobject[column].id,column,selectedTemplateID);
-  			$('#'+column+'list').append('<li id='+element.semobject[column].id+' qspCol="'+thislabel+'" class="list-group-item">'+
-		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+element.querycount+'</span></li>');
+  			$('#'+column+'list').append('<tr id='+element.semobject[column].id+' qspCol="'+thislabel+'"><td  class="list-group-item semanticlistelement">'+
+		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+element.querycount+'</span></td></tr>');
 		}
   	});	
 }
@@ -468,10 +481,9 @@ function createLabelList(wordsemantics){
 }
 
 function displaySemanticIcicle(uid, column){
-//	$("#"+column+"semanticExplorerPanel").show();
-	$("#"+column+"list").hide();
-	$("#"+column+"semanticExplorer").empty();
-	$("#"+column+"semanticExplorer").show();
+	 $("#"+column+"container").hide();
+	 $("#"+column+"semanticExplorer").empty();
+	 $("#"+column+"semanticExplorer").show();
 	
 	var w = 700,h = 600;
 	var x = d3.scale.linear().range([0, w]);

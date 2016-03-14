@@ -12,12 +12,7 @@
 
     <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="style1.css">    
-    <link rel="stylesheet" href="stroll/stroll.min.css">
-    <link rel="stylesheet" href="jQCloud/jqcloud.css">
-    <link rel="stylesheet" href="d3.parsets.css">
-    
-
-    
+    <link rel="stylesheet" href="d3.parsets.css">    
   </head>
 
 <body>
@@ -25,77 +20,59 @@
 <div class="panel panel-default">
 <div class="panel-heading"><h1 class="panel-title">Query Explorer</h1></div>
 <div class="panel-body">
-<div id="loader">Loading data, please wait.<br>
-<img alt="" src="images/progress_bar.gif">
-</div>
-<table class="table" id="interface">
-	<thead>
-	<tr><th>Query template</th><th>Column X</th><th>Column Y</th></tr></thead>
-	<tbody>
-		<tr>
-			<td>
-				<div class="testlayout " id="templateDisplay">
-					<div class="well well-lg" id = "selectedTemplate">You have not selected a template yet.</div>
-					<div>Select a template from the list of query templates:</div>
-					<div class = "well well-lg scrollable">
-						<ul id="templateList" class="list-group"></ul>
+	<div id="loader">Loading data, please wait.<br>
+	<img alt="" src="images/progress_bar.gif">
+	</div>	
+	<table class="table" id="interface">
+		<thead>
+		<tr><th>Query template</th><th>Column X</th><th>Column Y</th></tr></thead>
+		<tbody>
+			<tr>
+				<td>
+					<div class="testlayout " id="templateDisplay">
+						<div class="well well-lg" id = "selectedTemplate">You have not selected a template yet.</div>
+						<div>Select a template from the list of query templates:</div>
+						<div class = " scrollable">
+							<ul id="templateList" class="list-group"></ul>
+						</div>
 					</div>
-				</div>
-			</td>
-			<td>
-				<div class="testlayout" id="columnADisplay">
-				<div class="well well-lg" id = "selectedSemTypeA">You have not selected a semantic type yet.</div>
-					<div id="colAprompt">Select a semantic type from the list of <b>all semantic types</b> available in Column A.</div>
-					<div class = "well well-lg scrollable">	
-					<ul id="columnAlist"></ul>
-					<div id="columnAsemanticExplorer"></div></div>	
-					
-					
-				</div>
-			</td>
-			<td>
-				<div class="testlayout" id="columnBDisplay">
-				<div class="well well-lg" id = "selectedSemTypeB">You have not selected a semantic type yet.</div>
-					<div id="colBprompt">Select a semantic type from the list of <b>all semantic types</b> available in Column B.</div>
-					<div class = "well well-lg scrollable">	<ul id="columnBlist"></ul>
-					<div id="columnBsemanticExplorer"></div>
+				</td>
+				<td>
+					<div class="testlayout" id="columnADisplay">
+					<div class="well well-lg" id = "selectedSemTypeA">You have not selected a semantic type yet.</div>
+						<div id="colAprompt">Select a semantic type from the list of <b>all semantic types</b> available in Column A.</div>
+						<div class = "scrollable" id="columnAcontainer">	
+							
+						</div><div id="columnAsemanticExplorer"></div>
 					</div>
-				</div>
-			</td>
-		</tr>
-	</tbody>
-</table>
-<hr>
-<div class="panel panel-default" id="">
-	
-	<div class="panel-heading"><h3 class="panel-title">Parset tester Viewer</h3></div>
-	<div class="panel-body" id="parallelsets"></div>
-
-</div>
-
-<hr>
-<!-- <div  class="well well-lg" id="iciclePrintout"></div> -->
+				</td>
+				<td>
+					<div class="testlayout" id="columnBDisplay">
+					<div class="well well-lg" id = "selectedSemTypeB">You have not selected a semantic type yet.</div>
+						<div id="colBprompt">Select a semantic type from the list of <b>all semantic types</b> available in Column B.</div>
+						<div class = "scrollable" id="columnBcontainer">	
+						
+						</div><div id="columnBsemanticExplorer"></div>
+					</div>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<hr>
+	<div class="panel panel-default" id="">		
+		<div class="panel-heading"><h3 class="panel-title">Parset tester Viewer</h3></div>
+		<div class="panel-body" id="parallelsets"></div>	
+	</div>
 </div>
 </div>
 
 	<script src="https://d3js.org/d3.v3.min.js"></script>
     <script src="jquery/dist/jquery.js"></script>
     <script src="underscore/underscore-min.js"></script>
-	<script src="stroll/stroll.min.js"></script>
     <script src="scripts/script.js"></script>
     
     <script src="d3.parsets.js"></script>
     
-      <script>
-  var chart = d3.parsets()
-  .dimensions(["Survived", "Sex", "Age", "Class"]);
 
-  var vis = d3.select("#parallelsets").append("svg")
-      .attr("width", chart.width())
-      .attr("height", chart.height());
-
-  d3.csv("data/titanic.csv", function(error, csv) {
-    vis.datum(csv).call(chart);
-  });</script>
   </body>
 </html>
