@@ -143,6 +143,7 @@ d3.csv("data/qsp1.csv", function(d) {
 
 function displayParsets(semanticAid, semanticBid){
 	$("#parallelsets").empty();
+	parsetdata=[];
 //	var semanticAid = "wordnet_28105" //event
 //	var semanticBid = "wordnet_5761049" //idea_thought
 	var chart = d3.parsets().dimensions(["Semantic Type","Position", "Template"]);
