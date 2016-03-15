@@ -8,7 +8,7 @@ var parsetdata = [];
 var icicle;
 
 var selectedTemplateID = "",selectedColumnAID = "";
-
+var columnAelements= [], columnBelements= []; 
 
 
 
@@ -79,7 +79,7 @@ d3.csv("data/qsp1.csv", function(d) {
 				    		+$(this).attr('qspCol')+'</b>. ');
 
 					displaySemanticIcicle(selectedColumnAID, 'columnA');
-					
+					displayParsets(selectedColumnAID, "X", 10);
 					populateColumn(data, 'columnB');
 				});	
 				$(document).on("click", "#columnBlist tr", function() {
@@ -90,7 +90,7 @@ d3.csv("data/qsp1.csv", function(d) {
 					displaySemanticIcicle(this.id, 'columnB');
 					
 					if(selectedColumnAID!=""){
-						displayParsets(selectedColumnAID, this.id);
+						displayParsets(this.id, "Y", 10);
 					}
 
 				});
@@ -151,124 +151,88 @@ d3.csv("data/qsp1.csv", function(d) {
 		})	;
 });//end loading data
 
-function displayParsets(semanticAid, semanticBid){
+function displayParsets(semanticid, position, topK){
+	if(selectedTemplateID!=""){
 	$("#parallelsets").empty();
 	parsetdata=[];
-	var chart = d3.parsets().dimensions(["Semantic Type","Position", "Template"]);
+	
+	var chart = d3.parsets().dimensions(["ColumnX","ColumnY"]);
 	
 	var vis = d3.select("#parallelsets").append("svg")
      .attr("width", chart.width())
      .attr("height", chart.height());
 
  
-	addToParsetData(semanticAid, semanticBid);
+	addToParsetData(semanticid, position, topK);
 	vis.datum(parsetdata).call(chart);
-
+	}
 }
-function addToParsetData(semanticid1, semanticid2 ){
-	$.each(queryPermutations, function(key, value){
-		if(value.columnA.id == semanticid1 && value.columnB.id == semanticid2){
-			
-			parsetelement = {}
-			parsetelement["Semantic Type"] = _.select(wordnet, function (obj) {
-			  return obj.uid === semanticid1;
-			})[0].label;
-			parsetelement.Position = "columnA";
-			parsetelement.Template = value.template;
-			parsetdata.push(parsetelement);
-			
-			parsetelement = {}
-			parsetelement["Semantic Type"] = _.select(wordnet, function (obj) {
-				  return obj.uid === semanticid2;
-				})[0].label;
-			parsetelement.Position = "columnB";
-			parsetelement.Template = value.template;
-			parsetdata.push(parsetelement);
-		}
-		else if(value.columnA.id == semanticid1 && value.columnB.id != semanticid2){
-			parsetelement = {};
-			parsetelement["Semantic Type"] = _.select(wordnet, function (obj) {
-			  return obj.uid === semanticid1;
-			})[0].label;
-			parsetelement.Position = "columnA";
-			parsetelement.Template = value.template;
-			parsetdata.push(parsetelement);
-			
-			parsetelement = {};
-			parsetelement["Semantic Type"] = "other";
-			parsetelement.Position = "columnB";
-			parsetelement.Template = value.template;
-			parsetdata.push(parsetelement);
-		}
-	
-		else if(value.columnA.id != semanticid1 && value.columnB.id == semanticid2){
-			parsetelement = {}
-			parsetelement["Semantic Type"] = "other";
-			parsetelement.Position = "columnA";
-			parsetelement.Template = value.template;
-			parsetdata.push(parsetelement);
-			
-			parsetelement = {};
-			parsetelement["Semantic Type"] = _.select(wordnet, function (obj) {
-				  return obj.uid === semanticid2;
-			})[0].label;
-			parsetelement.Position = "columnB";
-			parsetelement.Template = value.template;
-			parsetdata.push(parsetelement);
-		}
-		if(value.columnA.id == semanticid2 && value.columnB.id == semanticid1){
-			
-			parsetelement = {}
-			parsetelement["Semantic Type"] = _.select(wordnet, function (obj) {
-			  return obj.uid === semanticid2;
-			})[0].label;
-			parsetelement.Position = "columnA";
-			parsetelement.Template = value.template;
-			parsetdata.push(parsetelement);
-			
-			parsetelement = {}
-			parsetelement["Semantic Type"] = _.select(wordnet, function (obj) {
-				  return obj.uid === semanticid1;
-				})[0].label;
-			parsetelement.Position = "columnB";
-			parsetelement.Template = value.template;
-			parsetdata.push(parsetelement);
-		}
-		else if(value.columnA.id == semanticid2 && value.columnB.id != semanticid1){
-			
-			parsetelement = {}
-			parsetelement["Semantic Type"] = _.select(wordnet, function (obj) {
-			  return obj.uid === semanticid2;
-			})[0].label;
-			parsetelement.Position = "columnA";
-			parsetelement.Template = value.template;
-			parsetdata.push(parsetelement);
-			
-			parsetelement = {}
-			parsetelement["Semantic Type"] = "other";
-			parsetelement.Position = "columnB";
-			parsetelement.Template = value.template;
-			parsetdata.push(parsetelement);
-		}
-		else if(value.columnA.id != semanticid2 && value.columnB.id == semanticid1){
-			
-			parsetelement = {}
-			parsetelement["Semantic Type"] = "other";
-			parsetelement.Position = "columnA";
-			parsetelement.Template = value.template;
-			parsetdata.push(parsetelement);
-			
-			parsetelement = {}
-			parsetelement["Semantic Type"] = _.select(wordnet, function (obj) {
-				  return obj.uid === semanticid1;
-				})[0].label;			parsetelement.Position = "columnB";
-			parsetelement.Template = value.template;
-			parsetdata.push(parsetelement);
-		}
+function addToParsetData(semantic, position, topK ){
+	var k = 0;
+	if(position == "X"){
+		semanticXlabel = _.select(wordnet, function (obj) {
+			  return obj.uid === semantic;
+		})[0].label;
 		
-	});
+
+		$.each(columnBelements, function(key, value){
+			if(k<topK){
+				semanticYlabel = _.select(wordnet, function (obj) {
+					  return obj.uid === value.semobject.columnB.id;
+				})[0].label;
+				for(var ind= 0; ind<value.querycount; ind++){			
+					parsetelement = {}
+					parsetelement.ColumnX = semanticXlabel 
+					parsetelement.ColumnY = semanticYlabel;
+					parsetdata.push(parsetelement);
+				}
+			k++
+			}else {
+//				for(var ind= 0; ind<value.querycount; ind++){			
+//				parsetelement = {}
+//				parsetelement.ColumnX = semanticXlabel 
+//				parsetelement.ColumnY = "other";
+//				parsetdata.push(parsetelement);
+//				}
+				return false;
+			}
+		});
+	}
+	else{
+		
+
+		semanticYlabel = _.select(wordnet, function (obj) {
+			  return obj.uid === semantic;
+		})[0].label;
+		
+
+		$.each(columnBelements, function(key, value){
+			if(k<topK){
+				semanticXlabel = _.select(wordnet, function (obj) {
+					  return obj.uid === value.semobject.columnA.id;
+				})[0].label;
+				for(var ind= 0; ind<value.querycount; ind++){			
+					parsetelement = {}
+					parsetelement.ColumnX = semanticXlabel 
+					parsetelement.ColumnY = semanticYlabel;
+					parsetdata.push(parsetelement);
+				}
+			k++
+			}else {
+				for(var ind= 0; ind<value.querycount; ind++){			
+				parsetelement = {}
+				parsetelement.ColumnX = "other" 
+				parsetelement.ColumnY = semanticYlabel;
+				parsetdata.push(parsetelement);
+				}
+			}
+		});
 	
+	}
 }
+
+
+
 function loadQTC(filename){
 	var qtc = {}; 
 	$.get(filename,function(txt){
@@ -321,6 +285,8 @@ function populateColumn(data, column){
 	});
 	listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
 
+	if(column=="columnA"){columnAelements = listelements;}
+	else if(column== "columnB"){columnBelements = listelements;}
 	
 	$.each(listelements, function( index, element) {
 		thislabel= element.semobject[column].label;
@@ -385,18 +351,23 @@ var id;
 			o = _.select(wordnet, function (obj) {
 				  return obj.uid === uid;
 				})[0];
-			
-			filteredQueryStats  = (_.uniq(o.queryStats, function (item) {
-				return Object.keys(item)[0]==id;
-				}));
-			if(filteredQueryStats[1]==undefined){
-//				console.log(uid+" "+column+" "+template);
-				return 0;
-			}
-			else{			
-				return filteredQueryStats[1][id];// NO IDEA WHY TWO ARE RETURNED!!!! :/
-}	
 		}
+		else{//it's a tag!
+			o = _.select(tags, function (obj) {
+				  return obj.uid === uid;
+				})[0];
+		}
+		
+		filteredQueryStats  = (_.uniq(o.queryStats, function (item) {
+			return Object.keys(item)[0]==id;
+			}));
+		if(filteredQueryStats[1]==undefined){
+//			console.log(uid+" "+column+" "+template);
+			return 0;
+		}
+		else{			
+			return filteredQueryStats[1][id];// NO IDEA WHY TWO ARE RETURNED!!!! :/
+}	
 	}
 	else{
 		totalcount = 0;
@@ -499,7 +470,7 @@ function displaySemanticIcicle(uid, column){
 	$("#"+column+"semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key
 			+'", with id="'+uid+'"</p>');
 	icicle[key] = {};
-	processObject(semanticobject[0], recursiondepth, icicle[key]);
+	processObject(semanticobject[0], recursiondepth, icicle[key], column);
 	var root = d3.entries(icicle)[0];
 	
 	//debug only
@@ -595,11 +566,13 @@ function displaySemanticIcicle(uid, column){
             .style("opacity", function(d) { 
             	return d.dx * ky > 12 ? 1 : 0; });
           d3.event.stopPropagation();
+          
+//          displayParsets(d.id, "X", 10){
       }	
 }
 
 
-function processObject(parent, recursiondepth, parentIcicle){
+function processObject(parent, recursiondepth, parentIcicle, column){
 	recursiondepth++;
 //	console.log("Processing: <"+ parent.label+", "+parent.uid+">");
 //	console.log("Has children: ["+parent.derivedFrom+"]");
@@ -618,7 +591,7 @@ function processObject(parent, recursiondepth, parentIcicle){
 			childSemantics = o[0];
 //			console.log("Processing child of "+parent.label+": <"+ childSemantics.label+", "+childSemantics.uid+">");
 			recursiondepth--;
-			parentIcicle[childSemantics.label] = fetchQC(childSemantics.uid,selectedColumnAID,selectedTemplateID)//childSemantics.columnCount;
+			parentIcicle[childSemantics.label] = fetchQC(childSemantics.uid,column,selectedTemplateID)//childSemantics.columnCount;
 			}
 		else{
 			childSemantics = o[0];
@@ -626,7 +599,7 @@ function processObject(parent, recursiondepth, parentIcicle){
 			if(parentIcicle[childSemantics.label]===undefined)
 				parentIcicle[childSemantics.label]= {};
 			
-			processObject(childSemantics, recursiondepth, parentIcicle[childSemantics.label]);
+			processObject(childSemantics, recursiondepth, parentIcicle[childSemantics.label], column);
 		}
 	});
 }
