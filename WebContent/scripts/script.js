@@ -152,20 +152,20 @@ d3.csv("data/qsp1.csv", function(d) {
 });//end loading data
 
 function displayParsets(semanticid, position, topK){
-	if(selectedTemplateID!=""){
-	$("#parallelsets").empty();
-	parsetdata=[];
+//	if(selectedTemplateID!=""){
+		$("#parallelsets").empty();
+		parsetdata=[];
+		
+		var chart = d3.parsets().dimensions(["ColumnX","ColumnY"]);
+		
+		var vis = d3.select("#parallelsets").append("svg")
+	     .attr("width", chart.width())
+	     .attr("height", chart.height());
 	
-	var chart = d3.parsets().dimensions(["ColumnX","ColumnY"]);
-	
-	var vis = d3.select("#parallelsets").append("svg")
-     .attr("width", chart.width())
-     .attr("height", chart.height());
-
- 
-	addToParsetData(semanticid, position, topK);
-	vis.datum(parsetdata).call(chart);
-	}
+	 
+		addToParsetData(semanticid, position, topK);
+		vis.datum(parsetdata).call(chart);
+//	}
 }
 function addToParsetData(semantic, position, topK ){
 	var k = 0;
