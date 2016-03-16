@@ -147,6 +147,27 @@ d3.csv("data/qsp1.csv", function(d) {
 					selectedColumnAID = "";
 				});
 				
+				$(document).on('change', '#columnAcontainer select', (function() {
+					var selected = $(this).val();
+					var table = document.getElementById("columnAtable")
+			        for (var i = 1, row; row = table.rows[i]; i++) {
+					  if(selected == row.getAttribute("abstraction") || selected == "All")
+						  $(row).show();
+					  else
+						  $(row).hide();
+					}
+			    }));
+				$(document).on('change', '#columnBcontainer select', (function() {
+					var selected = $(this).val();
+					var table = document.getElementById("columnBtable")
+			        for (var i = 1, row; row = table.rows[i]; i++) {
+					  if(selected == row.getAttribute("abstraction") || selected == "All")
+						  $(row).show();
+					  else
+						  $(row).hide();
+					}
+			    }));
+				
 			});
 		})	;
 });//end loading data
@@ -217,12 +238,6 @@ function addToParsetData(semantic, position, topK ){
 				}
 			k++
 			}else {
-//				for(var ind= 0; ind<value.querycount; ind++){			
-//					parsetelement = {}
-//					parsetelement.ColumnX = "other" 
-//					parsetelement.ColumnY = semanticYlabel;
-//					parsetdata.push(parsetelement);
-//				}
 				return false;
 			}
 		});
@@ -248,12 +263,22 @@ function loadQTC(filename){
 //Helper functions
 function populateColumn(data, column){
 	$('#'+column+'container').empty();
-	$('#'+column+'container').append('<div class="input-group" id="input'+column+'"> '+
+	$('#'+column+'container').append('Abstraction<select id="'+column+'abstraction" name ="Abstraction"><option selected="selected">All</option></select>'+
+			'<div class="input-group" id="input'+column+'"> '+
 			'<span class="input-group-addon">Filter</span>'+
-	'<input id="'+column+'filter" type="text" class="form-control" placeholder="Type here..."></div>'+
-	'<table class="table table-striped semanticlist"><tbody class="searchable" id="'+column+'list"></tbody></table>');
+			
+	'<input id="'+column+'filter" type="text" class="form-control" placeholder="Type here...">	</div>'+
+	'<table class="table table-striped semanticlist" id="'+column+'table" ><tbody class="searchable" id="'+column+'list"></tbody></table>');
 	
 	$('#'+column+'list').empty();
+	$("#"+column+"abstraction" ).selectmenu({
+		   close: function(event, ui){
+			      //Fire change event
+			      $(this).change();
+			      
+			   }
+			}).selectmenu("refresh");
+	
 	
 	var filtereddata = data;
 	
@@ -286,15 +311,23 @@ function populateColumn(data, column){
 
 	if(column=="columnA"){columnAelements = listelements;}
 	else if(column== "columnB"){columnBelements = listelements;}
-	
+	abstractions = [];
 	$.each(listelements, function( index, element) {
+		if($.inArray(element.semobject[column].abstractionLevel, abstractions) == -1)
+			abstractions.push(element.semobject[column].abstractionLevel);
+		
 		thislabel= element.semobject[column].label;
 		if(!isNaN(element.querycount)){
 			querycount = fetchQC(element.semobject[column].id,column,selectedTemplateID);
-  			$('#'+column+'list').append('<tr id='+element.semobject[column].id+' qspCol="'+thislabel+'"><td  class="list-group-item semanticlistelement">'+
+  			$('#'+column+'list').append('<tr id='+element.semobject[column].id+' abstraction='+element.semobject[column].abstractionLevel+' qspCol="'+thislabel+'"><td  class="list-group-item semanticlistelement">'+
 		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+element.querycount+'</span></td></tr>');
 		}
   	});	
+	var options = document.getElementById(column+'abstraction');
+	$.each(abstractions, function(index, value){
+		options.appendChild(new Option(value, value))
+	});
+	$('#'+column+'abstraction').selectmenu("refresh");
 }
 
 
