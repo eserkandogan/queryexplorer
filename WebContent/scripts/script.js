@@ -79,7 +79,7 @@ d3.csv("data/qsp1.csv", function(d) {
 				    		+$(this).attr('qspCol')+'</b>. ');
 
 					displaySemanticIcicle(selectedColumnAID, 'columnA');
-					displayParsets(selectedColumnAID, "X", 10);
+					displayParsets(selectedColumnAID, "columnA", 10);
 					populateColumn(data, 'columnB');
 				});	
 				$(document).on("click", "#columnBlist tr", function() {
@@ -90,7 +90,7 @@ d3.csv("data/qsp1.csv", function(d) {
 					displaySemanticIcicle(this.id, 'columnB');
 					
 					if(selectedColumnAID!=""){
-						displayParsets(this.id, "Y", 10);
+						displayParsets(this.id, "columnB", 10);
 					}
 
 				});
@@ -159,6 +159,8 @@ function displayParsets(semanticid, position, topK){
 		var chart = d3.parsets().dimensions(["ColumnX","ColumnY"]);
 		
 		var vis = d3.select("#parallelsets").append("svg")
+//		.append("polygon")
+//		 .attr("points","200,10 250,10 400,210 200,210")
 	     .attr("width", chart.width())
 	     .attr("height", chart.height());
 	
@@ -169,7 +171,7 @@ function displayParsets(semanticid, position, topK){
 }
 function addToParsetData(semantic, position, topK ){
 	var k = 0;
-	if(position == "X"){
+	if(position == "columnA"){
 		semanticXlabel = _.select(wordnet, function (obj) {
 			  return obj.uid === semantic;
 		})[0].label;
@@ -199,14 +201,10 @@ function addToParsetData(semantic, position, topK ){
 		});
 	}
 	else{
-		
-
 		semanticYlabel = _.select(wordnet, function (obj) {
 			  return obj.uid === semantic;
 		})[0].label;
-		
-
-		$.each(columnBelements, function(key, value){
+		$.each(columnAelements, function(key, value){
 			if(k<topK){
 				semanticXlabel = _.select(wordnet, function (obj) {
 					  return obj.uid === value.semobject.columnA.id;
@@ -219,12 +217,13 @@ function addToParsetData(semantic, position, topK ){
 				}
 			k++
 			}else {
-				for(var ind= 0; ind<value.querycount; ind++){			
-				parsetelement = {}
-				parsetelement.ColumnX = "other" 
-				parsetelement.ColumnY = semanticYlabel;
-				parsetdata.push(parsetelement);
-				}
+//				for(var ind= 0; ind<value.querycount; ind++){			
+//					parsetelement = {}
+//					parsetelement.ColumnX = "other" 
+//					parsetelement.ColumnY = semanticYlabel;
+//					parsetdata.push(parsetelement);
+//				}
+				return false;
 			}
 		});
 	
@@ -465,51 +464,49 @@ function displaySemanticIcicle(uid, column){
 	var semanticobject = _.select(wordnet, function (obj) {
 		  return obj.uid === uid;
 		});
-	recursiondepth = 0;
 	var key = semanticobject[0].label;
 	$("#"+column+"semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key
 			+'", with id="'+uid+'"</p>');
-	icicle[key] = {};
-	processObject(semanticobject[0], recursiondepth, icicle[key], column);
-	var root = d3.entries(icicle)[0];
-	
-	//debug only
-//	$("#iciclePrintout").empty();
-//	$("#iciclePrintout").append(JSON.stringify(icicle));
-
+	icicle.name= key;
+	icicle.uid=semanticobject[0].uid;
+	icicle.children= [];
+	processObject(semanticobject[0], icicle.children, column);
 	
 	var partition = d3.layout.partition()
-					.children(function(d) { 
-						return isNaN(d.value) ? d3.entries(d.value) : null; 
-						})
-					.value(function(d) { 
-						return d.value; });
+    .value(function(d) { return d.count; });
 	
+	var nodes = partition.nodes(icicle);
+	var root = nodes[0];
 	
 	var svg = d3.select("#"+column+"semanticExplorer").append("svg")
 	.attr("width", w)
 	.attr("height", h);
 	
 	var g = svg.selectAll("#"+column+"semanticExplorer g")
-    .data(partition.nodes(root))
-    .enter().append("svg:g")
+    .data(nodes)
+    .enter()
+    .append("svg:g")
+    .attr("uid", function(d) { return d.uid; })
     .attr("transform", function(d) { 
     	return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
     .on("click", clicked);
 	
 	var kx = w / root.dx,
     ky = h / 1;
-	 
-	 g.append("svg:rect")
+	
+	g.append("svg:rect")
+	.attr("uid", function(d) { return d.uid; })
      .attr("width", root.dy * kx)
      .attr("height", function(d) { return d.dx * ky; })
-     .attr("class", function(d) { return d.children ? "parent" : "child"; });
+     .attr("class", function(d) { 
+    	 return d.children ? "parent" : "child"; });
 
      g.append("svg:text")
+     .attr("uid", function(d) { return d.uid; })
      .attr("transform", transform)
      .attr("dy", ".35em")
      .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; })
-     .text(function(d) { return d.key; })
+     .text(function(d) { return d.name; })
 
      g.style("display", function(d) {
     	    if (d.depth > 1) {
@@ -541,7 +538,7 @@ function displaySemanticIcicle(uid, column){
         			  $(this).css("display","block");//show element
         			  
         		  }
-        		  else if (d1.depth ==d.depth+1 || d1.key==d.key) {//the element is the element i clicked on or a depth ahead.
+        		  else if (d1.depth ==d.depth+1 || d1.uid==d.uid) {//the element is the element i clicked on or a depth ahead.
         			  
         			  $(this).css("display","block");//show element
                   }
@@ -566,20 +563,15 @@ function displaySemanticIcicle(uid, column){
             .style("opacity", function(d) { 
             	return d.dx * ky > 12 ? 1 : 0; });
           d3.event.stopPropagation();
-          
-//          displayParsets(d.id, "X", 10){
-      }	
+    }	
 }
 
 
-function processObject(parent, recursiondepth, parentIcicle, column){
-	recursiondepth++;
-//	console.log("Processing: <"+ parent.label+", "+parent.uid+">");
-//	console.log("Has children: ["+parent.derivedFrom+"]");
-	$.each(parent.derivedFrom, function(index, value){
-//		console.log("parentIcicle: "+JSON.stringify(parentIcicle));
+function processObject(parent, parentIcicle, column){
 
-		var depth ="-";
+	$.each(parent.derivedFrom, function(index, value){
+
+
 		var o = _.select(wordnet, function (obj) {
 			  return obj.uid === value;
 			});
@@ -589,17 +581,189 @@ function processObject(parent, recursiondepth, parentIcicle, column){
 			  return obj.uid === value;
 			});
 			childSemantics = o[0];
-//			console.log("Processing child of "+parent.label+": <"+ childSemantics.label+", "+childSemantics.uid+">");
-			recursiondepth--;
-			parentIcicle[childSemantics.label] = fetchQC(childSemantics.uid,column,selectedTemplateID)//childSemantics.columnCount;
-			}
+			
+			var object = {};
+			object.name = childSemantics.label;
+			object.uid = childSemantics.uid;
+			object.count = fetchQC(childSemantics.uid,column,selectedTemplateID);
+			parentIcicle.push(object);
+		}
 		else{
 			childSemantics = o[0];
-//			console.log("Processing child of "+parent.label+": <"+ childSemantics.label+", "+childSemantics.uid+">");
-			if(parentIcicle[childSemantics.label]===undefined)
-				parentIcicle[childSemantics.label]= {};
+
+			var arr = _.filter(parentIcicle, function(value){ 
+			    if (value.name == childSemantics.label){ 
+			      return value;
+			    } 
+			 })
+			if (arr.length==0) {
+					var object = {};
+					object.name = childSemantics.label;
+					object.uid = childSemantics.uid;
+					object.children= [];
+					parentIcicle.push(object);
+				}
 			
-			processObject(childSemantics, recursiondepth, parentIcicle[childSemantics.label], column);
+			var arrobj = _.filter(parentIcicle, function(value){ 
+			    if (value.name == childSemantics.label){ 
+			      return value;
+			    } 
+			 })[0];
+			
+			processObject(childSemantics, arrobj.children, column);
 		}
 	});
 }
+
+//function displaySemanticIcicle(uid, column){
+//	 $("#"+column+"container").hide();
+//	 $("#"+column+"semanticExplorer").empty();
+//	 $("#"+column+"semanticExplorer").show();
+//	
+//	var w = 700,h = 600;
+//	var x = d3.scale.linear().range([0, w]);
+//	var y = d3.scale.linear().range([0, h]);
+//
+//	//create data for zoomable partition
+//	icicle = {}
+//	var semanticobject = _.select(wordnet, function (obj) {
+//		  return obj.uid === uid;
+//		});
+//	recursiondepth = 0;
+//	var key = semanticobject[0].label;
+//	$("#"+column+"semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key
+//			+'", with id="'+uid+'"</p>');
+//	icicle[key] = {};
+//	processObject(semanticobject[0], recursiondepth, icicle[key], column);
+//	var root = d3.entries(icicle)[0];
+//	
+//	//debug only
+////	$("#iciclePrintout").empty();
+////	$("#iciclePrintout").append(JSON.stringify(icicle));
+//
+//	
+//	var partition = d3.layout.partition()
+//					.children(function(d) { 
+//						return isNaN(d.value) ? d3.entries(d.value) : null; 
+//						})
+//					.value(function(d) { 
+//						return d.value; });
+//	
+//	
+//	var svg = d3.select("#"+column+"semanticExplorer").append("svg")
+//	.attr("width", w)
+//	.attr("height", h);
+//	
+//	var g = svg.selectAll("#"+column+"semanticExplorer g")
+//    .data(partition.nodes(root))
+//    .enter().append("svg:g")
+//    .attr("transform", function(d) { 
+//    	return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
+//    .on("click", clicked);
+//	
+//	var kx = w / root.dx,
+//    ky = h / 1;
+//	 
+//	 g.append("svg:rect")
+//     .attr("width", root.dy * kx)
+//     .attr("height", function(d) { return d.dx * ky; })
+//     .attr("class", function(d) { return d.children ? "parent" : "child"; });
+//
+//     g.append("svg:text")
+//     .attr("transform", transform)
+//     .attr("dy", ".35em")
+//     .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; })
+//     .text(function(d) { return d.key; })
+//
+//     g.style("display", function(d) {
+//    	    if (d.depth > 1) {
+//    	        return "none";//nodes whose depth is more than 1 make its vanish
+//    	      } else {
+//    	        return "block";
+//    	      }
+//    	    });
+//     
+// d3.select(window)
+//     .on("click", function() { clicked(root); })
+//	
+//     
+//    function transform(d) {
+//        return "translate(8," + d.dx * ky / 2 + ")";
+//    }
+// 
+// function clicked(d) {
+//        if (!d.children) return;
+//
+//        kx = (d.y ? w - 40 : w) / (1 - d.y);
+//        ky = h / d.dx;
+//        x.domain([d.y, 1]).range([d.y ? 40 : 0, w]);
+//        y.domain([d.x, d.x + d.dx]);
+//        
+//        d3.selectAll("#"+column+"semanticExplorer g").each( function(d1, i){
+//        	
+//        		  if($(this).css("display")=="none" && d1.depth==d.depth-1){// the element is hidden and before the element i clicked on
+//        			  $(this).css("display","block");//show element
+//        			  
+//        		  }
+//        		  else if (d1.depth ==d.depth+1 || d1.key==d.key) {//the element is the element i clicked on or a depth ahead.
+//        			  
+//        			  $(this).css("display","block");//show element
+//                  }
+//                  else {                    	
+//                    	$(this).css("display", "none");
+//                    }
+//        		});
+//         
+//   
+//        var g = svg.selectAll("#"+column+"semanticExplorer g");
+//        var t = g.transition()
+//            .duration(d3.event.altKey ? 7500 : 750)
+//            .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; });
+//
+//        t.select("rect")
+//            .attr("width", d.dy * kx)
+//            .attr("height", function(d) { 
+//            	return d.dx * ky; });
+//
+//        t.select("text")
+//            .attr("transform", transform)
+//            .style("opacity", function(d) { 
+//            	return d.dx * ky > 12 ? 1 : 0; });
+//          d3.event.stopPropagation();
+//          
+////          displayParsets(d.id, "X", 10){
+//      }	
+//}
+//
+//
+//function processObject(parent, recursiondepth, parentIcicle, column){
+//	recursiondepth++;
+////	console.log("Processing: <"+ parent.label+", "+parent.uid+">");
+////	console.log("Has children: ["+parent.derivedFrom+"]");
+//	$.each(parent.derivedFrom, function(index, value){
+////		console.log("parentIcicle: "+JSON.stringify(parentIcicle));
+//
+//		var depth ="-";
+//		var o = _.select(wordnet, function (obj) {
+//			  return obj.uid === value;
+//			});
+//		
+//		if(o.length==0){//reached a leaf (tag)
+//			o = _.select(tags, function (obj) {
+//			  return obj.uid === value;
+//			});
+//			childSemantics = o[0];
+////			console.log("Processing child of "+parent.label+": <"+ childSemantics.label+", "+childSemantics.uid+">");
+//			recursiondepth--;
+//			parentIcicle[childSemantics.label] = fetchQC(childSemantics.uid,column,selectedTemplateID)//childSemantics.columnCount;
+//			}
+//		else{
+//			childSemantics = o[0];
+////			console.log("Processing child of "+parent.label+": <"+ childSemantics.label+", "+childSemantics.uid+">");
+//			if(parentIcicle[childSemantics.label]===undefined)
+//				parentIcicle[childSemantics.label]= {};
+//			
+//			processObject(childSemantics, recursiondepth, parentIcicle[childSemantics.label], column);
+//		}
+//	});
+//}
