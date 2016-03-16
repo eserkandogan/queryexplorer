@@ -89,9 +89,9 @@ d3.csv("data/qsp1.csv", function(d) {
 				    
 					displaySemanticIcicle(this.id, 'columnB');
 					
-					if(selectedColumnAID!=""){
+//					if(selectedColumnAID!=""){
 						displayParsets(this.id, "columnB", 10);
-					}
+//					}
 
 				});
 				$(document).on("keyup","#columnAfilter", function () {
@@ -173,10 +173,8 @@ d3.csv("data/qsp1.csv", function(d) {
 });//end loading data
 
 function displayParsets(semanticid, position, topK){
-//	if(selectedTemplateID!=""){
 		$("#parallelsets").empty();
 		parsetdata=[];
-		
 		var chart = d3.parsets().dimensions(["ColumnX","ColumnY"]);
 		
 		var vis = d3.select("#parallelsets").append("svg")
@@ -188,7 +186,6 @@ function displayParsets(semanticid, position, topK){
 	 
 		addToParsetData(semanticid, position, topK);
 		vis.datum(parsetdata).call(chart);
-//	}
 }
 function addToParsetData(semantic, position, topK ){
 	var k = 0;
@@ -211,12 +208,6 @@ function addToParsetData(semantic, position, topK ){
 				}
 			k++
 			}else {
-//				for(var ind= 0; ind<value.querycount; ind++){			
-//				parsetelement = {}
-//				parsetelement.ColumnX = semanticXlabel 
-//				parsetelement.ColumnY = "other";
-//				parsetdata.push(parsetelement);
-//				}
 				return false;
 			}
 		});
@@ -596,6 +587,8 @@ function displaySemanticIcicle(uid, column){
             .style("opacity", function(d) { 
             	return d.dx * ky > 12 ? 1 : 0; });
           d3.event.stopPropagation();
+          
+          displayParsets(d.uid, column, 10)
     }	
 }
 
@@ -603,8 +596,6 @@ function displaySemanticIcicle(uid, column){
 function processObject(parent, parentIcicle, column){
 
 	$.each(parent.derivedFrom, function(index, value){
-
-
 		var o = _.select(wordnet, function (obj) {
 			  return obj.uid === value;
 			});
@@ -647,156 +638,3 @@ function processObject(parent, parentIcicle, column){
 		}
 	});
 }
-
-//function displaySemanticIcicle(uid, column){
-//	 $("#"+column+"container").hide();
-//	 $("#"+column+"semanticExplorer").empty();
-//	 $("#"+column+"semanticExplorer").show();
-//	
-//	var w = 700,h = 600;
-//	var x = d3.scale.linear().range([0, w]);
-//	var y = d3.scale.linear().range([0, h]);
-//
-//	//create data for zoomable partition
-//	icicle = {}
-//	var semanticobject = _.select(wordnet, function (obj) {
-//		  return obj.uid === uid;
-//		});
-//	recursiondepth = 0;
-//	var key = semanticobject[0].label;
-//	$("#"+column+"semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key
-//			+'", with id="'+uid+'"</p>');
-//	icicle[key] = {};
-//	processObject(semanticobject[0], recursiondepth, icicle[key], column);
-//	var root = d3.entries(icicle)[0];
-//	
-//	//debug only
-////	$("#iciclePrintout").empty();
-////	$("#iciclePrintout").append(JSON.stringify(icicle));
-//
-//	
-//	var partition = d3.layout.partition()
-//					.children(function(d) { 
-//						return isNaN(d.value) ? d3.entries(d.value) : null; 
-//						})
-//					.value(function(d) { 
-//						return d.value; });
-//	
-//	
-//	var svg = d3.select("#"+column+"semanticExplorer").append("svg")
-//	.attr("width", w)
-//	.attr("height", h);
-//	
-//	var g = svg.selectAll("#"+column+"semanticExplorer g")
-//    .data(partition.nodes(root))
-//    .enter().append("svg:g")
-//    .attr("transform", function(d) { 
-//    	return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
-//    .on("click", clicked);
-//	
-//	var kx = w / root.dx,
-//    ky = h / 1;
-//	 
-//	 g.append("svg:rect")
-//     .attr("width", root.dy * kx)
-//     .attr("height", function(d) { return d.dx * ky; })
-//     .attr("class", function(d) { return d.children ? "parent" : "child"; });
-//
-//     g.append("svg:text")
-//     .attr("transform", transform)
-//     .attr("dy", ".35em")
-//     .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; })
-//     .text(function(d) { return d.key; })
-//
-//     g.style("display", function(d) {
-//    	    if (d.depth > 1) {
-//    	        return "none";//nodes whose depth is more than 1 make its vanish
-//    	      } else {
-//    	        return "block";
-//    	      }
-//    	    });
-//     
-// d3.select(window)
-//     .on("click", function() { clicked(root); })
-//	
-//     
-//    function transform(d) {
-//        return "translate(8," + d.dx * ky / 2 + ")";
-//    }
-// 
-// function clicked(d) {
-//        if (!d.children) return;
-//
-//        kx = (d.y ? w - 40 : w) / (1 - d.y);
-//        ky = h / d.dx;
-//        x.domain([d.y, 1]).range([d.y ? 40 : 0, w]);
-//        y.domain([d.x, d.x + d.dx]);
-//        
-//        d3.selectAll("#"+column+"semanticExplorer g").each( function(d1, i){
-//        	
-//        		  if($(this).css("display")=="none" && d1.depth==d.depth-1){// the element is hidden and before the element i clicked on
-//        			  $(this).css("display","block");//show element
-//        			  
-//        		  }
-//        		  else if (d1.depth ==d.depth+1 || d1.key==d.key) {//the element is the element i clicked on or a depth ahead.
-//        			  
-//        			  $(this).css("display","block");//show element
-//                  }
-//                  else {                    	
-//                    	$(this).css("display", "none");
-//                    }
-//        		});
-//         
-//   
-//        var g = svg.selectAll("#"+column+"semanticExplorer g");
-//        var t = g.transition()
-//            .duration(d3.event.altKey ? 7500 : 750)
-//            .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; });
-//
-//        t.select("rect")
-//            .attr("width", d.dy * kx)
-//            .attr("height", function(d) { 
-//            	return d.dx * ky; });
-//
-//        t.select("text")
-//            .attr("transform", transform)
-//            .style("opacity", function(d) { 
-//            	return d.dx * ky > 12 ? 1 : 0; });
-//          d3.event.stopPropagation();
-//          
-////          displayParsets(d.id, "X", 10){
-//      }	
-//}
-//
-//
-//function processObject(parent, recursiondepth, parentIcicle, column){
-//	recursiondepth++;
-////	console.log("Processing: <"+ parent.label+", "+parent.uid+">");
-////	console.log("Has children: ["+parent.derivedFrom+"]");
-//	$.each(parent.derivedFrom, function(index, value){
-////		console.log("parentIcicle: "+JSON.stringify(parentIcicle));
-//
-//		var depth ="-";
-//		var o = _.select(wordnet, function (obj) {
-//			  return obj.uid === value;
-//			});
-//		
-//		if(o.length==0){//reached a leaf (tag)
-//			o = _.select(tags, function (obj) {
-//			  return obj.uid === value;
-//			});
-//			childSemantics = o[0];
-////			console.log("Processing child of "+parent.label+": <"+ childSemantics.label+", "+childSemantics.uid+">");
-//			recursiondepth--;
-//			parentIcicle[childSemantics.label] = fetchQC(childSemantics.uid,column,selectedTemplateID)//childSemantics.columnCount;
-//			}
-//		else{
-//			childSemantics = o[0];
-////			console.log("Processing child of "+parent.label+": <"+ childSemantics.label+", "+childSemantics.uid+">");
-//			if(parentIcicle[childSemantics.label]===undefined)
-//				parentIcicle[childSemantics.label]= {};
-//			
-//			processObject(childSemantics, recursiondepth, parentIcicle[childSemantics.label], column);
-//		}
-//	});
-//}
