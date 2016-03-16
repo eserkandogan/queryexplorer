@@ -182,9 +182,8 @@ function displayParsets(semanticid, position, topK){
 //		 .attr("points","200,10 250,10 400,210 200,210")
 	     .attr("width", chart.width())
 	     .attr("height", chart.height());
-	
-	 
-		addToParsetData(semanticid, position, topK);
+		
+	    addToParsetData(semanticid, position, topK);
 		vis.datum(parsetdata).call(chart);
 }
 function addToParsetData(semantic, position, topK ){
@@ -236,8 +235,6 @@ function addToParsetData(semantic, position, topK ){
 	}
 }
 
-
-
 function loadQTC(filename){
 	var qtc = {}; 
 	$.get(filename,function(txt){
@@ -266,7 +263,6 @@ function populateColumn(data, column){
 		   close: function(event, ui){
 			      //Fire change event
 			      $(this).change();
-			      
 			   }
 			}).selectmenu("refresh");
 	
