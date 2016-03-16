@@ -587,8 +587,15 @@ function displaySemanticIcicle(uid, column){
             .style("opacity", function(d) { 
             	return d.dx * ky > 12 ? 1 : 0; });
           d3.event.stopPropagation();
+          selectedColumnAID = d.uid; 
           
-          displayParsets(d.uid, column, 10)
+          if(column == "columnA")
+        	  populateColumn(queryPermutations, 'columnB');
+
+          else if(column == "columnB")
+        	  populateColumn(queryPermutations, 'columnA');
+          
+          displayParsets(d.uid, column, 10);
     }	
 }
 
