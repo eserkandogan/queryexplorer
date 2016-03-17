@@ -218,12 +218,15 @@ function displayParsets(d, position, topK){
     var partitionX = partitionBox.x;
 	var partitionY = partitionBox.y;
     
+    
     var margin = {top: 0, right: 120, bottom: 50, left: 0};
-//    width = 660 - margin.left - margin.right,
-//    height = 400 - margin.top - margin.bottom;
-    width = partitionBox.width - margin.left - margin.right,
-    height = partitionBox.height - margin.top - margin.bottom;
-	
+    // width BEFORE rotation (aka height later), should be as much as the partition box height.
+    var width = document.getElementById("partition"+position+d.uid).getBBox().height,// - margin.left - margin.right,//partitionBox.width - margin.left - margin.right,
+    //height, or width after rotation, should be as long a
+    height = 600;// - margin.top - margin.bottom;
+    
+    console.log(width+", "+height);
+        
 	var chart = d3.parsets()
 				.dimensions(["ColumnX","ColumnY"])
 				.width(width)
@@ -243,12 +246,15 @@ function displayParsets(d, position, topK){
 	
 	var vis = d3.select("#columnApartition").append("g")
 	.attr("id", "columnAparset")
-	.attr("x", partitionX)
-	.attr("y", partitionY)
-     .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
+//     .attr("width", width + margin.left + margin.right)
+//    .attr("height", height + margin.top + margin.bottom)
+	.attr("width", width)
+    .attr("height", height)
     .append("g")
-    .attr("transform", "translate(0," + height + ")rotate(-90)");
+    .attr("transform", "translate("+ height/2+ ","+ width/2+")rotate(-90)"+
+    		"translate(-"+width/2+", -"+height/2+")");
+
+//    .attr("transform", "translate(0," + height + ")rotate(-90)")
 
 	vis.datum(parsetdata).call(chart);
 	vis.selectAll(".category text")
@@ -263,7 +269,7 @@ function displayParsets(d, position, topK){
     .attr("x", 0)
     .attr("dx", 0)
     .attr("dy", "1.5em");
-	vis.selectAll("text.dimension .sort.size")
+	 vis.selectAll("text.dimension .sort.size")
     .attr("dx", "1em");
 	
 	d3.select("#columnAparset").moveToBack();
@@ -582,9 +588,10 @@ function displaySemanticIcicle(uid, column){
 	var nodes = partition.nodes(icicle);
 	var root = nodes[0];
 	
-	var svg = d3.select("#"+column+"semanticExplorer").append("svg").attr("id", column+"partition")
-	.attr("width", w)
-	.attr("height", h);
+	var svg = d3.select("#"+column+"semanticExplorer").append("svg")
+	.attr("id", column+"partition")
+	.attr("width", w+100)
+	.attr("height", h+100);
 	
 	var g = svg.selectAll("#"+column+"semanticExplorer g")
     .data(nodes)
@@ -594,7 +601,13 @@ function displaySemanticIcicle(uid, column){
     .attr("uid", function(d) { return d.uid; })
     .attr("transform", function(d) { 
     	return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
-    .on("click", clicked);
+    .on("click", clicked)
+    .on("mouseover", function(d) { 
+    	if (!d.children) return;
+    displayParsets(d, column, 10);})
+    .on("mouseout",function(){
+    	d3.selectAll("#"+column+"parset").remove()
+    });
 	
 	var kx = w / root.dx,
     ky = h / 1;
@@ -604,7 +617,8 @@ function displaySemanticIcicle(uid, column){
      .attr("width", root.dy * kx)
      .attr("height", function(d) { return d.dx * ky; })
      .attr("class", function(d) { 
-    	 return d.children ? "parent" : "child"; });
+    	 return d.children ? "parent" : "child"; })
+     ;
 
      g.append("svg:text")
      .attr("uid", function(d) { return d.uid; })
@@ -678,7 +692,6 @@ function displaySemanticIcicle(uid, column){
           else if(column == "columnB")
         	  populateColumn(queryPermutations, 'columnA');
           
-          displayParsets(d, column, 10);
     }	
 }
 
