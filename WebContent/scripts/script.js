@@ -191,30 +191,45 @@ function displayParsets(semanticid, position, topK){
 	$("#parallelsets").empty();
 	parsetdata=[];
     addToParsetData(semanticid, position, topK);
-    var w = 600, h= 300;
-	var x = d3.scale.linear().range([0, w]);
-	var y = d3.scale.linear().range([0, h]);
+    var margin = {top: 0, right: 120, bottom: 50, left: 0},
+    width = 660 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
 	
 	var chart = d3.parsets()
 				.dimensions(["ColumnX","ColumnY"])
-				.width(w)
-				.height(h)
-				.spacing(25)
-				.tension(0.5);
-	
+				.width(width)
+				.height(height);
 	
 	var vis = d3.select("#parallelsets").append("svg")
-     .attr("width", chart.width())
-     .attr("height", chart.height());
+     .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(0," + height + ")rotate(-90)");
+
 	vis.datum(parsetdata).call(chart);
+	vis.selectAll(".category text")
+    .attr("dx", 5)
+    .attr("transform", "rotate(90)");
+	vis.selectAll(".category rect")
+    .attr("y", 0);
+	vis.selectAll("text.dimension")
+    .attr("dy", "1.5em")
+    .attr("transform", "rotate(90)");
+	vis.selectAll("text.dimension .sort.alpha")
+    .attr("x", 0)
+    .attr("dx", 0)
+    .attr("dy", "1.5em");
+	vis.selectAll("text.dimension .sort.size")
+    .attr("dx", "1em");
+	
 }
+
 function addToParsetData(semantic, position, topK ){
 	var k = 0;
 	if(position == "columnA"){
 		semanticXlabel = _.select(wordnet, function (obj) {
 			  return obj.uid === semantic;
 		})[0].label;
-		
 
 		$.each(columnBelements, function(key, value){
 			if(k<topK){
