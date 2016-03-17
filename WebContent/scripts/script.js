@@ -79,7 +79,7 @@ d3.csv("data/qsp1.csv", function(d) {
 				    		+$(this).attr('qspCol')+'</b>. ');
 
 					displaySemanticIcicle(selectedColumnAID, 'columnA');
-					displayParsets(selectedColumnAID, "columnA", 10);
+//					displayParsets(selectedColumnAID, "columnA", 10);
 					populateColumn(data, 'columnB');
 				});	
 				$(document).on("click", "#columnBlist tr", function() {
@@ -90,7 +90,7 @@ d3.csv("data/qsp1.csv", function(d) {
 					displaySemanticIcicle(this.id, 'columnB');
 					
 //					if(selectedColumnAID!=""){
-						displayParsets(this.id, "columnB", 10);
+//						displayParsets(this.id, "columnB", 10);
 //					}
 
 				});
@@ -171,36 +171,80 @@ d3.csv("data/qsp1.csv", function(d) {
 			});
 		})	;
 });//end loading data
-//
-//function displayParsets(semanticid, position, topK){
-//		$("#parallelsets").empty();
-//		parsetdata=[];
-//		var chart = d3.parsets().dimensions(["ColumnX","ColumnY"]);
-//		
-//		var vis = d3.select("#parallelsets").append("svg")
-////		.append("polygon")
-////		 .attr("points","200,10 250,10 400,210 200,210")
-//	     .attr("width", chart.width())
-//	     .attr("height", chart.height());
-//		
-//	    addToParsetData(semanticid, position, topK);
-//		vis.datum(parsetdata).call(chart);
-//}
 
-function displayParsets(semanticid, position, topK){
-	$("#parallelsets").empty();
+//function displayParsets(semanticid, position, topK){
+//	$("#parallelsets").empty();
+//	parsetdata=[];
+//    addToParsetData(semanticid, position, topK);
+//    var margin = {top: 0, right: 120, bottom: 50, left: 0},
+//    width = 660 - margin.left - margin.right,
+//    height = 400 - margin.top - margin.bottom;
+//	
+//	var chart = d3.parsets()
+//				.dimensions(["ColumnX","ColumnY"])
+//				.width(width)
+//				.height(height);
+//	
+//	var vis = d3.select("#parallelsets").append("svg")
+//     .attr("width", width + margin.left + margin.right)
+//    .attr("height", height + margin.top + margin.bottom)
+//    .append("g")
+//    .attr("transform", "translate(0," + height + ")rotate(-90)");
+//
+//	vis.datum(parsetdata).call(chart);
+//	vis.selectAll(".category text")
+//    .attr("dx", 5)
+//    .attr("transform", "rotate(90)");
+//	vis.selectAll(".category rect")
+//    .attr("y", 0);
+//	vis.selectAll("text.dimension")
+//    .attr("dy", "1.5em")
+//    .attr("transform", "rotate(90)");
+//	vis.selectAll("text.dimension .sort.alpha")
+//    .attr("x", 0)
+//    .attr("dx", 0)
+//    .attr("dy", "1.5em");
+//	vis.selectAll("text.dimension .sort.size")
+//    .attr("dx", "1em");
+//	
+//}
+function displayParsets(d, position, topK){
+	var semanticid = d.uid;
+//	$("#parallelsets").empty();
 	parsetdata=[];
     addToParsetData(semanticid, position, topK);
-    var margin = {top: 0, right: 120, bottom: 50, left: 0},
-    width = 660 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+    
+    var partitionBox = document.getElementById(position+"partition").getBBox();
+    var partitionX = partitionBox.x;
+	var partitionY = partitionBox.y;
+    
+    var margin = {top: 0, right: 120, bottom: 50, left: 0};
+//    width = 660 - margin.left - margin.right,
+//    height = 400 - margin.top - margin.bottom;
+    width = partitionBox.width - margin.left - margin.right,
+    height = partitionBox.height - margin.top - margin.bottom;
 	
 	var chart = d3.parsets()
 				.dimensions(["ColumnX","ColumnY"])
 				.width(width)
 				.height(height);
 	
-	var vis = d3.select("#parallelsets").append("svg")
+	var partitionX = document.getElementById("columnApartition").getBBox().x;
+	var partitionY = document.getElementById("columnApartition").getBBox().x;
+	
+	d3.selection.prototype.moveToBack = function() { 
+	    return this.each(function() { 
+	        var firstChild = this.parentNode.firstChild; 
+	        if (firstChild) { 
+	            this.parentNode.insertBefore(this, firstChild); 
+	        } 
+	    }); 
+	};
+	
+	var vis = d3.select("#columnApartition").append("g")
+	.attr("id", "columnAparset")
+	.attr("x", partitionX)
+	.attr("y", partitionY)
      .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
@@ -222,6 +266,7 @@ function displayParsets(semanticid, position, topK){
 	vis.selectAll("text.dimension .sort.size")
     .attr("dx", "1em");
 	
+	d3.select("#columnAparset").moveToBack();
 }
 
 function addToParsetData(semantic, position, topK ){
@@ -333,9 +378,11 @@ function populateColumn(data, column){
 	});
 	listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
 
-	if(column=="columnA"){columnAelements = listelements;}
-	else if(column== "columnB"){columnBelements = listelements;}
+	if(column =="columnA"){columnAelements = listelements;}
+	else if(column == "columnB"){columnBelements = listelements;}
 	abstractions = [];
+	
+	var columnlist = $('#'+column+'list');
 	$.each(listelements, function( index, element) {
 		if($.inArray(element.semobject[column].abstractionLevel, abstractions) == -1)
 			abstractions.push(element.semobject[column].abstractionLevel);
@@ -343,7 +390,7 @@ function populateColumn(data, column){
 		thislabel= element.semobject[column].label;
 		if(!isNaN(element.querycount)){
 			querycount = fetchQC(element.semobject[column].id,column,selectedTemplateID);
-  			$('#'+column+'list').append('<tr id='+element.semobject[column].id+' abstraction='+element.semobject[column].abstractionLevel+' qspCol="'+thislabel+'"><td  class="list-group-item semanticlistelement">'+
+			columnlist.append('<tr id='+element.semobject[column].id+' abstraction='+element.semobject[column].abstractionLevel+' qspCol="'+thislabel+'"><td  class="list-group-item semanticlistelement">'+
 		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+element.querycount+'</span></td></tr>');
 		}
   	});	
@@ -535,7 +582,7 @@ function displaySemanticIcicle(uid, column){
 	var nodes = partition.nodes(icicle);
 	var root = nodes[0];
 	
-	var svg = d3.select("#"+column+"semanticExplorer").append("svg")
+	var svg = d3.select("#"+column+"semanticExplorer").append("svg").attr("id", column+"partition")
 	.attr("width", w)
 	.attr("height", h);
 	
@@ -543,6 +590,7 @@ function displaySemanticIcicle(uid, column){
     .data(nodes)
     .enter()
     .append("svg:g")
+    .attr("id", function(d) { return "partition"+column+d.uid; })
     .attr("uid", function(d) { return d.uid; })
     .attr("transform", function(d) { 
     	return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
@@ -582,6 +630,8 @@ function displaySemanticIcicle(uid, column){
     }
  
  function clicked(d) {
+	 	d3.selectAll("#"+column+"parset").remove();
+	 
         if (!d.children) return;
 
         kx = (d.y ? w - 40 : w) / (1 - d.y);
@@ -628,7 +678,7 @@ function displaySemanticIcicle(uid, column){
           else if(column == "columnB")
         	  populateColumn(queryPermutations, 'columnA');
           
-          displayParsets(d.uid, column, 10);
+          displayParsets(d, column, 10);
     }	
 }
 
