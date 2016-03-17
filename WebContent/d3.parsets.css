@@ -26,7 +26,7 @@
 .category-8 { fill: #bcbd22; stroke: #bcbd22; }
 .category-9 { fill: #17becf; stroke: #17becf; }
 
-.tooltip {
+.parsetstooltip {
   background-color: rgba(242, 242, 242, .6);
   position: absolute;
   padding: 5px;

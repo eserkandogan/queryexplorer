@@ -171,20 +171,42 @@ d3.csv("data/qsp1.csv", function(d) {
 			});
 		})	;
 });//end loading data
+//
+//function displayParsets(semanticid, position, topK){
+//		$("#parallelsets").empty();
+//		parsetdata=[];
+//		var chart = d3.parsets().dimensions(["ColumnX","ColumnY"]);
+//		
+//		var vis = d3.select("#parallelsets").append("svg")
+////		.append("polygon")
+////		 .attr("points","200,10 250,10 400,210 200,210")
+//	     .attr("width", chart.width())
+//	     .attr("height", chart.height());
+//		
+//	    addToParsetData(semanticid, position, topK);
+//		vis.datum(parsetdata).call(chart);
+//}
 
 function displayParsets(semanticid, position, topK){
-		$("#parallelsets").empty();
-		parsetdata=[];
-		var chart = d3.parsets().dimensions(["ColumnX","ColumnY"]);
-		
-		var vis = d3.select("#parallelsets").append("svg")
-//		.append("polygon")
-//		 .attr("points","200,10 250,10 400,210 200,210")
-	     .attr("width", chart.width())
-	     .attr("height", chart.height());
-		
-	    addToParsetData(semanticid, position, topK);
-		vis.datum(parsetdata).call(chart);
+	$("#parallelsets").empty();
+	parsetdata=[];
+    addToParsetData(semanticid, position, topK);
+    var w = 600, h= 300;
+	var x = d3.scale.linear().range([0, w]);
+	var y = d3.scale.linear().range([0, h]);
+	
+	var chart = d3.parsets()
+				.dimensions(["ColumnX","ColumnY"])
+				.width(w)
+				.height(h)
+				.spacing(25)
+				.tension(0.5);
+	
+	
+	var vis = d3.select("#parallelsets").append("svg")
+     .attr("width", chart.width())
+     .attr("height", chart.height());
+	vis.datum(parsetdata).call(chart);
 }
 function addToParsetData(semantic, position, topK ){
 	var k = 0;
