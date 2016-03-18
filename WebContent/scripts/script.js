@@ -396,7 +396,8 @@ function populateColumn(data, column){
 		thislabel= element.semobject[column].label;
 		if(!isNaN(element.querycount)){
 			querycount = fetchQC(element.semobject[column].id,column,selectedTemplateID);
-			columnlist.append('<tr id='+element.semobject[column].id+' abstraction='+element.semobject[column].abstractionLevel+' qspCol="'+thislabel+'"><td  class="list-group-item semanticlistelement">'+
+			columnlist.append('<tr id="'+element.semobject[column].id+'"  abstraction="'+
+					element.semobject[column].abstractionLevel+'" qspCol="'+thislabel+'"><td style="background:rgba(70,130,180,'+ 1/element.semobject[column].abstractionLevel +')" class="list-group-item semanticlistelement">'+
 		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+element.querycount+'</span></td></tr>');
 		}
   	});	
