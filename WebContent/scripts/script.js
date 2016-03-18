@@ -339,20 +339,22 @@ function loadQTC(filename){
 //Helper functions
 function populateColumn(data, column){
 	$('#'+column+'container').empty();
-	$('#'+column+'container').append('Abstraction<select id="'+column+'abstraction" name ="Abstraction"><option selected="selected">All</option></select>'+
+	$('#'+column+'container')
+	.append('<div style="padding-bottom:10px;">Abstraction: <div id="'+column+'abstraction" class= "abstractionslider" name ="Abstraction"></div>'+
 			'<div class="input-group" id="input'+column+'"> '+
 			'<span class="input-group-addon">Filter</span>'+
 			
-	'<input id="'+column+'filter" type="text" class="form-control" placeholder="Type here...">	</div>'+
-	'<table class="table table-striped semanticlist" id="'+column+'table" ><tbody class="searchable" id="'+column+'list"></tbody></table>');
+	'<input id="'+column+'filter" type="text" class="form-control" placeholder="Type here...">	</div></div>'+
+	'<div class = "scrollable"><table class="table table-striped semanticlist" id="'+column+'table" ><tbody class="searchable" id="'+column+'list"></tbody></table></div>');
 	
 	$('#'+column+'list').empty();
-	$("#"+column+"abstraction" ).selectmenu({
-		   close: function(event, ui){
-			      //Fire change event
-			      $(this).change();
-			   }
-			}).selectmenu("refresh");
+//	$("#"+column+"abstraction" ).selectmenu({
+//		   close: function(event, ui){
+//			      //Fire change event
+//			      $(this).change();
+//			   }
+//			}).selectmenu("refresh");
+	
 	
 	
 	var filtereddata = data;
@@ -401,11 +403,51 @@ function populateColumn(data, column){
 		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+element.querycount+'</span></td></tr>');
 		}
   	});	
-	var options = document.getElementById(column+'abstraction');
-	$.each(abstractions, function(index, value){
-		options.appendChild(new Option(value, value))
+	
+	$("#"+column+"abstraction").slider({
+        value:8,
+        min: 1,
+        max: 8,
+        step: 1,
+        slide: function( event, ui ) {
+			var selected = ui.value;
+			var table = document.getElementById(column+"table")
+	        for (var i = 1, row; row = table.rows[i]; i++) {
+			  if(selected == row.getAttribute("abstraction") || selected == "All")
+				  $(row).show();
+			  else
+				  $(row).hide();
+			}
+        }
+	}).each(function() {
+
+	    // Add labels to slider whose values 
+	    // are specified by min, max
+
+	    // Get the options for this slider (specified above)
+	    var opt = $(this).data().uiSlider.options;
+
+	    // Get the number of possible values
+	    var vals = opt.max - opt.min;
+
+	    // Position the labels
+	    for (var i = 0; i <= vals; i++) {
+
+	        // Create a new element and position it with percentages
+	        var el = $('<label>' + (i + opt.min) + '</label>').css('left', (i/vals*100) + '%');
+
+	        // Add the element inside #slider
+	        $("#"+column+"abstraction").append(el);
+
+	    }
+
 	});
-	$('#'+column+'abstraction').selectmenu("refresh");
+	$('.ui-widget-content').css('background','steelblue');
+//		var options = document.getElementById(column+'abstraction');
+//      $.each(abstractions, function(index, value){
+//			options.appendChild(new Option(value, value))
+//	    });
+//	    $('#'+column+'abstraction').selectmenu("refresh");
 }
 
 

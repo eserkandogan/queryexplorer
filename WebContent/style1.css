@@ -16,6 +16,19 @@
 	height:800px;
 	width:400px;
 }
+.abstractionslider{
+	margin-top:10px;
+	margin-left:10px;
+	margin-right:10px;
+	margin-bottom:40px;
+}
+.abstractionslider label {
+  position: absolute;
+  width: 20px;
+  margin-top: 20px;
+  margin-left: -10px;
+  text-align: center;
+}
 .semanticlistelement{
 	width:400px;
 }
