@@ -147,67 +147,31 @@ d3.csv("data/qsp1.csv", function(d) {
 					selectedColumnAID = "";
 				});
 				
-				$(document).on('change', '#columnAcontainer select', (function() {
-					var selected = $(this).val();
-					var table = document.getElementById("columnAtable")
-			        for (var i = 1, row; row = table.rows[i]; i++) {
-					  if(selected == row.getAttribute("abstraction") || selected == "All")
-						  $(row).show();
-					  else
-						  $(row).hide();
-					}
-			    }));
-				$(document).on('change', '#columnBcontainer select', (function() {
-					var selected = $(this).val();
-					var table = document.getElementById("columnBtable")
-			        for (var i = 1, row; row = table.rows[i]; i++) {
-					  if(selected == row.getAttribute("abstraction") || selected == "All")
-						  $(row).show();
-					  else
-						  $(row).hide();
-					}
-			    }));
+//				$(document).on('change', '#columnAcontainer select', (function() {
+//					var selected = $(this).val();
+//					var table = document.getElementById("columnAtable")
+//			        for (var i = 1, row; row = table.rows[i]; i++) {
+//					  if(selected == row.getAttribute("abstraction") || selected == "All")
+//						  $(row).show();
+//					  else
+//						  $(row).hide();
+//					}
+//			    }));
+//				$(document).on('change', '#columnBcontainer select', (function() {
+//					var selected = $(this).val();
+//					var table = document.getElementById("columnBtable")
+//			        for (var i = 1, row; row = table.rows[i]; i++) {
+//					  if(selected == row.getAttribute("abstraction") || selected == "All")
+//						  $(row).show();
+//					  else
+//						  $(row).hide();
+//					}
+//			    }));
 				
 			});
 		})	;
 });//end loading data
 
-//function displayParsets(semanticid, position, topK){
-//	$("#parallelsets").empty();
-//	parsetdata=[];
-//    addToParsetData(semanticid, position, topK);
-//    var margin = {top: 0, right: 120, bottom: 50, left: 0},
-//    width = 660 - margin.left - margin.right,
-//    height = 400 - margin.top - margin.bottom;
-//	
-//	var chart = d3.parsets()
-//				.dimensions(["ColumnX","ColumnY"])
-//				.width(width)
-//				.height(height);
-//	
-//	var vis = d3.select("#parallelsets").append("svg")
-//     .attr("width", width + margin.left + margin.right)
-//    .attr("height", height + margin.top + margin.bottom)
-//    .append("g")
-//    .attr("transform", "translate(0," + height + ")rotate(-90)");
-//
-//	vis.datum(parsetdata).call(chart);
-//	vis.selectAll(".category text")
-//    .attr("dx", 5)
-//    .attr("transform", "rotate(90)");
-//	vis.selectAll(".category rect")
-//    .attr("y", 0);
-//	vis.selectAll("text.dimension")
-//    .attr("dy", "1.5em")
-//    .attr("transform", "rotate(90)");
-//	vis.selectAll("text.dimension .sort.alpha")
-//    .attr("x", 0)
-//    .attr("dx", 0)
-//    .attr("dy", "1.5em");
-//	vis.selectAll("text.dimension .sort.size")
-//    .attr("dx", "1em");
-//	
-//}
 function displayParsets(d, position, topK){
 	var semanticid = d.uid;
 //	$("#parallelsets").empty();
@@ -340,22 +304,15 @@ function loadQTC(filename){
 function populateColumn(data, column){
 	$('#'+column+'container').empty();
 	$('#'+column+'container')
-	.append('<div style="padding-bottom:10px;">Abstraction: <div id="'+column+'abstraction" class= "abstractionslider" name ="Abstraction"></div>'+
+	.append('<div style="padding-bottom:10px;">Abstraction: <br> <input type="checkbox" id="'+column+'abstractionCheck" name="'+column+'abstractionCheck" value="All">All semantic abstraction levels: </input>'+
+			'<div id="'+column+'abstraction" class= "abstractionslider" name ="Abstraction"></div>'+
 			'<div class="input-group" id="input'+column+'"> '+
-			'<span class="input-group-addon">Filter</span>'+
-			
+			'<span class="input-group-addon">Filter</span>'+			
 	'<input id="'+column+'filter" type="text" class="form-control" placeholder="Type here...">	</div></div>'+
 	'<div class = "scrollable"><table class="table table-striped semanticlist" id="'+column+'table" ><tbody class="searchable" id="'+column+'list"></tbody></table></div>');
 	
 	$('#'+column+'list').empty();
-//	$("#"+column+"abstraction" ).selectmenu({
-//		   close: function(event, ui){
-//			      //Fire change event
-//			      $(this).change();
-//			   }
-//			}).selectmenu("refresh");
-	
-	
+	$('#'+column+'abstractionCheck').prop("checked", true);
 	
 	var filtereddata = data;
 	
@@ -413,7 +370,7 @@ function populateColumn(data, column){
 			var selected = ui.value;
 			var table = document.getElementById(column+"table")
 	        for (var i = 1, row; row = table.rows[i]; i++) {
-			  if(selected == row.getAttribute("abstraction") || selected == "All")
+			  if(selected == row.getAttribute("abstraction"))
 				  $(row).show();
 			  else
 				  $(row).hide();
@@ -443,6 +400,29 @@ function populateColumn(data, column){
 
 	});
 	$('.ui-widget-content').css('background','steelblue');
+	
+	$( "#"+column+"abstraction").slider({
+		  disabled: true
+		});
+	$('#'+column+'abstractionCheck').click(function(){
+		
+		if($('#'+column+'abstractionCheck').is(':checked')) { 
+			$( "#"+column+"abstraction").slider({
+				  disabled: true
+				});
+			var table = document.getElementById(column+"table")
+	        for (var i = 1, row; row = table.rows[i]; i++) {
+				  $(row).show();
+	        }	
+		}
+		
+		else{
+			$( "#"+column+"abstraction").slider({
+				  disabled: false
+			});
+//			$('#'+column+'abstractionRadio').prop("checked", false);
+		}
+	});
 //		var options = document.getElementById(column+'abstraction');
 //      $.each(abstractions, function(index, value){
 //			options.appendChild(new Option(value, value))
