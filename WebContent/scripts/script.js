@@ -223,7 +223,7 @@ function displayParsets(d, position, topK){
     // width BEFORE rotation (aka height later), should be as much as the partition box height.
     var width = document.getElementById("partition"+position+d.uid).getBBox().height,// - margin.left - margin.right,//partitionBox.width - margin.left - margin.right,
     //height, or width after rotation, should be as long a
-    height = 600;// - margin.top - margin.bottom;
+    height = 500;// - margin.top - margin.bottom;
     
     console.log(width+", "+height);
         
@@ -579,6 +579,7 @@ function displaySemanticIcicle(uid, column){
 			+'", with id="'+uid+'"</p>');
 	icicle.name= key;
 	icicle.uid=semanticobject[0].uid;
+	icicle.abstractionLevel = semanticobject[0].abstrationLevel;
 	icicle.children= [];
 	processObject(semanticobject[0], icicle.children, column);
 	
@@ -599,6 +600,8 @@ function displaySemanticIcicle(uid, column){
     .append("svg:g")
     .attr("id", function(d) { return "partition"+column+d.uid; })
     .attr("uid", function(d) { return d.uid; })
+    .attr("abstractionLevel", function(d) { 
+    	return d.abstractionLevel; })
     .attr("transform", function(d) { 
     	return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
     .on("click", clicked)
@@ -618,6 +621,9 @@ function displaySemanticIcicle(uid, column){
      .attr("height", function(d) { return d.dx * ky; })
      .attr("class", function(d) { 
     	 return d.children ? "parent" : "child"; })
+     .style("opacity", function(d) { 
+    	 return d.children ? 1/d.abstractionLevel : 1;
+    	 })
      ;
 
      g.append("svg:text")
@@ -727,6 +733,8 @@ function processObject(parent, parentIcicle, column){
 					var object = {};
 					object.name = childSemantics.label;
 					object.uid = childSemantics.uid;
+					object.abstractionLevel = childSemantics.abstrationLevel;
+
 					object.children= [];
 					parentIcicle.push(object);
 				}
