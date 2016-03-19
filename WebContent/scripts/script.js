@@ -7,7 +7,7 @@ var parsetdata = [];
 
 var icicle;
 
-var selectedTemplateID = "",selectedColumnAID = "";
+var selectedTemplateID = "",selectedColumnAID = "",selectedColumnBID= "";
 var columnAelements= [], columnBelements= []; 
 
 
@@ -79,20 +79,19 @@ d3.csv("data/qsp1.csv", function(d) {
 				    		+$(this).attr('qspCol')+'</b>. ');
 
 					displaySemanticIcicle(selectedColumnAID, 'columnA');
-//					displayParsets(selectedColumnAID, "columnA", 10);
 					populateColumn(data, 'columnB');
 				});	
 				$(document).on("click", "#columnBlist tr", function() {
+				    selectedColumnBID = this.id;
+
 					$('#selectedSemTypeB').empty();
 				    $('#selectedSemTypeB').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspCol')+'</b> '+
 		    		'<button id="clearColB" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
-				    
-					displaySemanticIcicle(this.id, 'columnB');
-					
-//					if(selectedColumnAID!=""){
-//						displayParsets(this.id, "columnB", 10);
-//					}
-
+				    selectedColumnBID = this.id;
+				    if(selectedColumnAID!=""){
+					    populateColumn(data, 'columnA');
+					}
+				    displaySemanticIcicle(this.id, 'columnB');
 				});
 				$(document).on("keyup","#columnAfilter", function () {
 
@@ -115,10 +114,12 @@ d3.csv("data/qsp1.csv", function(d) {
 				$(document).on("click", "#clearTemplate", function(){
 					$('#selectedTemplate').empty();
 				    $('#selectedTemplate').append('You have not selected a template yet.');
-				    selectedTemplateID = "";
+				    
 					$('#templateList li').removeClass( 'selectedListElement' );
+					selectedTemplateID = "";
+					selectedColumnAID = "";					
+					selectedColumnBID = "";
 
-					selectedColumnAID = "";
 					populateColumn(data, 'columnA');
 					populateColumn(data, 'columnB');
 				});
@@ -127,6 +128,7 @@ d3.csv("data/qsp1.csv", function(d) {
 					$('#selectedSemTypeA').empty();
 				    $('#selectedSemTypeA').append('You have not selected a semantic type yet.');
 					selectedColumnAID = "";
+					selectedColumnBID = "";
 					$("#columnAcontainer").show();
 					$("#columnAsemanticExplorer").hide();
 					
@@ -145,29 +147,8 @@ d3.csv("data/qsp1.csv", function(d) {
 				    $("#columnBcontainer").show();
 					$("#columnBsemanticExplorer").hide();
 					selectedColumnAID = "";
+					selectedColumnBID = "";
 				});
-				
-//				$(document).on('change', '#columnAcontainer select', (function() {
-//					var selected = $(this).val();
-//					var table = document.getElementById("columnAtable")
-//			        for (var i = 1, row; row = table.rows[i]; i++) {
-//					  if(selected == row.getAttribute("abstraction") || selected == "All")
-//						  $(row).show();
-//					  else
-//						  $(row).hide();
-//					}
-//			    }));
-//				$(document).on('change', '#columnBcontainer select', (function() {
-//					var selected = $(this).val();
-//					var table = document.getElementById("columnBtable")
-//			        for (var i = 1, row; row = table.rows[i]; i++) {
-//					  if(selected == row.getAttribute("abstraction") || selected == "All")
-//						  $(row).show();
-//					  else
-//						  $(row).hide();
-//					}
-//			    }));
-				
 			});
 		})	;
 });//end loading data
@@ -178,9 +159,11 @@ function displayParsets(d, position, topK){
 	parsetdata=[];
     addToParsetData(semanticid, position, topK);
     
-    var partitionBox = document.getElementById(position+"partition").getBBox();
-    var partitionX = partitionBox.x;
-	var partitionY = partitionBox.y;
+//    var partitionBox = document.getElementById(position+"partition").getBBox();
+    var svgBox = document.getElementById(position+"svg").getBBox();
+//
+//    var partitionX = partitionBox.x;
+//	var partitionY = partitionBox.y;
     
     var margin = {top: 0, right: 120, bottom: 50, left: 0};
     // width BEFORE rotation (aka height later), should be as much as the partition box height.
@@ -195,8 +178,8 @@ function displayParsets(d, position, topK){
 				.width(width)
 				.height(height);
 	
-	var partitionX = document.getElementById("columnApartition").getBBox().x;
-	var partitionY = document.getElementById("columnApartition").getBBox().y;
+//	var partitionX = document.getElementById("columnApartition").getBBox().x;
+//	var partitionY = document.getElementById("columnApartition").getBBox().y;
 	
 	d3.selection.prototype.moveToBack = function() { 
 	    return this.each(function() { 
@@ -206,40 +189,56 @@ function displayParsets(d, position, topK){
 	        } 
 	    }); 
 	};
-	console.log(width);
+//	console.log(width);
+	// need to move the parset g down to the bottom y coordinate of the rectangle we are hovering over
+//	var translateY = document.getElementById("partition"+position+d.uid).getBoundingClientRect().y+document.getElementById("partition"+position+d.uid).getBBox().height;
+	console.log(document.getElementById("partition"+position+d.uid).getBoundingClientRect())
 	
-	var vis = d3.select("#columnApartition").append("g")
-	.attr("id", "columnAparset")
+	console.log(document.getElementById("partition"+position+d.uid).getBBox())
+	var translateY = document.getElementById("partition"+position+d.uid).getBoundingClientRect().bottom;
+	var translateX = 25;//document.getElementById("partition"+position+d.uid).getBBox().width;
+
+	
+//	console.log("y: "+document.getElementById("partition"+position+d.uid).getBoundingClientRect().y);
+//	console.log("height: "+document.getElementById("partition"+position+d.uid).getBBox().height)
+	console.log("translateY: "+translateY);
+	console.log("translateX: "+translateX);
+
+	
+	var vis = d3.select("#"+position+"svg").append("g")
+	.attr("id", position+"parset")
 //     .attr("width", width + margin.left + margin.right)
 //    .attr("height", height + margin.top + margin.bottom)
 	.attr("width", width)
     .attr("height", height)
     .append("g")
-//  attr("transform", "translate("+ height/2+ ","+ width/2+")rotate(-90)"+
-//  .attr("transform", "translate("+ 300+ ","+ width/2+")rotate(-90)"+// 300 brings parsets 300 px to the right
-//  "translate(-"+width/2+", -"+height/2+")");
-    .attr("transform", "translate("+document.getElementById("partition"+position+d.uid).getBBox().width/2+","+(height+100)+")rotate(-90)");
-    //.attr("transform", "rotate(-90)");
-    
-//    .attr("transform", "translate(0," + height + ")rotate(-90)")
+//    .attr("transform", "translate("+document.getElementById("partition"+position+d.uid).getBBox().width/2+","+(height+100)+")rotate(-90)");
+//    .attr("transform", "translate("+document.getElementById("partition"+position+d.uid).getBBox().width/2+","+(height+100)+")")
+//    .attr("transform", "translate(20,"+width+")rotate(-90)");
+    .attr("transform", "translate("+translateX+","+translateY+")rotate(-90)");//this is correct. Only need to assign translateX with correct get correct x offset
 
 	vis.datum(parsetdata).call(chart);
+    
 	vis.selectAll(".category text")
     .attr("dx", 5)
     .attr("transform", "rotate(90)");
+	
 	vis.selectAll(".category rect")
     .attr("y", 0);
+	
 	vis.selectAll("text.dimension")
     .attr("dy", "1.5em")
     .attr("transform", "rotate(90)");
+	
 	vis.selectAll("text.dimension .sort.alpha")
     .attr("x", 0)
     .attr("dx", 0)
     .attr("dy", "1.5em");
+	
 	 vis.selectAll("text.dimension .sort.size")
     .attr("dx", "1em");
 	
-	d3.select("#columnAparset").moveToBack();
+	d3.select("#"+position+"parset").moveToBack();
 }
 
 function addToParsetData(semantic, position, topK ){
@@ -289,7 +288,14 @@ function addToParsetData(semantic, position, topK ){
 				}
 			k++
 			}else {
-				return false;
+				
+					for(var ind= 0; ind<value.querycount; ind++){
+						parsetelement = {}
+						parsetelement.ColumnX = "other"; 
+						parsetelement.ColumnY = semanticYlabel;
+						parsetdata.push(parsetelement);
+					}
+				//return false;
 			}
 		});
 	
@@ -337,7 +343,11 @@ function populateColumn(data, column){
 	    return obj.columnA.id == selectedColumnAID;
 		});
 	}
-	
+	if(selectedColumnBID!=""){
+		filtereddata = filtereddata.filter(function( obj ) {
+	    return obj.columnB.id == selectedColumnBID;
+		});
+	}
 	var uniqueEntities = _.uniq(filtereddata, function (item, key, a) {
 		return item[column].label;}
 	);
@@ -366,7 +376,9 @@ function populateColumn(data, column){
 		if(!isNaN(element.querycount)){
 			querycount = fetchQC(element.semobject[column].id,column,selectedTemplateID);
 			columnlist.append('<tr id="'+element.semobject[column].id+'"  abstraction="'+
-					element.semobject[column].abstractionLevel+'" qspCol="'+thislabel+'"><td style="background:rgba(70,130,180,'+ 1/element.semobject[column].abstractionLevel +')" class="list-group-item semanticlistelement">'+
+					element.semobject[column].abstractionLevel+'" qspCol="'+thislabel+
+					'"><td style="background:rgba(70,130,180,'+ 1/element.semobject[column].abstractionLevel +
+					')" class="list-group-item semanticlistelement">'+
 		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+element.querycount+'</span></td></tr>');
 		}
   	});	
@@ -430,14 +442,9 @@ function populateColumn(data, column){
 			$( "#"+column+"abstraction").slider({
 				  disabled: false
 			});
-//			$('#'+column+'abstractionRadio').prop("checked", false);
 		}
 	});
-//		var options = document.getElementById(column+'abstraction');
-//      $.each(abstractions, function(index, value){
-//			options.appendChild(new Option(value, value))
-//	    });
-//	    $('#'+column+'abstraction').selectmenu("refresh");
+
 }
 
 
@@ -623,11 +630,13 @@ function displaySemanticIcicle(uid, column){
 	var root = nodes[0];
 	
 	var svg = d3.select("#"+column+"semanticExplorer").append("svg")
-	.attr("id", column+"partition")
-	.attr("width", w+100)
-	.attr("height", h+100);
+		.attr("id", column+"svg")
+		.attr("width", w+100)
+		.attr("height", h+100)
+		.append("g")
+		.attr("id", column+"partition");
 	
-	var g = svg.selectAll("#"+column+"semanticExplorer g")
+	var g = svg.selectAll("#"+column+"partition g")
     .data(nodes)
     .enter()
     .append("svg:g")
@@ -692,7 +701,7 @@ function displaySemanticIcicle(uid, column){
         x.domain([d.y, 1]).range([d.y ? 40 : 0, w]);
         y.domain([d.x, d.x + d.dx]);
         
-        d3.selectAll("#"+column+"semanticExplorer g").each( function(d1, i){
+        d3.selectAll("#"+column+"partition g").each( function(d1, i){
         	
         		  if($(this).css("display")=="none" && d1.depth==d.depth-1){// the element is hidden and before the element i clicked on
         			  $(this).css("display","block");//show element
@@ -708,7 +717,7 @@ function displaySemanticIcicle(uid, column){
         		});
          
    
-        var g = svg.selectAll("#"+column+"semanticExplorer g");
+        var g = svg.selectAll("#"+column+"partition g");
         var t = g.transition()
             .duration(d3.event.altKey ? 7500 : 750)
             .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; });
