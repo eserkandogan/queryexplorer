@@ -182,7 +182,6 @@ function displayParsets(d, position, topK){
     var partitionX = partitionBox.x;
 	var partitionY = partitionBox.y;
     
-    
     var margin = {top: 0, right: 120, bottom: 50, left: 0};
     // width BEFORE rotation (aka height later), should be as much as the partition box height.
     var width = document.getElementById("partition"+position+d.uid).getBBox().height,// - margin.left - margin.right,//partitionBox.width - margin.left - margin.right,
@@ -197,7 +196,7 @@ function displayParsets(d, position, topK){
 				.height(height);
 	
 	var partitionX = document.getElementById("columnApartition").getBBox().x;
-	var partitionY = document.getElementById("columnApartition").getBBox().x;
+	var partitionY = document.getElementById("columnApartition").getBBox().y;
 	
 	d3.selection.prototype.moveToBack = function() { 
 	    return this.each(function() { 
@@ -207,6 +206,7 @@ function displayParsets(d, position, topK){
 	        } 
 	    }); 
 	};
+	console.log(width);
 	
 	var vis = d3.select("#columnApartition").append("g")
 	.attr("id", "columnAparset")
@@ -215,9 +215,12 @@ function displayParsets(d, position, topK){
 	.attr("width", width)
     .attr("height", height)
     .append("g")
-    .attr("transform", "translate("+ height/2+ ","+ width/2+")rotate(-90)"+
-    		"translate(-"+width/2+", -"+height/2+")");
-
+//  attr("transform", "translate("+ height/2+ ","+ width/2+")rotate(-90)"+
+//  .attr("transform", "translate("+ 300+ ","+ width/2+")rotate(-90)"+// 300 brings parsets 300 px to the right
+//  "translate(-"+width/2+", -"+height/2+")");
+    .attr("transform", "translate("+document.getElementById("partition"+position+d.uid).getBBox().width/2+","+(height+100)+")rotate(-90)");
+    //.attr("transform", "rotate(-90)");
+    
 //    .attr("transform", "translate(0," + height + ")rotate(-90)")
 
 	vis.datum(parsetdata).call(chart);
@@ -259,7 +262,13 @@ function addToParsetData(semantic, position, topK ){
 				}
 			k++
 			}else {
-				return false;
+				for(var ind= 0; ind<value.querycount; ind++){
+					parsetelement = {}
+					parsetelement.ColumnX = semanticXlabel 
+					parsetelement.ColumnY = "other";
+					parsetdata.push(parsetelement);
+				}
+//				return false;
 			}
 		});
 	}
@@ -304,7 +313,8 @@ function loadQTC(filename){
 function populateColumn(data, column){
 	$('#'+column+'container').empty();
 	$('#'+column+'container')
-	.append('<div style="padding-bottom:10px;">Abstraction: <br> <input type="checkbox" id="'+column+'abstractionCheck" name="'+column+'abstractionCheck" value="All">All semantic abstraction levels: </input>'+
+	.append('<div style="padding-bottom:10px;">Abstraction: <br> <input type="checkbox" id="'+column+'abstractionCheck" name="'+column+'abstractionCheck" value="All"/>'+
+			'<label for="'+column+'abstractionCheck"> Show all semantic abstraction levels</label>'+
 			'<div id="'+column+'abstraction" class= "abstractionslider" name ="Abstraction"></div>'+
 			'<div class="input-group" id="input'+column+'"> '+
 			'<span class="input-group-addon">Filter</span>'+			
