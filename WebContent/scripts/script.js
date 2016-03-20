@@ -21,10 +21,18 @@ d3.csv("data/qsp1.csv", function(d) {
 	  };	
 	  return toReturn;
 	}, function(data) {
+		$("#loader").append("<br>- Loaded data/qsp1.csv")
+		$("#loader").append("<br>- Processed data/qsp1.csv")
 		queryPermutations = data;
 		$.get("data/wordsemantics-2.20-json.txt",function(txt){
+			$("#loader").append("<br>- Loaded data/wordsemantics-2.20-json.txt")
+
 			processSemanticTxt(txt);
+
+			$("#loader").append("<br>- Processed data/wordsemantics-2.20-json.txt")
 			$.get("data/templateQC.txt",function(txt){
+				$("#loader").append("<br>- Loaded data/templateQC.txt")
+
 			    var lines = txt.split("\n");
 			    for (var i = 0, len = lines.length; i < len; i++) {
 			    	line = lines[i];
@@ -33,19 +41,36 @@ d3.csv("data/qsp1.csv", function(d) {
 			    	queryTemplates[res[1]].count = res[0];
 			    	queryTemplates[res[1]].text = res[2];
 			    }				
-								
-				$("#loader").css( "display","none");
-	
-				$("#interface").css( "display","block");
-				displayTemplates(data);
-				populateColumn(data, 'columnA');
-				populateColumn(data, 'columnB');		
+				$("#loader").append("<br>- Processed data/templateQC.txt")
 				
+				$("#loader").css( "display","none");	
+				$("#interface").css( "display","block");
+
+//				window.setTimeout(displayTemplates(data), 5000);
+				displayTemplates(data);
+				$("#interface").hide();
+				window.setTimeout(function() {
+					$("#interface").show();
+				}, 0);
+//				$(window).trigger('resize');
+				console.log("Displayed Templates")
+				
+//				window.setTimeout(populateColumn(data, 'columnA'), 10000);
+				populateColumn(data, 'columnA')
+				$(window).trigger('resize');
+				console.log("Displayed Column A")
+
+//				window.setTimeout(populateColumn(data, 'columnB'), 10000);
+				populateColumn(data, 'columnB')
+				$(window).trigger('resize');
+				console.log("Displayed Column B")
+
 				$('#templateList').on('click', 'li', function() {
+				    selectedTemplateID = this.id;
+
 				    $('#selectedTemplate').empty();
 				    $('#selectedTemplate').append('You selected template <b>'+this.id+'</b> '+
 				    		'<button id="clearTemplate" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
-				    selectedTemplateID = this.id;
 				    
 				    $('#colAprompt').empty();
 				    $('#colAprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+selectedTemplateID+'</b>');
@@ -68,13 +93,13 @@ d3.csv("data/qsp1.csv", function(d) {
 				
 				$(document).on("click", "#columnAlist tr", function() {
 					selectedColumnAID = this.id;
-					$('#selectedSemTypeA').empty();
-				    $('#selectedSemTypeA').append('You selected semantic type <b>'+selectedColumnAID+': '+$(this).attr('qspCol')+'</b> '+
-				    		'<button id="clearColA" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
-				    
-				    $('#selectedSemTypeB').empty();
-				    $('#selectedSemTypeB').append('Displaying semantic types used in queries where template is <b>'+selectedTemplateID+'</b> and columnA is <b>'
-				    		+$(this).attr('qspCol')+'</b>. ');
+//					$('#selectedSemTypeA').empty();
+//				    $('#selectedSemTypeA').append('You selected semantic type <b>'+selectedColumnAID+': '+$(this).attr('qspCol')+'</b> '+
+//				    		'<button id="clearColA" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
+				    $('#colAprompt').append('<button id="clearColA" class="btn btn-danger btn-xs" type="button"> Clear selected template <span class="glyphicon glyphicon-remove"></span> </button>')
+//				    $('#selectedSemTypeB').empty();
+//				    $('#selectedSemTypeB').append('Displaying semantic types used in queries where template is <b>'+selectedTemplateID+'</b> and columnA is <b>'
+//				    		+$(this).attr('qspCol')+'</b>. ');
 
 					displaySemanticIcicle(selectedColumnAID, 'columnA');
 					populateColumn(data, 'columnB');
@@ -83,10 +108,12 @@ d3.csv("data/qsp1.csv", function(d) {
 				$(document).on("click", "#columnBlist tr", function() {
 				    selectedColumnBID = this.id;
 
-					$('#selectedSemTypeB').empty();
-				    $('#selectedSemTypeB').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspCol')+'</b> '+
-		    		'<button id="clearColB" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
-				    selectedColumnBID = this.id;
+//					$('#selectedSemTypeB').empty();
+//				    $('#selectedSemTypeB').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspCol')+'</b> '+
+//		    		'<button id="clearColB" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
+				    
+				    $('#colBprompt').append('<button id="clearColB" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
+				    
 				    if(selectedColumnAID!=""){
 					    populateColumn(data, 'columnA');
 					}
@@ -312,8 +339,7 @@ function loadQTC(filename){
 function populateColumn(data, column){
 	$('#'+column+'container').empty();
 	$('#'+column+'container')
-	.append('<div style="padding-bottom:10px;">Abstraction: <br> <input type="checkbox" id="'+column+'abstractionCheck" name="'+column+'abstractionCheck" value="All"/>'+
-			'<label for="'+column+'abstractionCheck"> Show all semantic abstraction levels</label>'+
+	.append('<div style="padding-bottom:10px;">Abstraction: <br> '+
 			'<div id="'+column+'abstraction" class= "abstractionslider" name ="Abstraction"></div>'+
 			'<div class="input-group" id="input'+column+'"> '+
 			'<span class="input-group-addon">Filter</span>'+			
@@ -321,7 +347,6 @@ function populateColumn(data, column){
 	'<div class = "scrollable"><table class="table table-striped semanticlist" id="'+column+'table" ><tbody class="searchable" id="'+column+'list"></tbody></table></div>');
 	
 	$('#'+column+'list').empty();
-	$('#'+column+'abstractionCheck').prop("checked", true);
 	
 	var filtereddata = data;
 	
@@ -379,19 +404,23 @@ function populateColumn(data, column){
 	columnlist.append(columnlisthtml);
 	
 	$("#"+column+"abstraction").slider({
-        value:8,
+		range:true,
+        values:[1,8],
         min: 1,
         max: 8,
         step: 1,
         slide: function( event, ui ) {
-			var selected = ui.value;
-			var table = document.getElementById(column+"table")
+			var selected = ui.values;
+			$('#'+column+'abstraction .ui-slider-range').css('background','linear-gradient(to right, rgba(70,130,180,'+1/selected[0]+'), rgba(70,130,180,'+1/selected[1]+'))');
+
+			var table = document.getElementById(column+"table");
 	        for (var i = 1, row; row = table.rows[i]; i++) {
-			  if(selected == row.getAttribute("abstraction"))
+			  if( row.getAttribute("abstraction")>=selected[0] && row.getAttribute("abstraction")<=selected[1])
 				  $(row).show();
 			  else
 				  $(row).hide();
 			}
+
         }
 	}).each(function() {
 
@@ -414,29 +443,9 @@ function populateColumn(data, column){
 	        $("#"+column+"abstraction").append(el);
 	    }
 	});
-	$('.ui-widget-content').css('background','steelblue');
-	
-	$( "#"+column+"abstraction").slider({
-		  disabled: true
-		});
-	$('#'+column+'abstractionCheck').click(function(){
-		
-		if($('#'+column+'abstractionCheck').is(':checked')) { 
-			$( "#"+column+"abstraction").slider({
-				  disabled: true
-				});
-			var table = document.getElementById(column+"table")
-	        for (var i = 1, row; row = table.rows[i]; i++) {
-				  $(row).show();
-	        }	
-		}
-		
-		else{
-			$( "#"+column+"abstraction").slider({
-				  disabled: false
-			});
-		}
-	});
+	$('#'+column+'abstraction .ui-slider-range').css('background','linear-gradient(to right, rgba(70,130,180,1), rgba(70,130,180,'+1/8+'))');
+
+//	$('.ui-widget-content').css('background','gray');
 
 }
 
@@ -700,19 +709,16 @@ function displaySemanticIcicle(uid, column){
         
         
         d3.selectAll("#"+column+"partition g").each( function(d1, i){
-        	
-        		  if($(this).css("display")=="none" && d1.depth==d.depth-1){// the element is hidden and before the element i clicked on
-        			  $(this).css("display","block");//show element
-        			  
-        		  }
-        		  else if (d1.depth ==d.depth+1 || d1.uid==d.uid) {//the element is the element i clicked on or a depth ahead.
-        			  
-        			  $(this).css("display","block");//show element
-                  }
-                  else {                    	
-                    	$(this).css("display", "none");
-                    }
-        		});
+        	if($(this).css("display")=="none" && d1.depth==d.depth-1){// the element is hidden and before the element i clicked on
+        		$(this).css("display","block");//show element
+        	}
+        	else if (d1.depth ==d.depth+1 || d1.uid==d.uid) {//the element is the element i clicked on or a depth ahead.
+        		$(this).css("display","block");//show element
+            }
+            else {                    	
+                $(this).css("display", "none");
+            }
+        });
          
    
         var g = svg.selectAll("#"+column+"partition g");
