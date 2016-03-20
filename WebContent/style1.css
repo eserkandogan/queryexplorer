@@ -13,7 +13,7 @@
 .scrollable{
 	overflow-y: scroll; 
 	overflow-x: scroll;
-	height:600px;
+	height:300px;
 	width:400px;
 }
 .abstractionslider{
@@ -23,14 +23,6 @@
 	margin-bottom:40px;
 	}
 
-/* .ui-slider-range{ */
-/* /* 	height:20px; */ */
-/* 	background: rgba(70,130,180); */
-/* 	background: -webkit-linear-gradient(left, rgba(70,130,180,0.1), rgba(70,130,180,1)); For Safari 5.1 to 6.0 */
-/*     background: -o-linear-gradient(right, rgba(70,130,180,0.1), rgba(70,130,180,1)); For Opera 11.1 to 12.0 */
-/*     background: -moz-linear-gradient(right, rgba(70,130,180,0.1), rgba(70,130,180,1)); For Firefox 3.6 to 15 */
-/*     background: linear-gradient(to right, rgba(70,130,180,0.1), rgba(70,130,180,1)); Standard syntax (must be last) */
-/*     } */
 .abstractionslider label {
   position: absolute;
   width: 20px;
@@ -97,7 +89,12 @@ line {
 }
 
 
-
+.inheritance-ico{
+	background:url(images/icon-inheritance-view.png); 
+    width:16px; 
+    height:16px;
+    display: block;
+    }
 
 
 .templatebrowser {
@@ -116,6 +113,8 @@ line {
 	margin:10px;
 }
 .selectedListElement{
+	fill:yellow;
+	opacity:1;
 	background-color:yellow;
 }
 /* #semanticExplorerPanel{ */
