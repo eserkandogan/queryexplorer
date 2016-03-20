@@ -4,13 +4,10 @@ var wordnet = [];
 var tags = [];
 var queryTemplates = {};
 var parsetdata = [];
-
 var icicle;
 
 var selectedTemplateID = "",selectedColumnAID = "",selectedColumnBID= "";
 var columnAelements= [], columnBelements= []; 
-
-
 
 $("#semanticExplorerPanel").hide();
 d3.csv("data/qsp1.csv", function(d) {
@@ -66,6 +63,7 @@ d3.csv("data/qsp1.csv", function(d) {
 					
 				    populateColumn(data, 'columnA');
 				    populateColumn(data, 'columnB');
+				    displayQueries("", "")
 				});
 				
 				$(document).on("click", "#columnAlist tr", function() {
@@ -80,6 +78,7 @@ d3.csv("data/qsp1.csv", function(d) {
 
 					displaySemanticIcicle(selectedColumnAID, 'columnA');
 					populateColumn(data, 'columnB');
+					displayQueries("columnA", selectedColumnAID);
 				});	
 				$(document).on("click", "#columnBlist tr", function() {
 				    selectedColumnBID = this.id;
@@ -92,6 +91,7 @@ d3.csv("data/qsp1.csv", function(d) {
 					    populateColumn(data, 'columnA');
 					}
 				    displaySemanticIcicle(this.id, 'columnB');
+				    displayQueries("columnB", selectedColumnBID)
 				});
 				$(document).on("keyup","#columnAfilter", function () {
 
@@ -159,11 +159,8 @@ function displayParsets(d, position, topK){
 	parsetdata=[];
     addToParsetData(semanticid, position, topK);
     
-//    var partitionBox = document.getElementById(position+"partition").getBBox();
     var svgBox = document.getElementById(position+"svg").getBBox();
-//
-//    var partitionX = partitionBox.x;
-//	var partitionY = partitionBox.y;
+
     
     var margin = {top: 0, right: 120, bottom: 50, left: 0};
     // width BEFORE rotation (aka height later), should be as much as the partition box height.
@@ -189,7 +186,7 @@ function displayParsets(d, position, topK){
 	        } 
 	    }); 
 	};
-//	console.log(width);
+	
 	// need to move the parset g down to the bottom y coordinate of the rectangle we are hovering over
 //	var translateY = document.getElementById("partition"+position+d.uid).getBoundingClientRect().y+document.getElementById("partition"+position+d.uid).getBBox().height;
 	console.log(document.getElementById("partition"+position+d.uid).getBoundingClientRect())
@@ -198,9 +195,6 @@ function displayParsets(d, position, topK){
 	var translateY = document.getElementById("partition"+position+d.uid).getBoundingClientRect().bottom;
 	var translateX = 25;//document.getElementById("partition"+position+d.uid).getBBox().width;
 
-	
-//	console.log("y: "+document.getElementById("partition"+position+d.uid).getBoundingClientRect().y);
-//	console.log("height: "+document.getElementById("partition"+position+d.uid).getBBox().height)
 	console.log("translateY: "+translateY);
 	console.log("translateX: "+translateX);
 
@@ -212,8 +206,6 @@ function displayParsets(d, position, topK){
 	.attr("width", width)
     .attr("height", height)
     .append("g")
-//    .attr("transform", "translate("+document.getElementById("partition"+position+d.uid).getBBox().width/2+","+(height+100)+")rotate(-90)");
-//    .attr("transform", "translate("+document.getElementById("partition"+position+d.uid).getBBox().width/2+","+(height+100)+")")
 //    .attr("transform", "translate(20,"+width+")rotate(-90)");
     .attr("transform", "translate("+translateX+","+translateY+")rotate(-90)");//this is correct. Only need to assign translateX with correct get correct x offset
 
@@ -261,6 +253,7 @@ function addToParsetData(semantic, position, topK ){
 				}
 			k++
 			}else {
+				//add an object for every query not in top 10 categories
 				for(var ind= 0; ind<value.querycount; ind++){
 					parsetelement = {}
 					parsetelement.ColumnX = semanticXlabel 
@@ -288,7 +281,7 @@ function addToParsetData(semantic, position, topK ){
 				}
 			k++
 			}else {
-				
+				//add an object for every query not in top 10 categories
 					for(var ind= 0; ind<value.querycount; ind++){
 						parsetelement = {}
 						parsetelement.ColumnX = "other"; 
@@ -368,6 +361,7 @@ function populateColumn(data, column){
 	abstractions = [];
 	
 	var columnlist = $('#'+column+'list');
+	var columnlisthtml = "";
 	$.each(listelements, function( index, element) {
 		if($.inArray(element.semobject[column].abstractionLevel, abstractions) == -1)
 			abstractions.push(element.semobject[column].abstractionLevel);
@@ -375,13 +369,14 @@ function populateColumn(data, column){
 		thislabel= element.semobject[column].label;
 		if(!isNaN(element.querycount)){
 			querycount = fetchQC(element.semobject[column].id,column,selectedTemplateID);
-			columnlist.append('<tr id="'+element.semobject[column].id+'"  abstraction="'+
+			columnlisthtml = columnlisthtml+'<tr id="'+element.semobject[column].id+'"  abstraction="'+
 					element.semobject[column].abstractionLevel+'" qspCol="'+thislabel+
 					'"><td style="background:rgba(70,130,180,'+ 1/element.semobject[column].abstractionLevel +
 					')" class="list-group-item semanticlistelement">'+
-		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+element.querycount+'</span></td></tr>');
+		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+element.querycount+'</span></td></tr>';
 		}
-  	});	
+  	});
+	columnlist.append(columnlisthtml);
 	
 	$("#"+column+"abstraction").slider({
         value:8,
@@ -417,9 +412,7 @@ function populateColumn(data, column){
 
 	        // Add the element inside #slider
 	        $("#"+column+"abstraction").append(el);
-
 	    }
-
 	});
 	$('.ui-widget-content').css('background','steelblue');
 	
@@ -479,10 +472,14 @@ function displayTemplates(data){
 		}
 	});
 	listelements = _.sortBy(listelements, function(element){ return - element.templatecount;})
+	var listhtml= "";
 	$.each(listelements, function( index, value) {
-	list.append('<li class="list-group-item" id="'+value.template+'" permutations = "'+value.templatecount+
-			'"><span class ="badge">'+value.templatecount+'</span>'+value.text+'</li>');
+//	list.append('<li class="list-group-item" id="'+value.template+'" permutations = "'+value.templatecount+
+//			'"><span class ="badge">'+value.templatecount+'</span>'+value.text+'</li>');
+		listhtml = listhtml+ '<li class="list-group-item" id="'+value.template+'" permutations = "'+value.templatecount+
+		'"><span class ="badge">'+value.templatecount+'</span>'+value.text+'</li>';
 	});
+	list.append(listhtml);
 }
 
 
@@ -693,13 +690,14 @@ function displaySemanticIcicle(uid, column){
  
  function clicked(d) {
 	 	d3.selectAll("#"+column+"parset").remove();
-	 
+	 	displayQueries(column, d.uid);
         if (!d.children) return;
 
         kx = (d.y ? w - 40 : w) / (1 - d.y);
         ky = h / d.dx;
         x.domain([d.y, 1]).range([d.y ? 40 : 0, w]);
         y.domain([d.x, d.x + d.dx]);
+        
         
         d3.selectAll("#"+column+"partition g").each( function(d1, i){
         	
@@ -732,14 +730,17 @@ function displaySemanticIcicle(uid, column){
             .style("opacity", function(d) { 
             	return d.dx * ky > 12 ? 1 : 0; });
           d3.event.stopPropagation();
-          selectedColumnAID = d.uid; 
+           
           
-          if(column == "columnA")
+          if(column == "columnA"){
+        	  selectedColumnAID = d.uid;
         	  populateColumn(queryPermutations, 'columnB');
+          }
 
-          else if(column == "columnB")
+          else if(column == "columnB"){
+        	  selectedColumnBID = d.uid
         	  populateColumn(queryPermutations, 'columnA');
-          
+          }         
     }	
 }
 
@@ -791,3 +792,11 @@ function processObject(parent, parentIcicle, column){
 		}
 	});
 }
+
+function displayQueries(column, uid){
+	var examplequeries = $("#examplequeries");
+	examplequeries.empty();
+	examplequeries.append(selectedTemplateID+": "+column+", "+ uid);
+	
+}
+
