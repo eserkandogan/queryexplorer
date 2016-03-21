@@ -514,8 +514,8 @@ var minQueryCount= 0, maxQueryCount= 0;
 			var element = {};
 			element.semobject = value;//get the querysemantics
 			
-//			element.querycount = fetchQC(value[column].id,column, value.template)
-			element.querycount = fetchQC(value[column].id,column, selectedTemplateID)
+			element.querycount = fetchQC(value[column].id,column, value.template)
+//			element.querycount = fetchQC(value[column].id,column, selectedTemplateID)
 			listelements.push(element);	
 			if(element.querycount<minQueryCount)minQueryCount = element.querycount;
 			if(element.querycount>maxQueryCount)maxQueryCount = element.querycount;
@@ -572,19 +572,14 @@ var minQueryCount= 0, maxQueryCount= 0;
 	.each(function() {
 		 // Add labels to slider whose values 
 	    // are specified by min, max
-
 	    // Get the options for this slider (specified above)
 	    var opt = $(this).data().uiSlider.options;
-
 	    // Get the number of possible values
 	    var vals = opt.max - opt.min;
-
 	    // Position the labels
 	    for (var i = 0; i <= vals; i++) {
-
 	        // Create a new element and position it with percentages
 	        var el = $('<label>' + (i + opt.min) + '</label>').css('left', (i/vals*100) + '%').css('margin-top','15px');
-
 	        // Add the element inside #slider
 	        $("#"+column+"abstraction").append(el);
 	    }
@@ -636,14 +631,14 @@ function displayTemplates(data){
 	});
 	listelements = _.sortBy(listelements, function(element){ return - element.templatecount;})
 	maxQueryCount = listelements[0].templatecount;
+	
 	var listhtml= "";
 	var fontscale = d3.scale.linear()
 	.domain([minQueryCount, maxQueryCount])
 	.range([10, 30])
 	.clamp(true);
+	
 	$.each(listelements, function( index, value) {
-//	list.append('<li class="list-group-item" id="'+value.template+'" permutations = "'+value.templatecount+
-//			'"><span class ="badge">'+value.templatecount+'</span>'+value.text+'</li>');
 		listhtml = listhtml+ '<li class="list-group-item" id="'+value.template+'" text="'+value.text+'" permutations = "'+value.templatecount+
 		'" style="font-size:'+fontscale(value.templatecount)+'px;"><span class ="badge">'+value.templatecount+'</span>'+value.text+'</li>';
 	});
@@ -741,8 +736,6 @@ function processSemanticTxt(txt){
 			groupindex = line.indexOf("\{grouping", groupindex);
 			line = line.substr(0, groupindex+1) + '"' + line.substr(groupindex+1);
 		}
-			
-			
     	jsonSemantics = $.parseJSON(line);
     	if((jsonSemantics.uid).indexOf('wordnet')!==-1)
     		wordnet.push(jsonSemantics);
