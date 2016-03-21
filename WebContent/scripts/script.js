@@ -115,13 +115,16 @@ d3.csv("data/qsp1.csv", function(d) {
 							$('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-log-out" label="inspect children"></span>');
 							$('#columnAlist'+selectedColumnAID).css('background', 'yellow');
 						}
-						semobject = _.select(wordnet, function (obj) {
-							  return obj.uid === selectedColumnAID;
-						})[0];
+						
+						
 						displayQueries("columnA", selectedColumnAID);
 						populateColumn(data, 'columnB');
-						displayParsets(semobject, "columnA", 10);
-
+						if(selectedColumnAID!=""){
+							semobject = _.select(wordnet, function (obj) {
+								  return obj.uid === selectedColumnAID;
+							})[0];
+							displayParsets(semobject, "columnA", 10);
+						}
 				});
 				$(document).on("click", "#columnAlist .inspect", function(){
 					$('#colAprompt').append('<button id="backTocolumnA" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span>  Back to semantics list </button>')
@@ -165,12 +168,12 @@ d3.csv("data/qsp1.csv", function(d) {
 					}
 				    
 				    displayQueries("columnB", selectedColumnBID);
-				    
-					semobject = _.select(wordnet, function (obj) {
-							  return obj.uid === selectedColumnBID;
-						})[0];
-				    displayParsets(semobject, "columnB", 10);
-
+				    if(selectedColumnBID!=""){
+						semobject = _.select(wordnet, function (obj) {
+								  return obj.uid === selectedColumnBID;
+							})[0];
+					    displayParsets(semobject, "columnB", 10);
+				    }
 				});
 				$(document).on("keyup","#columnAfilter", function () {
 
