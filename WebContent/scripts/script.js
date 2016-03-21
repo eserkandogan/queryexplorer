@@ -121,6 +121,7 @@ d3.csv("data/qsp1.csv", function(d) {
 							  return obj.uid === selectedColumnAID;
 						})[0];
 						displayParsets(semobject, "columnA", 10);
+						displayQueries("columnA", selectedColumnAID);
 						populateColumn(data, 'columnB');
 				});
 				$(document).on("click", "#columnAlist .inspect", function(){
@@ -128,19 +129,41 @@ d3.csv("data/qsp1.csv", function(d) {
 					displaySemanticIcicle(selectedColumnAID, 'columnA');
 					displayQueries("columnA", selectedColumnAID);
 				})
+					$(document).on("click", "#columnBlist .inspect", function(){
+					$('#colAprompt').append('<button id="backTocolumnB" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span>  Back to semantics list </button>')
+					displaySemanticIcicle(selectedColumnBID, 'columnB');
+					displayQueries("columnB", selectedColumnBID);
+				})
 				$(document).on("click", "#columnBlist .semanticlistelement", function() {
-				    selectedColumnBID = this.getAttribute('uid');
+					if(selectedColumnBID == this.getAttribute('uid')){
+						abstractionLevel = _.select(wordnet, function (obj) {
+							  return obj.uid === selectedColumnBID;
+						})[0].abstrationLevel;
+						$('#columnBlist'+selectedColumnBID).css('background', 'rgba(70,130,180,'+ 1/abstractionLevel +	')');
+						$('#columnBlist'+selectedColumnBID+ ' .inspect').empty();
+						selectedColumnBID = "";
+					}
+					else{
+						if(selectedColumnBID!=""){
+							abstractionLevel = _.select(wordnet, function (obj) {
+								  return obj.uid === selectedColumnBID;
+							})[0].abstrationLevel;
+							$('#columnBlist'+selectedColumnBID).css('background','rgba(70,130,180,'+ 1/abstractionLevel +	')');
+							$('#columnBlist'+selectedColumnBID+ ' .inspect').empty();
 
-//				    $('#selectedSemTypeB').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspCol')+'</b> '+
-//		    		'<button id="clearColB" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
-					$('#colBprompt').append('<button id="backTocolumnB" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span> Back to semantics list</button>')
+						}
+						//update selected semantic
+						selectedColumnBID = this.getAttribute('uid');
 
-//				    $('#colBprompt').append('<button id="clearColB" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
-				    
+						$('#columnBlist'+selectedColumnBID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-log-out" label="inspect children"></span>');
+						$('#columnBlist'+selectedColumnBID).css('background', 'yellow');
+					}
+									    
 				    if(selectedColumnAID!=""){
 					    populateColumn(data, 'columnA');
+					    $('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-log-out" label="inspect children"></span>');
+						$('#columnAlist'+selectedColumnAID).css('background', 'yellow');
 					}
-				    displaySemanticIcicle(selectedColumnBID, 'columnB');
 				    displayQueries("columnB", selectedColumnBID)
 				});
 				$(document).on("keyup","#columnAfilter", function () {
@@ -837,6 +860,8 @@ function displaySemanticIcicle(uid, column){
     	if($("#"+column+"semanticExplorer").css('display')=='none')return;
     	
     	displaySemanticIcicle(d.uid, column);
+    	
+		displayParsets(d, column, 10);
 //	 	d3.selectAll("#"+column+"parset").remove();
 //	 	displayQueries(column, d.uid);
 //       if (!d.children) return;
