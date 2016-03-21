@@ -225,8 +225,8 @@ d3.csv("data/qsp1.csv", function(d) {
 					$("#columnAsemanticExplorer").empty();
 					$("#columnAsemanticExplorer").hide();
 					$("#columnAcontainer").show();
-					$("#backTocolumnA").remove()
-					selectedColumnAID = $("#columnAlist .drilldown").getAttribute("uid");
+					$("#backTocolumnA").remove();
+					selectedColumnAID =	document.querySelector("#columnAlist .inspect").parentElement.getAttribute("uid");
 					semobject = _.select(wordnet, function (obj) {
 						  return obj.uid === selectedColumnAID;
 					})[0];
@@ -239,7 +239,7 @@ d3.csv("data/qsp1.csv", function(d) {
 					$("#columnBsemanticExplorer").hide();
 					$("#columnBcontainer").show();
 					$("#backTocolumnB").remove();
-					selectedColumnBID = $("#columnBlist .drilldown").getAttribute("uid");
+					selectedColumnBID = document.querySelector("#columnBlist .inspect").parentElement.getAttribute("uid");
 					semobject = _.select(wordnet, function (obj) {
 						  return obj.uid === selectedColumnBID;
 					})[0];
