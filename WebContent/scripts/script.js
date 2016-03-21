@@ -60,16 +60,16 @@ d3.csv("data/qsp1.csv", function(d) {
 				    selectedTemplateID = this.id;
 				    selectedTemplateString = this.getAttribute('text')
 				    $('#templateList').hide();
-				    $('#selectedTemplate1').show();
+				    $('.templatetext').show();
 				    $('#selectedTemplate1').empty();
 				    $('#selectedTemplate1').append('<div><button id="clearTemplate" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span> Back to template list</button><div>'+
 				    		'<div>'+this.getAttribute('text').slice(0, this.getAttribute('text').indexOf("X"))+' </div>');
 
 				    $('#selectedTemplate2').empty();
-				    $('#selectedTemplate2').append('<div>'+selectedTemplateString.slice(selectedTemplateString.indexOf("X")+1, selectedTemplateString.indexOf("Y"))+'</div>');
+				    $('#selectedTemplate2').append(selectedTemplateString.slice(selectedTemplateString.indexOf("X")+1, selectedTemplateString.indexOf("Y")));
 				    
 				    $('#selectedTemplate3').empty();
-				    $('#selectedTemplate3').append('<div>'+selectedTemplateString.slice(selectedTemplateString.indexOf("Y")+1, selectedTemplateString.length-1)+'</div>');
+				    $('#selectedTemplate3').append(selectedTemplateString.slice(selectedTemplateString.indexOf("Y")+1, selectedTemplateString.length-1));
 
 				    
 				    //				    $('#colAprompt').empty();
@@ -117,6 +117,10 @@ d3.csv("data/qsp1.csv", function(d) {
 							$('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-log-out" label="inspect children"></span>');
 							$('#columnAlist'+selectedColumnAID).css('background', 'yellow');
 						}
+						semobject = _.select(wordnet, function (obj) {
+							  return obj.uid === selectedColumnAID;
+						})[0];
+						displayParsets(semobject, "columnA", 10);
 						populateColumn(data, 'columnB');
 				});
 				$(document).on("click", "#columnAlist .inspect", function(){
@@ -161,7 +165,7 @@ d3.csv("data/qsp1.csv", function(d) {
 //					$('#selectedTemplate').empty();
 //				    $('#selectedTemplate').append('You have not selected a template yet.');
 					$('#templateList').show();
-					$('#selectedTemplate1').hide();
+					$('.templatetext').hide();
 					$('#templateList li').removeClass( 'selectedListElement' );
 					selectedTemplateID = "";
 					selectedColumnAID = "";					
@@ -214,30 +218,30 @@ d3.csv("data/qsp1.csv", function(d) {
 		});
 });//end loading data
 
+
 function displayParsets(d, position, topK){
 	var semanticid = d.uid;
-//	$("#parallelsets").empty();
+	$("#"+position+"parset").empty();
+	//prep the data for parallel sets
 	parsetdata=[];
     addToParsetData(semanticid, position, topK);
     
-    var svgBox = document.getElementById(position+"svg").getBBox();
-
+//    var svgBox = document.getElementById(position+"svg").getBBox();
+//    var svgBox = document.getElementById(position+"parsetsvg").getBBox();
+    var svg = d3.select("#"+position+"parset").append("svg")
+	.attr("id", "#"+position+"parsetsvg")
+	.attr("width", 400)
+	.attr("height", 450)
     
-    var margin = {top: 0, right: 120, bottom: 50, left: 0};
-    // width BEFORE rotation (aka height later), should be as much as the partition box height.
-    var width = document.getElementById("partition"+position+d.uid).getBBox().height,// - margin.left - margin.right,//partitionBox.width - margin.left - margin.right,
-    //height, or width after rotation, should be as long a
-    height = 500;// - margin.top - margin.bottom;
+    var margin = {top: 0, right: 25, bottom: 50, left: 0};
+    var width = 400 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+//    var width = 400 ,height = 400;
+   
     
     console.log(width+", "+height);
-        
-	var chart = d3.parsets()
-				.dimensions(["ColumnX","ColumnY"])
-				.width(width)
-				.height(height);
-	
-//	var partitionX = document.getElementById("columnApartition").getBBox().x;
-//	var partitionY = document.getElementById("columnApartition").getBBox().y;
+//    svgBox.width(width).height(height);    
+	var chart = d3.parsets().dimensions(["ColumnX","ColumnY"]).width(width).height(height);				
 	
 	d3.selection.prototype.moveToBack = function() { 
 	    return this.each(function() { 
@@ -247,29 +251,16 @@ function displayParsets(d, position, topK){
 	        } 
 	    }); 
 	};
-	
-	// need to move the parset g down to the bottom y coordinate of the rectangle we are hovering over
-//	var translateY = document.getElementById("partition"+position+d.uid).getBoundingClientRect().y+document.getElementById("partition"+position+d.uid).getBBox().height;
-	console.log(document.getElementById("partition"+position+d.uid).getBoundingClientRect())
-	
-	console.log(document.getElementById("partition"+position+d.uid).getBBox())
-	var translateY = document.getElementById("partition"+position+d.uid).getBoundingClientRect().bottom;
-	var translateX = 25;//document.getElementById("partition"+position+d.uid).getBBox().width;
 
-	console.log("translateY: "+translateY);
-	console.log("translateX: "+translateX);
-
-	
-	var vis = d3.select("#"+position+"svg").append("g")
+	var vis = svg.append("g")
 	.attr("id", position+"parset")
 //     .attr("width", width + margin.left + margin.right)
 //    .attr("height", height + margin.top + margin.bottom)
 	.attr("width", width)
     .attr("height", height)
     .append("g")
-//    .attr("transform", "translate(20,"+width+")rotate(-90)");
-    .attr("transform", "translate("+translateX+","+translateY+")rotate(-90)");//this is correct. Only need to assign translateX with correct get correct x offset
-
+    .attr("transform", "translate(0,"+height+")rotate(-90)");//this is correct. 
+	
 	vis.datum(parsetdata).call(chart);
     
 	vis.selectAll(".category text")
@@ -291,8 +282,88 @@ function displayParsets(d, position, topK){
 	 vis.selectAll("text.dimension .sort.size")
     .attr("dx", "1em");
 	
-	d3.select("#"+position+"parset").moveToBack();
 }
+
+
+//function displayParsets(d, position, topK){
+//	var semanticid = d.uid;
+////	$("#parallelsets").empty();
+//	parsetdata=[];
+//    addToParsetData(semanticid, position, topK);
+//    
+//    var svgBox = document.getElementById(position+"svg").getBBox();
+//
+//    
+//    var margin = {top: 0, right: 120, bottom: 50, left: 0};
+//    // width BEFORE rotation (aka height later), should be as much as the partition box height.
+//    var width = document.getElementById("partition"+position+d.uid).getBBox().height,// - margin.left - margin.right,//partitionBox.width - margin.left - margin.right,
+//    //height, or width after rotation, should be as long a
+//    height = 500;// - margin.top - margin.bottom;
+//    
+//    console.log(width+", "+height);
+//        
+//	var chart = d3.parsets()
+//				.dimensions(["ColumnX","ColumnY"])
+//				.width(width)
+//				.height(height);
+//	
+////	var partitionX = document.getElementById("columnApartition").getBBox().x;
+////	var partitionY = document.getElementById("columnApartition").getBBox().y;
+//	
+//	d3.selection.prototype.moveToBack = function() { 
+//	    return this.each(function() { 
+//	        var firstChild = this.parentNode.firstChild; 
+//	        if (firstChild) { 
+//	            this.parentNode.insertBefore(this, firstChild); 
+//	        } 
+//	    }); 
+//	};
+//	
+//	// need to move the parset g down to the bottom y coordinate of the rectangle we are hovering over
+////	var translateY = document.getElementById("partition"+position+d.uid).getBoundingClientRect().y+document.getElementById("partition"+position+d.uid).getBBox().height;
+//	console.log(document.getElementById("partition"+position+d.uid).getBoundingClientRect())
+//	
+//	console.log(document.getElementById("partition"+position+d.uid).getBBox())
+//	var translateY = document.getElementById("partition"+position+d.uid).getBoundingClientRect().bottom;
+//	var translateX = 25;//document.getElementById("partition"+position+d.uid).getBBox().width;
+//
+//	console.log("translateY: "+translateY);
+//	console.log("translateX: "+translateX);
+//
+//	
+//	var vis = d3.select("#"+position+"svg").append("g")
+//	.attr("id", position+"parset")
+////     .attr("width", width + margin.left + margin.right)
+////    .attr("height", height + margin.top + margin.bottom)
+//	.attr("width", width)
+//    .attr("height", height)
+//    .append("g")
+////    .attr("transform", "translate(20,"+width+")rotate(-90)");
+//    .attr("transform", "translate("+translateX+","+translateY+")rotate(-90)");//this is correct. Only need to assign translateX with correct get correct x offset
+//
+//	vis.datum(parsetdata).call(chart);
+//    
+//	vis.selectAll(".category text")
+//    .attr("dx", 5)
+//    .attr("transform", "rotate(90)");
+//	
+//	vis.selectAll(".category rect")
+//    .attr("y", 0);
+//	
+//	vis.selectAll("text.dimension")
+//    .attr("dy", "1.5em")
+//    .attr("transform", "rotate(90)");
+//	
+//	vis.selectAll("text.dimension .sort.alpha")
+//    .attr("x", 0)
+//    .attr("dx", 0)
+//    .attr("dy", "1.5em");
+//	
+//	 vis.selectAll("text.dimension .sort.size")
+//    .attr("dx", "1em");
+//	
+//	d3.select("#"+position+"parset").moveToBack();
+//}
 
 function addToParsetData(semantic, position, topK ){
 	var k = 0;
@@ -315,13 +386,13 @@ function addToParsetData(semantic, position, topK ){
 			k++
 			}else {
 				//add an object for every query not in top 10 categories
-				for(var ind= 0; ind<value.querycount; ind++){
-					parsetelement = {}
-					parsetelement.ColumnX = semanticXlabel 
-					parsetelement.ColumnY = "other";
-					parsetdata.push(parsetelement);
-				}
-//				return false;
+//				for(var ind= 0; ind<value.querycount; ind++){
+//					parsetelement = {}
+//					parsetelement.ColumnX = semanticXlabel 
+//					parsetelement.ColumnY = "other";
+//					parsetdata.push(parsetelement);
+//				}
+				return false;
 			}
 		});
 	}
@@ -343,13 +414,13 @@ function addToParsetData(semantic, position, topK ){
 			k++
 			}else {
 				//add an object for every query not in top 10 categories
-					for(var ind= 0; ind<value.querycount; ind++){
-						parsetelement = {}
-						parsetelement.ColumnX = "other"; 
-						parsetelement.ColumnY = semanticYlabel;
-						parsetdata.push(parsetelement);
-					}
-				//return false;
+//					for(var ind= 0; ind<value.querycount; ind++){
+//						parsetelement = {}
+//						parsetelement.ColumnX = "other"; 
+//						parsetelement.ColumnY = semanticYlabel;
+//						parsetdata.push(parsetelement);
+//					}
+				return false;
 			}
 		});
 	

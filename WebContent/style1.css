@@ -1,5 +1,6 @@
 #interface{
-	display:none;	
+	display:none;
+	width:1600px;	
 }
 #loader{}
 
@@ -101,20 +102,20 @@ line {
     }
     
 .templatetext{
-	min-width: 50px;
+/* 	min-width: 150px; */
 	padding:25px;
 	position: relative;
 	display:none;
 	background-color:yellow;
     top: 200px;
     left: 20px;
-/* 	align:center; */
+	align:center;
 	font-size: 25px;
 	}
 
 .templatebrowser {
       width: 400px;
-      height: 600px;
+/*       height: 600px; */
       border: 1px solid #ccc;
       margin: 20px;
 }
