@@ -13,7 +13,7 @@
 .scrollable{
 	overflow-y: scroll; 
 	overflow-x: scroll;
-	height:300px;
+	height:400px;
 	width:400px;
 }
 .abstractionslider{
@@ -30,7 +30,6 @@
   margin-left: -10px;
   text-align: center;
 }
-
 
 .semanticlistelement{
 	width:400px;
@@ -96,7 +95,12 @@ line {
     display: block;
     }
     
-.templatetext{ font-size: 25px;}
+.templatetext{
+	position: relative;
+    top: 300px;
+    left: 20px;
+/* 	align:center; */
+	font-size: 25px;}
 
 .templatebrowser {
       width: 400px;
