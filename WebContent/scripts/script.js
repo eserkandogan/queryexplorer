@@ -98,7 +98,7 @@ d3.csv("data/qsp1.csv", function(d) {
 								  return obj.uid === selectedColumnAID;
 							})[0].abstrationLevel;
 							$('#columnAlist'+selectedColumnAID).css('background', 'rgba(70,130,180,'+ 1/abstractionLevel +	')');
-							$('#columnAlist'+selectedColumnAID+ ' .inspect').empty();
+							$('#columnAlist'+selectedColumnAID+ ' .drilldown').empty();
 							selectedColumnAID = "";
 						}
 						else{
@@ -107,7 +107,7 @@ d3.csv("data/qsp1.csv", function(d) {
 									  return obj.uid === selectedColumnAID;
 								})[0].abstrationLevel;
 								$('#columnAlist'+selectedColumnAID).css('background','rgba(70,130,180,'+ 1/abstractionLevel +	')');
-								$('#columnAlist'+selectedColumnAID+ ' .inspect').empty();
+								$('#columnAlist'+selectedColumnAID+ ' .drilldown').empty();
 							}
 							//update selected semantic
 							selectedColumnAID = this.getAttribute('uid');
@@ -138,7 +138,7 @@ d3.csv("data/qsp1.csv", function(d) {
 							  return obj.uid === selectedColumnBID;
 						})[0].abstrationLevel;
 						$('#columnBlist'+selectedColumnBID).css('background', 'rgba(70,130,180,'+ 1/abstractionLevel +	')');
-						$('#columnBlist'+selectedColumnBID+ ' .inspect').empty();
+						$('#columnBlist'+selectedColumnBID+ ' .drilldown').empty();
 						selectedColumnBID = "";
 					}
 					else{
@@ -147,7 +147,7 @@ d3.csv("data/qsp1.csv", function(d) {
 								  return obj.uid === selectedColumnBID;
 							})[0].abstrationLevel;
 							$('#columnBlist'+selectedColumnBID).css('background','rgba(70,130,180,'+ 1/abstractionLevel +	')');
-							$('#columnBlist'+selectedColumnBID+ ' .inspect').empty();
+							$('#columnBlist'+selectedColumnBID+ ' .drilldown').empty();
 
 						}
 						//update selected semantic
@@ -226,7 +226,7 @@ d3.csv("data/qsp1.csv", function(d) {
 					$("#columnAsemanticExplorer").hide();
 					$("#columnAcontainer").show();
 					$("#backTocolumnA").remove()
-					selectedColumnAID = $("#columnAlist .inspect").attr("uid");
+					selectedColumnAID = $("#columnAlist .drilldown").getAttribute("uid");
 					semobject = _.select(wordnet, function (obj) {
 						  return obj.uid === selectedColumnAID;
 					})[0];
@@ -239,7 +239,7 @@ d3.csv("data/qsp1.csv", function(d) {
 					$("#columnBsemanticExplorer").hide();
 					$("#columnBcontainer").show();
 					$("#backTocolumnB").remove();
-					selectedColumnBID = $("#columnBlist .inspect").attr("uid");
+					selectedColumnBID = $("#columnBlist .drilldown").getAttribute("uid");
 					semobject = _.select(wordnet, function (obj) {
 						  return obj.uid === selectedColumnBID;
 					})[0];
@@ -871,7 +871,7 @@ function displaySemanticIcicle(uid, column){
     	
     	displaySemanticIcicle(d.uid, column);
     	
-		displayParsets(d, column, 10);
+		
 //	 	d3.selectAll("#"+column+"parset").remove();
 //	 	displayQueries(column, d.uid);
 //       if (!d.children) return;
@@ -913,14 +913,15 @@ function displaySemanticIcicle(uid, column){
           
          
          if(column == "columnA"){
-       	  selectedColumnAID = d.uid;
-       	  populateColumn(queryPermutations, 'columnB');
+       	  	selectedColumnAID = d.uid;
+       	  	populateColumn(queryPermutations, 'columnB');
          }
 
          else if(column == "columnB"){
-       	  selectedColumnBID = d.uid
-       	  populateColumn(queryPermutations, 'columnA');
-         }         
+        	 selectedColumnBID = d.uid
+       	  	 populateColumn(queryPermutations, 'columnA');
+         }  
+         displayParsets(d, column, 10);
     }	
 }
 
