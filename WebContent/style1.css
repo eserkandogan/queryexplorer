@@ -95,7 +95,8 @@ line {
     height:16px;
     display: block;
     }
-
+    
+.templatetext{ font-size: 25px;}
 
 .templatebrowser {
       width: 400px;

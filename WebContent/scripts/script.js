@@ -52,25 +52,28 @@ d3.csv("data/qsp1.csv", function(d) {
 //				$(window).trigger('resize');
 				console.log("Displayed Templates")
 				
-//				window.setTimeout(populateColumn(data, 'columnA'), 10000);
 				populateColumn(data, 'columnA')
 
-//				window.setTimeout(populateColumn(data, 'columnB'), 10000);
 				populateColumn(data, 'columnB')
 
 				$('#templateList').on('click', 'li', function() {
 				    selectedTemplateID = this.id;
+				    selectedTemplateString = this.getAttribute('text')
+				    $('#templateList').hide();
+				    $('#selectedTemplate1').show();
+				    $('#selectedTemplate1').empty();
+				    $('#selectedTemplate1').append('<div><button id="clearTemplate" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span> Back to template list</button><div>'+
+				    		'<div>'+this.getAttribute('text').slice(0, this.getAttribute('text').indexOf("X"))+' </div>');
+				    $('#selectedTemplate2').append('<div>'+selectedTemplateString.slice(selectedTemplateString.indexOf("X")+1, selectedTemplateString.indexOf("Y"))+'</div>');
+				    $('#selectedTemplate3').append('<div>'+selectedTemplateString.slice(selectedTemplateString.indexOf("Y")+1, selectedTemplateString.length-1)+'</div>');
 
-				    $('#selectedTemplate').empty();
-				    $('#selectedTemplate').append('You selected template <b>'+this.id+'</b> '+
-				    		'<button id="clearTemplate" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
 				    
-				    $('#colAprompt').empty();
-				    $('#colAprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+selectedTemplateID+'</b>');
-				    
-				    $('#colBprompt').empty();
-				    $('#colBprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+selectedTemplateID+'</b>');
-				    
+				    //				    $('#colAprompt').empty();
+//				    $('#colAprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+selectedTemplateID+'</b>');
+//				    
+//				    $('#colBprompt').empty();
+//				    $('#colBprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+selectedTemplateID+'</b>');
+//				    
 				    $('#templateList li').removeClass( 'selectedListElement' );
 				    $(this).toggleClass('selectedListElement');
 				    			    
@@ -86,7 +89,7 @@ d3.csv("data/qsp1.csv", function(d) {
 				
 				$(document).on("click", "#columnAlist tr", function() {
 					selectedColumnAID = this.id;
-					$('#colAprompt').append('<button id="backTocolumnA" class="btn btn-danger btn-xs" type="button"> Back to semantics list <span class="glyphicon glyphicon-remove"></span> </button>')
+					$('#colAprompt').append('<button id="backTocolumnA" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span>  Back to semantics list </button>')
 //					$('#colAprompt').append('<button id="clearColA" class="btn btn-danger btn-xs" type="button"> Reset semantics list <span class="glyphicon glyphicon-remove"></span> </button>')
 
 //				    $('#selectedSemTypeB').append('Displaying semantic types used in queries where template is <b>'+selectedTemplateID+'</b> and columnA is <b>'
@@ -101,8 +104,9 @@ d3.csv("data/qsp1.csv", function(d) {
 
 //				    $('#selectedSemTypeB').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspCol')+'</b> '+
 //		    		'<button id="clearColB" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
-				    
-				    $('#colBprompt').append('<button id="clearColB" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
+					$('#colBprompt').append('<button id="backTocolumnB" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span> Back to semantics list</button>')
+
+//				    $('#colBprompt').append('<button id="clearColB" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
 				    
 				    if(selectedColumnAID!=""){
 					    populateColumn(data, 'columnA');
@@ -131,7 +135,8 @@ d3.csv("data/qsp1.csv", function(d) {
 				$(document).on("click", "#clearTemplate", function(){
 //					$('#selectedTemplate').empty();
 //				    $('#selectedTemplate').append('You have not selected a template yet.');
-				    
+					$('#templateList').show();
+					$('#selectedTemplate1').hide();
 					$('#templateList li').removeClass( 'selectedListElement' );
 					selectedTemplateID = "";
 					selectedColumnAID = "";					
@@ -400,12 +405,11 @@ var minQueryCount= 0, maxQueryCount= 0;
 	.domain([minQueryCount, maxQueryCount])
 	.range([10, 30])
 	$.each(listelements, function( index, element) {
-		if($.inArray(element.semobject[column].abstractionLevel, abstractions) == -1)
+		if($.inArray(element.semobject[column].abstractionLevel, abstractions) == -1){
 			abstractions.push(element.semobject[column].abstractionLevel);
-		
+		}
 		thislabel= element.semobject[column].label;
 		if(!isNaN(element.querycount)){
-			//querycount = fetchQC(element.semobject[column].id,column,selectedTemplateID);
 			columnlisthtml = columnlisthtml+'<tr id="'+element.semobject[column].id+'"  abstraction="'+
 					element.semobject[column].abstractionLevel+'" qspCol="'+thislabel+
 					'"><td style="background:rgba(70,130,180,'+ 1/element.semobject[column].abstractionLevel +
@@ -414,10 +418,6 @@ var minQueryCount= 0, maxQueryCount= 0;
 		}
   	});
 	columnlist.append(columnlisthtml);
-	
-	
-	
-	
 	
 	
 	$("#"+column+"abstraction").slider({
@@ -503,7 +503,7 @@ function displayTemplates(data){
 	$.each(listelements, function( index, value) {
 //	list.append('<li class="list-group-item" id="'+value.template+'" permutations = "'+value.templatecount+
 //			'"><span class ="badge">'+value.templatecount+'</span>'+value.text+'</li>');
-		listhtml = listhtml+ '<li class="list-group-item" id="'+value.template+'" permutations = "'+value.templatecount+
+		listhtml = listhtml+ '<li class="list-group-item" id="'+value.template+'" text="'+value.text+'" permutations = "'+value.templatecount+
 		'"><span class ="badge">'+value.templatecount+'</span>'+value.text+'</li>';
 	});
 	list.append(listhtml);
