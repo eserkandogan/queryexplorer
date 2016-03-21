@@ -373,13 +373,19 @@ function populateColumn(data, column){
 		return item[column].label;}
 	);
 	var listelements = []
-
+var minQueryCount= 0, maxQueryCount= 0;
+	//for every querysemantics that matches my filters
 	$.each(uniqueEntities, function( index, value) {
 		if(value[column].id!=undefined){
 			var element = {};
-		element.semobject = value;
-		element.querycount = fetchQC(value[column].id,column,value.template);
-		listelements.push(element);	
+			element.semobject = value;//get the querysemantics
+			
+//			element.querycount = fetchQC(value[column].id,column, value.template)
+			element.querycount = fetchQC(value[column].id,column, selectedTemplateID)
+			listelements.push(element);	
+			if(element.querycount<minQueryCount)minQueryCount = element.querycount;
+			if(element.querycount>maxQueryCount)maxQueryCount = element.querycount;
+
 		}
 	});
 	listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
@@ -390,21 +396,29 @@ function populateColumn(data, column){
 	
 	var columnlist = $('#'+column+'list');
 	var columnlisthtml = "";
+	var fontscale = d3.scale.linear()
+	.domain([minQueryCount, maxQueryCount])
+	.range([10, 30])
 	$.each(listelements, function( index, element) {
 		if($.inArray(element.semobject[column].abstractionLevel, abstractions) == -1)
 			abstractions.push(element.semobject[column].abstractionLevel);
 		
 		thislabel= element.semobject[column].label;
 		if(!isNaN(element.querycount)){
-			querycount = fetchQC(element.semobject[column].id,column,selectedTemplateID);
+			//querycount = fetchQC(element.semobject[column].id,column,selectedTemplateID);
 			columnlisthtml = columnlisthtml+'<tr id="'+element.semobject[column].id+'"  abstraction="'+
 					element.semobject[column].abstractionLevel+'" qspCol="'+thislabel+
 					'"><td style="background:rgba(70,130,180,'+ 1/element.semobject[column].abstractionLevel +
-					')" class="list-group-item semanticlistelement">'+
+					'); font-size:'+fontscale(element.querycount)+'px" class="list-group-item semanticlistelement">'+
 		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+element.querycount+'</span></td></tr>';
 		}
   	});
 	columnlist.append(columnlisthtml);
+	
+	
+	
+	
+	
 	
 	$("#"+column+"abstraction").slider({
 		range:true,
@@ -423,7 +437,6 @@ function populateColumn(data, column){
 			  else
 				  $(row).hide();
 			}
-
         }
 	})
 	.each(function() {
