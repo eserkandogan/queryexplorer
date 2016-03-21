@@ -92,7 +92,6 @@ d3.csv("data/qsp1.csv", function(d) {
 				});
 				
 				$(document).on("click", "#columnAlist .semanticlistelement", function() {
-						
 					
 						if(selectedColumnAID == this.getAttribute('uid')){
 							abstractionLevel = _.select(wordnet, function (obj) {
@@ -109,7 +108,6 @@ d3.csv("data/qsp1.csv", function(d) {
 								})[0].abstrationLevel;
 								$('#columnAlist'+selectedColumnAID).css('background','rgba(70,130,180,'+ 1/abstractionLevel +	')');
 								$('#columnAlist'+selectedColumnAID+ ' .inspect').empty();
-
 							}
 							//update selected semantic
 							selectedColumnAID = this.getAttribute('uid');
@@ -228,13 +226,25 @@ d3.csv("data/qsp1.csv", function(d) {
 					$("#columnAsemanticExplorer").hide();
 					$("#columnAcontainer").show();
 					$("#backTocolumnA").remove()
+					selectedColumnAID = $("#columnAlist .inspect").attr("uid");
+					semobject = _.select(wordnet, function (obj) {
+						  return obj.uid === selectedColumnAID;
+					})[0];
+					displayParsets(semobject, "columnA", 10);
+					displayQueries("columnA", selectedColumnAID);
 				});
 				
 				$(document).on("click", "#backTocolumnB", function(){
 					$("#columnBsemanticExplorer").empty();
 					$("#columnBsemanticExplorer").hide();
 					$("#columnBcontainer").show();
-					$("#backTocolumnB").remove()
+					$("#backTocolumnB").remove();
+					selectedColumnBID = $("#columnBlist .inspect").attr("uid");
+					semobject = _.select(wordnet, function (obj) {
+						  return obj.uid === selectedColumnBID;
+					})[0];
+					displayParsets(semobject, "columnB", 10);
+					displayQueries("columnB", selectedColumnBID);
 
 				});
 			});
