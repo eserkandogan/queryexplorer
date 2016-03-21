@@ -64,7 +64,11 @@ d3.csv("data/qsp1.csv", function(d) {
 				    $('#selectedTemplate1').empty();
 				    $('#selectedTemplate1').append('<div><button id="clearTemplate" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span> Back to template list</button><div>'+
 				    		'<div>'+this.getAttribute('text').slice(0, this.getAttribute('text').indexOf("X"))+' </div>');
+
+				    $('#selectedTemplate2').empty();
 				    $('#selectedTemplate2').append('<div>'+selectedTemplateString.slice(selectedTemplateString.indexOf("X")+1, selectedTemplateString.indexOf("Y"))+'</div>');
+				    
+				    $('#selectedTemplate3').empty();
 				    $('#selectedTemplate3').append('<div>'+selectedTemplateString.slice(selectedTemplateString.indexOf("Y")+1, selectedTemplateString.length-1)+'</div>');
 
 				    
@@ -488,6 +492,7 @@ function displayTemplates(data){
 		});
 	var list = $("#templateList");
 	var listelements = []
+	var minQueryCount= 0,maxQueryCount = 0;
 	$.each(uniqueEntities, function( index, value) {
 		var element = {};
 		var template = value.template;
@@ -495,16 +500,26 @@ function displayTemplates(data){
 			element.template = template;
 			element.templatecount = queryTemplates[template].count;
 			element.text = queryTemplates[template].text;
-			listelements.push(element);		
+			listelements.push(element);	
+
+			if(element.templatecount<=minQueryCount)
+				minQueryCount = element.templatecount;
+			if(element.templatecount>=maxQueryCount)
+				maxQueryCount = element.templatecount;
 		}
 	});
 	listelements = _.sortBy(listelements, function(element){ return - element.templatecount;})
+	maxQueryCount = listelements[0].templatecount;
 	var listhtml= "";
+	var fontscale = d3.scale.linear()
+	.domain([minQueryCount, maxQueryCount])
+	.range([10, 30])
+	.clamp(true);
 	$.each(listelements, function( index, value) {
 //	list.append('<li class="list-group-item" id="'+value.template+'" permutations = "'+value.templatecount+
 //			'"><span class ="badge">'+value.templatecount+'</span>'+value.text+'</li>');
 		listhtml = listhtml+ '<li class="list-group-item" id="'+value.template+'" text="'+value.text+'" permutations = "'+value.templatecount+
-		'"><span class ="badge">'+value.templatecount+'</span>'+value.text+'</li>';
+		'" style="font-size:'+fontscale(value.templatecount)+'px;"><span class ="badge">'+value.templatecount+'</span>'+value.text+'</li>';
 	});
 	list.append(listhtml);
 }

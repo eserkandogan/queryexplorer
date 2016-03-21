@@ -96,11 +96,16 @@ line {
     }
     
 .templatetext{
+	min-width: 50px;
+	padding:25px;
 	position: relative;
-    top: 300px;
+	display:none;
+	background-color:yellow;
+    top: 200px;
     left: 20px;
 /* 	align:center; */
-	font-size: 25px;}
+	font-size: 25px;
+	}
 
 .templatebrowser {
       width: 400px;
