@@ -91,20 +91,41 @@ d3.csv("data/qsp1.csv", function(d) {
 				    displayQueries("", "")
 				});
 				
-				$(document).on("click", "#columnAlist tr", function() {
-					selectedColumnAID = this.id;
+				$(document).on("click", "#columnAlist .semanticlistelement", function() {
+						
+					
+						if(selectedColumnAID == this.getAttribute('uid')){
+							abstractionLevel = _.select(wordnet, function (obj) {
+								  return obj.uid === selectedColumnAID;
+							})[0].abstrationLevel;
+							$('#columnAlist'+selectedColumnAID).css('background', 'rgba(70,130,180,'+ 1/abstractionLevel +	')');
+							$('#columnAlist'+selectedColumnAID+ ' .inspect').empty();
+							selectedColumnAID = "";
+						}
+						else{
+							if(selectedColumnAID!=""){
+								abstractionLevel = _.select(wordnet, function (obj) {
+									  return obj.uid === selectedColumnAID;
+								})[0].abstrationLevel;
+								$('#columnAlist'+selectedColumnAID).css('background','rgba(70,130,180,'+ 1/abstractionLevel +	')');
+								$('#columnAlist'+selectedColumnAID+ ' .inspect').empty();
+
+							}
+							//update selected semantic
+							selectedColumnAID = this.getAttribute('uid');
+	
+							$('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-log-out" label="inspect children"></span>');
+							$('#columnAlist'+selectedColumnAID).css('background', 'yellow');
+						}
+						populateColumn(data, 'columnB');
+				});
+				$(document).on("click", "#columnAlist .inspect", function(){
 					$('#colAprompt').append('<button id="backTocolumnA" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span>  Back to semantics list </button>')
-//					$('#colAprompt').append('<button id="clearColA" class="btn btn-danger btn-xs" type="button"> Reset semantics list <span class="glyphicon glyphicon-remove"></span> </button>')
-
-//				    $('#selectedSemTypeB').append('Displaying semantic types used in queries where template is <b>'+selectedTemplateID+'</b> and columnA is <b>'
-//				    		+$(this).attr('qspCol')+'</b>. ');
-
 					displaySemanticIcicle(selectedColumnAID, 'columnA');
-					populateColumn(data, 'columnB');
 					displayQueries("columnA", selectedColumnAID);
-				});	
-				$(document).on("click", "#columnBlist tr", function() {
-				    selectedColumnBID = this.id;
+				})
+				$(document).on("click", "#columnBlist .semanticlistelement", function() {
+				    selectedColumnBID = this.getAttribute('uid');
 
 //				    $('#selectedSemTypeB').append('You selected semantic type <b>'+this.id+': '+$(this).attr('qspCol')+'</b> '+
 //		    		'<button id="clearColB" class="btn btn-danger btn-xs" type="button"> <span class="glyphicon glyphicon-remove"></span> </button>');
@@ -115,7 +136,7 @@ d3.csv("data/qsp1.csv", function(d) {
 				    if(selectedColumnAID!=""){
 					    populateColumn(data, 'columnA');
 					}
-				    displaySemanticIcicle(this.id, 'columnB');
+				    displaySemanticIcicle(selectedColumnBID, 'columnB');
 				    displayQueries("columnB", selectedColumnBID)
 				});
 				$(document).on("keyup","#columnAfilter", function () {
@@ -414,11 +435,12 @@ var minQueryCount= 0, maxQueryCount= 0;
 		}
 		thislabel= element.semobject[column].label;
 		if(!isNaN(element.querycount)){
-			columnlisthtml = columnlisthtml+'<tr id="'+element.semobject[column].id+'"  abstraction="'+
+			columnlisthtml = columnlisthtml+'<tr id="'+column+'list'+element.semobject[column].id+'" uid="'+element.semobject[column].id+'" abstraction="'+
 					element.semobject[column].abstractionLevel+'" qspCol="'+thislabel+
-					'"><td style="background:rgba(70,130,180,'+ 1/element.semobject[column].abstractionLevel +
-					'); font-size:'+fontscale(element.querycount)+'px" class="list-group-item semanticlistelement">'+
-		      '<span id="'+column+'" >'+thislabel+'</span><span class="badge">'+element.querycount+'</span></td></tr>';
+					'"  style="background:rgba(70,130,180,'+ 1/element.semobject[column].abstractionLevel +
+					'); "><td><span class="badge" >'+element.querycount+'</span></td><td uid="'+element.semobject[column].id+
+					'" class="drilldown"></td><td class=" semanticlistelement" uid="'+element.semobject[column].id+'"  style="font-size:'+fontscale(element.querycount)+'px;" >'+
+		      thislabel+'</td></tr>';
 		}
   	});
 	columnlist.append(columnlisthtml);

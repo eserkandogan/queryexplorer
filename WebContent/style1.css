@@ -30,10 +30,15 @@
   margin-left: -10px;
   text-align: center;
 }
-
-.semanticlistelement{
+.semanticlist{
 	width:400px;
 }
+.semanticlistelement{
+	overflow-x: scroll;
+	width:350px;
+}
+.drilldown{width:20px;}
+
 
 ::-webkit-scrollbar {
     -webkit-appearance: none;
@@ -122,10 +127,18 @@ line {
 	padding:10px;
 	margin:10px;
 }
+.inspect{
+	display: inline-block;
+	width: 18px;
+	vertical-align:middle;
+	float:right;
+	margin-right:10px;
+}
 .selectedListElement{
 	fill:yellow;
 	opacity:1;
 	background-color:yellow;
+	bgcolor:yellow;
 }
 /* #semanticExplorerPanel{ */
 /* 	display:none; */
