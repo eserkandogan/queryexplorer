@@ -870,58 +870,17 @@ function displaySemanticIcicle(uid, column){
     	if($("#"+column+"semanticExplorer").css('display')=='none')return;
     	
     	displaySemanticIcicle(d.uid, column);
-    	
-		
-//	 	d3.selectAll("#"+column+"parset").remove();
-//	 	displayQueries(column, d.uid);
-//       if (!d.children) return;
-//
-//       kx = (d.y ? w - 40 : w) / (1 - d.y);
-//       ky = h / d.dx;
-//       x.domain([d.y, 1]).range([d.y ? 40 : 0, w]);
-//       y.domain([d.x, d.x + d.dx]);
-//       
-//       
-//       d3.selectAll("#"+column+"partition g").each( function(d1, i){
-//       	if($(this).css("display")=="none" && d1.depth==d.depth-1){// the element is hidden and before the element i clicked on
-//       		$(this).css("display","block");//show element
-//       	}
-//       	else if (d1.depth ==d.depth+1 || d1.uid==d.uid) {//the element is the element i clicked on or a depth ahead.
-//       		$(this).css("display","block");//show element
-//           }
-//           else {                    	
-//               $(this).css("display", "none");
-//           }
-//       });
-//        
-//  
-//       var g = svg.selectAll("#"+column+"partition g");
-//       var t = g.transition()
-//           .duration(d3.event.altKey ? 7500 : 750)
-//           .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; });
-//
-//       t.select("rect")
-//           .attr("width", d.dy * kx)
-//           .attr("height", function(d) { 
-//           	return d.dx * ky; });
-//
-//       t.select("text")
-//           .attr("transform", transform)
-//           .style("opacity", function(d) { 
-//           	return d.dx * ky > 12 ? 1 : 0; });
-         d3.event.stopPropagation();
-          
-         
-         if(column == "columnA"){
-       	  	selectedColumnAID = d.uid;
-       	  	populateColumn(queryPermutations, 'columnB');
-         }
+    	d3.event.stopPropagation();
+        if(column == "columnA"){
+       	 	selectedColumnAID = d.uid;
+       	 	populateColumn(queryPermutations, 'columnB');
+        }
 
-         else if(column == "columnB"){
-        	 selectedColumnBID = d.uid
-       	  	 populateColumn(queryPermutations, 'columnA');
-         }  
-         displayParsets(d, column, 10);
+        else if(column == "columnB"){
+        	selectedColumnBID = d.uid
+       		populateColumn(queryPermutations, 'columnA');
+        }  
+        displayParsets(d, column, 10);
     }	
 }
 
