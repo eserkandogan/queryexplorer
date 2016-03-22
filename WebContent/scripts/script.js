@@ -99,6 +99,8 @@ d3.csv("data/qsp1.csv", function(d) {
 							})[0].abstrationLevel;
 							$('#columnAlist'+selectedColumnAID).css('background', 'rgba(70,130,180,'+ 1/abstractionLevel +	')');
 							$('#columnAlist'+selectedColumnAID+ ' .drilldown').empty();
+							$('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').empty();
+
 							selectedColumnAID = "";
 						}
 						else{
@@ -108,15 +110,15 @@ d3.csv("data/qsp1.csv", function(d) {
 								})[0].abstrationLevel;
 								$('#columnAlist'+selectedColumnAID).css('background','rgba(70,130,180,'+ 1/abstractionLevel +	')');
 								$('#columnAlist'+selectedColumnAID+ ' .drilldown').empty();
+								$('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').empty();
+
 							}
 							//update selected semantic
 							selectedColumnAID = this.getAttribute('uid');
-	
-							$('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-log-out" label="inspect children"></span>');
+							$('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
+							$('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
 							$('#columnAlist'+selectedColumnAID).css('background', 'yellow');
 						}
-						
-						
 						displayQueries("columnA", selectedColumnAID);
 						populateColumn(data, 'columnB');
 						if(selectedColumnAID!=""){
@@ -128,12 +130,22 @@ d3.csv("data/qsp1.csv", function(d) {
 				});
 				$(document).on("click", "#columnAlist .inspect", function(){
 					$('#colAprompt').append('<button id="backTocolumnA" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span>  Back to semantics list </button>')
-					displaySemanticIcicle(selectedColumnAID, 'columnA');
+					displaySemanticIcicle(selectedColumnAID, 'columnA', false);
 					displayQueries("columnA", selectedColumnAID);
-				})
-					$(document).on("click", "#columnBlist .inspect", function(){
+				});
+				$(document).on("click", "#columnBlist .inspect", function(){
 					$('#colBprompt').append('<button id="backTocolumnB" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span>  Back to semantics list </button>')
-					displaySemanticIcicle(selectedColumnBID, 'columnB');
+					displaySemanticIcicle(selectedColumnBID, 'columnB', false);
+					displayQueries("columnB", selectedColumnBID);
+				})
+				$(document).on("click", "#columnAlist .showicicles", function(){
+					$('#colAprompt').append('<button id="backTocolumnA" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span>  Back to semantics list </button>')
+					displaySemanticIcicle(selectedColumnAID, 'columnA', true);
+					displayQueries("columnA", selectedColumnAID);
+				});
+				$(document).on("click", "#columnBlist .showicicles", function(){
+					$('#colBprompt').append('<button id="backTocolumnB" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span>  Back to semantics list </button>')
+					displaySemanticIcicle(selectedColumnBID, 'columnB', true);
 					displayQueries("columnB", selectedColumnBID);
 				})
 				$(document).on("click", "#columnBlist .semanticlistelement", function() {
@@ -143,6 +155,7 @@ d3.csv("data/qsp1.csv", function(d) {
 						})[0].abstrationLevel;
 						$('#columnBlist'+selectedColumnBID).css('background', 'rgba(70,130,180,'+ 1/abstractionLevel +	')');
 						$('#columnBlist'+selectedColumnBID+ ' .drilldown').empty();
+						$('#columnBlist'+selectedColumnBID+ ' .doubledrilldown').empty();
 						selectedColumnBID = "";
 					}
 					else{
@@ -152,18 +165,23 @@ d3.csv("data/qsp1.csv", function(d) {
 							})[0].abstrationLevel;
 							$('#columnBlist'+selectedColumnBID).css('background','rgba(70,130,180,'+ 1/abstractionLevel +	')');
 							$('#columnBlist'+selectedColumnBID+ ' .drilldown').empty();
+							$('#columnBlist'+selectedColumnBID+ ' .doubledrilldown').empty();
+
 
 						}
 						//update selected semantic
 						selectedColumnBID = this.getAttribute('uid');
 
-						$('#columnBlist'+selectedColumnBID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-log-out" label="inspect children"></span>');
+						$('#columnBlist'+selectedColumnBID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
+						$('#columnBlist'+selectedColumnBID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
+
 						$('#columnBlist'+selectedColumnBID).css('background', 'yellow');
 					}
 									    
 				    if(selectedColumnAID!=""){
 					    populateColumn(data, 'columnA');
-					    $('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-log-out" label="inspect children"></span>');
+					    $('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
+					    $('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
 						$('#columnAlist'+selectedColumnAID).css('background', 'yellow');
 					}
 				    
@@ -303,7 +321,7 @@ function displayParsets(d, position, topK){
 	.attr("width", width)
     .attr("height", height)
     .append("g")
-    .attr("transform", "translate(0,"+height+")rotate(-90)");//this is correct. 
+    .attr("transform", "translate(0,"+(width + margin.left + margin.right)+")rotate(-90)");//this is correct. 
 	
 	vis.datum(parsetdata).call(chart);
     
@@ -492,7 +510,8 @@ function populateColumn(data, column){
 			'<div class="input-group" id="input'+column+'"> '+
 			'<span class="input-group-addon">Filter</span>'+			
 	'<input id="'+column+'filter" type="text" class="form-control" placeholder="Type here...">	</div></div>'+
-	'<div class = "scrollable"><table class="table table-striped semanticlist" id="'+column+'table" ><tbody class="searchable" id="'+column+'list"></tbody></table></div>');
+	'<div class = "scrollable"><table class="table table-striped semanticlist" id="'+column+
+	'table" ><tbody class="searchable" id="'+column+'list"></tbody></table></div>');
 	
 	$('#'+column+'list').empty();
 	
@@ -554,7 +573,9 @@ var minQueryCount= 0, maxQueryCount= 0;
 					element.semobject[column].abstractionLevel+'" qspCol="'+thislabel+
 					'"  style="background:rgba(70,130,180,'+ 1/element.semobject[column].abstractionLevel +
 					'); "><td><span class="badge" >'+element.querycount+'</span></td><td uid="'+element.semobject[column].id+
-					'" class="drilldown"></td><td class=" semanticlistelement" uid="'+element.semobject[column].id+'"  style="font-size:'+fontscale(element.querycount)+'px;" >'+
+					'" class="doubledrilldown"></td><td uid="'+element.semobject[column].id+
+					'" class="drilldown"></td><td class=" semanticlistelement" uid="'+element.semobject[column].id+
+					'"  style="font-size:'+fontscale(element.querycount)+'px;" >'+
 		      thislabel+'</td></tr>';
 		}
   	});
@@ -768,12 +789,12 @@ function createLabelList(wordsemantics){
 		}
 	});
 }
-function displaySemanticIcicle(uid, column){
+function displaySemanticIcicle(uid, column, fullIcicle){
 	 $("#"+column+"container").hide();
 	 $("#"+column+"semanticExplorer").empty();
 	 $("#"+column+"semanticExplorer").show();
-	
-	var w = 400,h = 400;
+	var fullIcicle = fullIcicle;
+	var w = 600,h = 600;
 	var x = d3.scale.linear().range([0, w]);
 	var y = d3.scale.linear().range([0, h]);
 
@@ -792,7 +813,7 @@ function displaySemanticIcicle(uid, column){
 	icicle.type="wordnet";
 	icicle.count = fetchQC(semanticobject[0].uid,column,selectedTemplateID);
 	icicle.children= [];
-	processObject(semanticobject[0], icicle.children, column);
+	processObject(semanticobject[0], icicle.children, column, fullIcicle);
 	
 	var partition = d3.layout.partition()
    .value(function(d) { return d.count; });
@@ -840,14 +861,14 @@ function displaySemanticIcicle(uid, column){
     .attr("width", root.dy * kx)
     .attr("height", function(d) { return d.dx * ky; })
     .attr("class", function(d) { 
-    	if(d.children)
+    	if(d.depth==0)
     		return "selectedListElement";
     	else
     		return d.type=="wordnet" ? "parent" : "child"; 
     	})
 
     .style("opacity", function(d) { 
-    	return d.type=="wordnet"&& !d.children ? 1/d.abstractionLevel : 1;
+    	return d.type=="wordnet" && d.depth!=0 ? 1/d.abstractionLevel : 1;
    	 })
     ;
 
@@ -858,22 +879,53 @@ function displaySemanticIcicle(uid, column){
     .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; })
     .text(function(d) { return d.name +", "+d.count; })
 
-    g.style("display", function(d) {
-   	    if (d.depth > 1) {
-   	        return "none";//nodes whose depth is more than 1 make its vanish
-   	      } else {
-   	        return "block";
-   	      }
-   	    });
-    
-    d3.select(window).on("click", function() { clicked(root); })
+    d3.select(window).on("click", function() { 
+    	if(fullIcicle)
+    		clickedFullIcicle(root, fullIcicle)
+    	else
+    		clicked(root); 
+    	})
     
     function transform(d) {return "translate(8," + d.dx * ky / 2 + ")"; }
+    
+    function clickedFullIcicle(d, fullicicle){
+		if (!d.children) return;
+		
+        kx = (d.y ? w - 40 : w) / (1 - d.y);
+        ky = h / d.dx;
+        x.domain([d.y, 1]).range([d.y ? 40 : 0, w]);
+        y.domain([d.x, d.x + d.dx]);
+        
+        var g = svg.selectAll("#"+column+"partition g");
+        var t = g.transition()
+            .duration(d3.event.altKey ? 7500 : 750)
+            .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; });
 
+        t.select("rect")
+            .attr("width", d.dy * kx)
+            .attr("height", function(d) { 
+            	return d.dx * ky; })
+
+        t.select("text")
+            .attr("transform", transform)
+            .style("opacity", function(d) { 
+            	return d.dx * ky > 12 ? 1 : 0; });
+          d3.event.stopPropagation();
+          
+          if(column == "columnA"){
+        	  selectedColumnAID = d.uid;
+        	  populateColumn(queryPermutations, 'columnB');
+          }
+
+          else if(column == "columnB"){
+        	  selectedColumnBID = d.uid
+        	  populateColumn(queryPermutations, 'columnA');
+          }
+     }
     function clicked(d) {
     	if($("#"+column+"semanticExplorer").css('display')=='none')return;
     	
-    	displaySemanticIcicle(d.uid, column);
+    	displaySemanticIcicle(d.uid, column, false);
     	d3.event.stopPropagation();
         if(column == "columnA"){
        	 	selectedColumnAID = d.uid;
@@ -885,11 +937,12 @@ function displaySemanticIcicle(uid, column){
        		populateColumn(queryPermutations, 'columnA');
         }  
         displayParsets(d, column, 10);
+    	
     }	
 }
 
 
-function processObject(parent, parentIcicle, column){
+function processObject(parent, parentIcicle, column, fullicicle){
 //this version only goes down depth 1
 	$.each(parent.derivedFrom, function(index, value){
 		var o = _.select(wordnet, function (obj) {
@@ -922,19 +975,25 @@ function processObject(parent, parentIcicle, column){
 					object.name = childSemantics.label;
 					object.uid = childSemantics.uid;
 					object.abstractionLevel = childSemantics.abstrationLevel;
-					object.count = fetchQC(childSemantics.uid,column,selectedTemplateID);
 					object.type = "wordnet";
-//					object.children= [];
+					object.count = fetchQC(childSemantics.uid,column,selectedTemplateID);
+						
+					if(fullicicle){
+						object.children= [];
+					}
 					parentIcicle.push(object);
 				}
+			if(fullicicle){
+				var arrobj = _.filter(parentIcicle, function(value){ 
+			    if (value.name == childSemantics.label){ 
+			      return value;
+			    } 
+			 })[0];
 			
-//			var arrobj = _.filter(parentIcicle, function(value){ 
-//			    if (value.name == childSemantics.label){ 
-//			      return value;
-//			    } 
-//			 })[0];
-//			
-//			processObject(childSemantics, arrobj.children, column);
+			processObject(childSemantics, arrobj.children, column, fullicicle);
+				
+			}
+
 		}
 	});
 }
@@ -1086,53 +1145,6 @@ function processObject(parent, parentIcicle, column){
 //}
 //
 //
-//function processObject(parent, parentIcicle, column){
-//
-//	$.each(parent.derivedFrom, function(index, value){
-//		var o = _.select(wordnet, function (obj) {
-//			  return obj.uid === value;
-//			});
-//		
-//		if(o.length==0){//reached a leaf (tag)
-//			o = _.select(tags, function (obj) {
-//			  return obj.uid === value;
-//			});
-//			childSemantics = o[0];
-//			
-//			var object = {};
-//			object.name = childSemantics.label;
-//			object.uid = childSemantics.uid;
-//			object.count = fetchQC(childSemantics.uid,column,selectedTemplateID);
-//			parentIcicle.push(object);
-//		}
-//		else{
-//			childSemantics = o[0];
-//
-//			var arr = _.filter(parentIcicle, function(value){ 
-//			    if (value.name == childSemantics.label){ 
-//			      return value;
-//			    } 
-//			 })
-//			if (arr.length==0) {
-//					var object = {};
-//					object.name = childSemantics.label;
-//					object.uid = childSemantics.uid;
-//					object.abstractionLevel = childSemantics.abstrationLevel;
-//
-//					object.children= [];
-//					parentIcicle.push(object);
-//				}
-//			
-//			var arrobj = _.filter(parentIcicle, function(value){ 
-//			    if (value.name == childSemantics.label){ 
-//			      return value;
-//			    } 
-//			 })[0];
-//			
-//			processObject(childSemantics, arrobj.children, column);
-//		}
-//	});
-//}
 
 function displayQueries(column, uid){
 	var examplequeries = $("#examplequeries");

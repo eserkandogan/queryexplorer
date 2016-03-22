@@ -23,6 +23,10 @@
 	margin-right:10px;
 	margin-bottom:40px;
 	}
+.parsetholder{
+	float:left;
+}
+#examplequeriespanel{float:left;}
 
 .abstractionslider label {
   position: absolute;
