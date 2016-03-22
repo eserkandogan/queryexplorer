@@ -309,8 +309,6 @@ function displayParsets(d, position, reset){
 		addToParsetData(semanticid, position, 10);
 	}
     
-//    var svgBox = document.getElementById(position+"svg").getBBox();
-//    var svgBox = document.getElementById(position+"parsetsvg").getBBox();
     var svg = d3.select("#"+position+"parset").append("svg")
 	.attr("id", "#"+position+"parsetsvg")
 	.attr("width", 400)
@@ -319,11 +317,7 @@ function displayParsets(d, position, reset){
     var margin = {top: 0, right: 25, bottom: 50, left: 0};
     var width = 400 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
-//    var width = 400 ,height = 400;
-   
-    
     console.log(width+", "+height);
-//    svgBox.width(width).height(height);    
 	var chart = d3.parsets().dimensions(["ColumnX","ColumnY"]).width(width).height(height);				
 
 	var vis = svg.append("g")
@@ -446,22 +440,19 @@ function displayParsets(d, position, reset){
 function addToParsetData(semantic, column, topK ){
 	var filtereddata = queryPermutations;
 	var k = 0;
-	if(column == "columnA"){
-		
-		if(selectedTemplateID!=""){
-		 filtereddata = filtereddata.filter(function( obj ) {
-		    return obj.template == selectedTemplateID;
-			});
-		}
-		
-		filtereddata = filtereddata.filter(function( obj ) {
-		    return obj.columnA.id == semantic;
-		});
 
-		listelements = _.sortBy(filtereddata, function(element){ return - element.count;})
-		semanticXlabel = _.select(wordnet, function (obj) {
-			  return obj.uid === semantic;
-		})[0].label;
+	if(selectedTemplateID!=""){
+	 filtereddata = filtereddata.filter(function( obj ) {
+	    return obj.template == selectedTemplateID;
+		});
+	}
+	
+	filtereddata = filtereddata.filter(function( obj ) {
+	    return obj[column].id == semantic;
+	});
+	
+	listelements = _.sortBy(filtereddata, function(element){ return - element.count;})
+	if(column == "columnA"){
 
 		$.each(listelements, function(key, value){
 			if(k<topK){
@@ -482,44 +473,19 @@ function addToParsetData(semantic, column, topK ){
 		});
 	}
 	else if (column == "columnB"){
-		if(selectedTemplateID!=""){
-		 filtereddata = filtereddata.filter(function( obj ) {
-		    return obj.template == selectedTemplateID;
-			});
-		}
-		
-		filtereddata = filtereddata.filter(function( obj ) {
-		    return obj.columnB.id == semantic;
-		});
-		
-		var uniqueEntities = _.uniq(filtereddata, function (item, key, a) {
-			return item["columnA"].label;}
-		);
-		var listelements = []
-	
-		//for every querysemantics that matches my filters
-		$.each(uniqueEntities, function( index, value) {
-			if(value[column].id!=undefined){
-				var element = {};
-				element.semobject = value;//get the querysemantics
-				element.querycount = fetchQC(value[column].id,column, value.template)
-				listelements.push(element);	
-			}
-		});
-		listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
 		semanticYlabel = _.select(wordnet, function (obj) {
 			  return obj.uid === semantic;
 		})[0].label;
+
 		$.each(listelements, function(key, value){
 			if(k<topK){
 				semanticXlabel = _.select(wordnet, function (obj) {
-					  return obj.uid === value.semobject.columnA.id;
+					  return obj.uid === value.columnA.id;
 				})[0].label;
-				for(var ind= 0; ind<value.querycount; ind++){			
+				for(var ind= 0; ind<value.count; ind++){			
 					parsetelement = {}
 					parsetelement.ColumnX = semanticXlabel 
 					parsetelement.ColumnY = semanticYlabel;
-
 					if(column=="columnA")parsetAdata.push(parsetelement);
 					else if(column=="columnB")parsetBdata.push(parsetelement);
 				}
