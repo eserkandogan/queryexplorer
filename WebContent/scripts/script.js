@@ -3,7 +3,9 @@ var queryPermutations= [];
 var wordnet = [];
 var tags = [];
 var queryTemplates = {};
-var parsetdata = [];
+var parsetAdata = [];
+var parsetBdata = [];
+
 var icicle;
 
 var selectedTemplateID = "",selectedColumnAID = "",selectedColumnBID= "";
@@ -92,7 +94,8 @@ d3.csv("data/qsp1.csv", function(d) {
 				});
 				
 				$(document).on("click", "#columnAlist .semanticlistelement", function() {
-					
+				    $("input[name='columnAparallelsets']").prop('checked', false);
+
 						if(selectedColumnAID == this.getAttribute('uid')){
 							abstractionLevel = _.select(wordnet, function (obj) {
 								  return obj.uid === selectedColumnAID;
@@ -125,7 +128,7 @@ d3.csv("data/qsp1.csv", function(d) {
 							semobject = _.select(wordnet, function (obj) {
 								  return obj.uid === selectedColumnAID;
 							})[0];
-							displayParsets(semobject, "columnA", 10);
+							displayParsets(semobject, "columnA", true);
 						}
 				});
 				$(document).on("click", "#columnAlist .inspect", function(){
@@ -190,7 +193,7 @@ d3.csv("data/qsp1.csv", function(d) {
 						semobject = _.select(wordnet, function (obj) {
 								  return obj.uid === selectedColumnBID;
 							})[0];
-					    displayParsets(semobject, "columnB", 10);
+					    displayParsets(semobject, "columnB", true);
 				    }
 				});
 				$(document).on("keyup","#columnAfilter", function () {
@@ -259,7 +262,7 @@ d3.csv("data/qsp1.csv", function(d) {
 					semobject = _.select(wordnet, function (obj) {
 						  return obj.uid === selectedColumnAID;
 					})[0];
-					displayParsets(semobject, "columnA", 10);
+					displayParsets(semobject, "columnA", true);
 					displayQueries("columnA", selectedColumnAID);
 				});
 				
@@ -272,28 +275,46 @@ d3.csv("data/qsp1.csv", function(d) {
 					semobject = _.select(wordnet, function (obj) {
 						  return obj.uid === selectedColumnBID;
 					})[0];
-					displayParsets(semobject, "columnB", 10);
+					displayParsets(semobject, "columnB", true);
 					displayQueries("columnB", selectedColumnBID);
 
+				});
+				$(document).on("change","input[type='checkbox']",function() {
+				    if(this.checked) {
+				        //Do stuff
+				    	console.log($(this).prop("value"));
+				    	columnName = this.parentElement.getAttribute("column");
+				    	semanticid = $(this).prop("value");
+				        addToParsetData(semanticid, columnName, 10);
+				        semobject = _.select(wordnet, function (obj) {
+							  return obj.uid === semanticid;
+						})[0];
+				        displayParsets(semobject, columnName, false);
+				    }
 				});
 			});
 		});
 });//end loading data
 
 
-function displayParsets(d, position, topK){
+function displayParsets(d, position, reset){
 	var semanticid = d.uid;
 	$("#"+position+"parset").empty();
 	//prep the data for parallel sets
-	parsetdata=[];
-    addToParsetData(semanticid, position, topK);
+	if(reset){
+		if(position=="columnA")
+			parsetAdata=[];
+		else if(position=="columnB")
+			parsetBdata=[];
+		addToParsetData(semanticid, position, 10);
+	}
     
 //    var svgBox = document.getElementById(position+"svg").getBBox();
 //    var svgBox = document.getElementById(position+"parsetsvg").getBBox();
     var svg = d3.select("#"+position+"parset").append("svg")
 	.attr("id", "#"+position+"parsetsvg")
 	.attr("width", 400)
-	.attr("height", 450)
+	.attr("height", 450);
     
     var margin = {top: 0, right: 25, bottom: 50, left: 0};
     var width = 400 - margin.left - margin.right,
@@ -304,15 +325,6 @@ function displayParsets(d, position, topK){
     console.log(width+", "+height);
 //    svgBox.width(width).height(height);    
 	var chart = d3.parsets().dimensions(["ColumnX","ColumnY"]).width(width).height(height);				
-	
-	d3.selection.prototype.moveToBack = function() { 
-	    return this.each(function() { 
-	        var firstChild = this.parentNode.firstChild; 
-	        if (firstChild) { 
-	            this.parentNode.insertBefore(this, firstChild); 
-	        } 
-	    }); 
-	};
 
 	var vis = svg.append("g")
 	.attr("id", position+"parset")
@@ -323,7 +335,10 @@ function displayParsets(d, position, topK){
     .append("g")
     .attr("transform", "translate(0,"+(width + margin.left + margin.right)+")rotate(-90)");//this is correct. 
 	
-	vis.datum(parsetdata).call(chart);
+	if(position=="columnA")
+		vis.datum(parsetAdata).call(chart);	
+	else if(position=="columnB")
+		vis.datum(parsetBdata).call(chart);
     
 	vis.selectAll(".category text")
     .attr("dx", 5)
@@ -427,42 +442,75 @@ function displayParsets(d, position, topK){
 //	d3.select("#"+position+"parset").moveToBack();
 //}
 
-function addToParsetData(semantic, position, topK ){
+
+function addToParsetData(semantic, column, topK ){
+	var filtereddata = queryPermutations;
 	var k = 0;
-	if(position == "columnA"){
+	if(column == "columnA"){
+		
+		if(selectedTemplateID!=""){
+		 filtereddata = filtereddata.filter(function( obj ) {
+		    return obj.template == selectedTemplateID;
+			});
+		}
+		
+		filtereddata = filtereddata.filter(function( obj ) {
+		    return obj.columnA.id == semantic;
+		});
+
+		listelements = _.sortBy(filtereddata, function(element){ return - element.count;})
 		semanticXlabel = _.select(wordnet, function (obj) {
 			  return obj.uid === semantic;
 		})[0].label;
 
-		$.each(columnBelements, function(key, value){
+		$.each(listelements, function(key, value){
 			if(k<topK){
 				semanticYlabel = _.select(wordnet, function (obj) {
-					  return obj.uid === value.semobject.columnB.id;
+					  return obj.uid === value.columnB.id;
 				})[0].label;
-				for(var ind= 0; ind<value.querycount; ind++){			
+				for(var ind= 0; ind<value.count; ind++){			
 					parsetelement = {}
 					parsetelement.ColumnX = semanticXlabel 
 					parsetelement.ColumnY = semanticYlabel;
-					parsetdata.push(parsetelement);
+					if(column=="columnA")parsetAdata.push(parsetelement);
+					else if(column=="columnB")parsetBdata.push(parsetelement);
 				}
 			k++
 			}else {
-				//add an object for every query not in top 10 categories
-//				for(var ind= 0; ind<value.querycount; ind++){
-//					parsetelement = {}
-//					parsetelement.ColumnX = semanticXlabel 
-//					parsetelement.ColumnY = "other";
-//					parsetdata.push(parsetelement);
-//				}
 				return false;
 			}
 		});
 	}
-	else{
+	else if (column == "columnB"){
+		if(selectedTemplateID!=""){
+		 filtereddata = filtereddata.filter(function( obj ) {
+		    return obj.template == selectedTemplateID;
+			});
+		}
+		
+		filtereddata = filtereddata.filter(function( obj ) {
+		    return obj.columnB.id == semantic;
+		});
+		
+		var uniqueEntities = _.uniq(filtereddata, function (item, key, a) {
+			return item["columnA"].label;}
+		);
+		var listelements = []
+	
+		//for every querysemantics that matches my filters
+		$.each(uniqueEntities, function( index, value) {
+			if(value[column].id!=undefined){
+				var element = {};
+				element.semobject = value;//get the querysemantics
+				element.querycount = fetchQC(value[column].id,column, value.template)
+				listelements.push(element);	
+			}
+		});
+		listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
 		semanticYlabel = _.select(wordnet, function (obj) {
 			  return obj.uid === semantic;
 		})[0].label;
-		$.each(columnAelements, function(key, value){
+		$.each(listelements, function(key, value){
 			if(k<topK){
 				semanticXlabel = _.select(wordnet, function (obj) {
 					  return obj.uid === value.semobject.columnA.id;
@@ -471,23 +519,134 @@ function addToParsetData(semantic, position, topK ){
 					parsetelement = {}
 					parsetelement.ColumnX = semanticXlabel 
 					parsetelement.ColumnY = semanticYlabel;
-					parsetdata.push(parsetelement);
+
+					if(column=="columnA")parsetAdata.push(parsetelement);
+					else if(column=="columnB")parsetBdata.push(parsetelement);
 				}
 			k++
 			}else {
-				//add an object for every query not in top 10 categories
-//					for(var ind= 0; ind<value.querycount; ind++){
-//						parsetelement = {}
-//						parsetelement.ColumnX = "other"; 
-//						parsetelement.ColumnY = semanticYlabel;
-//						parsetdata.push(parsetelement);
-//					}
 				return false;
 			}
 		});
 	
 	}
 }
+
+function fetchfullQC(uidA,columnA, uidB, columnB,template){
+	var oA,oB;
+totalcount = 0;
+var id;
+	if(template!==""){
+		if(column == "columnA")
+			id = template+"_1";
+		else if(column == "columnB")
+			id = template+"_2";
+		if(uidA.indexOf('wordnet')!==-1){
+			oA = _.select(wordnet, function (obj) {
+				  return obj.uid === uid;
+				})[0];
+		}
+		else{//it's a tag!
+			oA = _.select(tags, function (obj) {
+				  return obj.uid === uid;
+				})[0];
+		}
+		
+		filteredQueryStats  = (_.uniq(oA.queryStats, function (item) {
+			return Object.keys(item)[0]==idA;
+			}));
+		if(filteredQueryStats[1]==undefined){
+//			console.log(uid+" "+column+" "+template);
+			return 0;
+		}
+		else{			
+			return filteredQueryStats[1][id];// NO IDEA WHY TWO ARE RETURNED!!!! :/
+		}	
+	}
+	else{
+		totalcount = 0;
+		if(uid.indexOf('wordnet')!==-1){
+			o = _.select(wordnet, function (obj) {
+			  return obj.uid === uid;
+			})[0];
+		}
+		else{
+			o = _.select(tags, function (obj) {
+				  return obj.uid === uid;
+				})[0];
+			}
+		$.each(o.queryStats, function( index, value) {
+			totalcount = totalcount+value[Object.keys(value)[0]];
+		});
+		return totalcount;
+	}
+}
+
+//function addToParsetData(semantic, position, topK ){
+//	var k = 0;
+//	if(position == "columnA"){
+//		semanticXlabel = _.select(wordnet, function (obj) {
+//			  return obj.uid === semantic;
+//		})[0].label;
+//
+//		$.each(columnBelements, function(key, value){
+//			if(k<topK){
+//				semanticYlabel = _.select(wordnet, function (obj) {
+//					  return obj.uid === value.semobject.columnB.id;
+//				})[0].label;
+//				for(var ind= 0; ind<value.querycount; ind++){			
+//					parsetelement = {}
+//					parsetelement.ColumnX = semanticXlabel 
+//					parsetelement.ColumnY = semanticYlabel;
+//					if(position=="columnA")parsetAdata.push(parsetelement);
+//					else if(position=="columnB")parsetBdata.push(parsetelement);
+//
+//				}
+//			k++
+//			}else {
+//				//add an object for every query not in top 10 categories
+////				for(var ind= 0; ind<value.querycount; ind++){
+////					parsetelement = {}
+////					parsetelement.ColumnX = semanticXlabel 
+////					parsetelement.ColumnY = "other";
+////					parsetdata.push(parsetelement);
+////				}
+//				return false;
+//			}
+//		});
+//	}
+//	else{
+//		semanticYlabel = _.select(wordnet, function (obj) {
+//			  return obj.uid === semantic;
+//		})[0].label;
+//		$.each(columnAelements, function(key, value){
+//			if(k<topK){
+//				semanticXlabel = _.select(wordnet, function (obj) {
+//					  return obj.uid === value.semobject.columnA.id;
+//				})[0].label;
+//				for(var ind= 0; ind<value.querycount; ind++){			
+//					parsetelement = {}
+//					parsetelement.ColumnX = semanticXlabel 
+//					parsetelement.ColumnY = semanticYlabel;
+//
+//					if(position=="columnA")parsetAdata.push(parsetelement);
+//					else if(position=="columnB")parsetBdata.push(parsetelement);
+//				}
+//			k++
+//			}else {
+//				//add an object for every query not in top 10 categories
+////					for(var ind= 0; ind<value.querycount; ind++){
+////						parsetelement = {}
+////						parsetelement.ColumnX = "other"; 
+////						parsetelement.ColumnY = semanticYlabel;
+////						parsetdata.push(parsetelement);
+////					}
+//				return false;
+//			}
+//		});
+//	
+//	}
+//}
 
 function loadQTC(filename){
 	var qtc = {}; 
@@ -572,7 +731,7 @@ var minQueryCount= 0, maxQueryCount= 0;
 			columnlisthtml = columnlisthtml+'<tr id="'+column+'list'+element.semobject[column].id+'" uid="'+element.semobject[column].id+'" abstraction="'+
 					element.semobject[column].abstractionLevel+'" qspCol="'+thislabel+
 					'"  style="background:rgba(70,130,180,'+ 1/element.semobject[column].abstractionLevel +
-					'); "><td><span class="badge" >'+element.querycount+'</span></td><td uid="'+element.semobject[column].id+
+					'); "><td column="'+column+'"><input type="checkbox" name="'+column+'parallelsets" value="'+element.semobject[column].id+'"> </td><td><span class="badge" >'+element.querycount+'</span></td><td uid="'+element.semobject[column].id+
 					'" class="doubledrilldown"></td><td uid="'+element.semobject[column].id+
 					'" class="drilldown"></td><td class=" semanticlistelement" uid="'+element.semobject[column].id+
 					'"  style="font-size:'+fontscale(element.querycount)+'px;" >'+
@@ -730,6 +889,7 @@ var id;
 }	
 
 
+
 function processSemanticTxt(txt){
 
     var lines = txt.split("\n");
@@ -846,7 +1006,7 @@ function displaySemanticIcicle(uid, column, fullIcicle){
 			   		return;
 			   	if (!d.children) 
 			   		return;
-			   	displayParsets(d, column, 10);
+			   	displayParsets(d, column, true);
 			   	})
 		   .on("mouseout",function(){
 			   	if (displayParsetsOn== false)
@@ -936,7 +1096,7 @@ function displaySemanticIcicle(uid, column, fullIcicle){
         	selectedColumnBID = d.uid
        		populateColumn(queryPermutations, 'columnA');
         }  
-        displayParsets(d, column, 10);
+        displayParsets(d, column, true);
     	
     }	
 }
