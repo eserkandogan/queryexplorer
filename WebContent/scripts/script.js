@@ -57,27 +57,31 @@ d3.csv("data/qsp1.csv", function(d) {
 				populateColumn(data, 'columnB')
 
 				$('#templateList').on('click', 'li', function() {
-				    selectedTemplateID = this.id;
 				    selectedTemplateString = this.getAttribute('text')
-				    $('#templateList').hide();
-				    $('.templatetext').show();
-				    $('#selectedTemplate1').empty();
-				    $('#selectedTemplate1').append('<div><button id="backToTemplate" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span> Back to template list</button><div>'+
-				    		'<div>'+this.getAttribute('text').slice(0, this.getAttribute('text').indexOf("X"))+' </div>');
-
-				    $('#selectedTemplate2').empty();
-				    $('#selectedTemplate2').append(selectedTemplateString.slice(selectedTemplateString.indexOf("X")+1, selectedTemplateString.indexOf("Y")));
+//				    $('#templateList').hide();
+//				    $('#selectedTemplate1').empty();
+//				    $('#selectedTemplate1').append('<div><button id="backToTemplate" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span> Back to template list</button><div>'+
+//				    		'<div>'+this.getAttribute('permutations')+' Query Semantics: <br>'+this.getAttribute('text').slice(0, this.getAttribute('text').indexOf("X"))+' </div>');
 				    
-				    $('#selectedTemplate3').empty();
-				    $('#selectedTemplate3').append(selectedTemplateString.slice(selectedTemplateString.indexOf("Y")+1, selectedTemplateString.length-1));
-
-				    if($('#templateList li .selectedListElement')){//i am deselecting a template
+				   
+				    if($('#templateList .selectedListElement').length!=0){//i am deselecting a template
 				    	selectedTemplateID= '';
+				    	$('.templatetext').hide();
 						displayTemplates(data);//recalculate query counts
-
 				    }
-				    $('#templateList li').removeClass( 'selectedListElement' );
-				    $(this).toggleClass('selectedListElement');
+				    else{//i'm selecting a template that was not selected
+					    $('.templatetext').show();
+					    $('#selectedTemplate2').empty();
+					    $('#selectedTemplate2').append(selectedTemplateString.slice(selectedTemplateString.indexOf("X")+1, selectedTemplateString.indexOf("Y")));
+					    
+					    $('#selectedTemplate3').empty();
+					    $('#selectedTemplate3').append(selectedTemplateString.slice(selectedTemplateString.indexOf("Y")+1, selectedTemplateString.length-1));
+
+					    selectedTemplateID = this.id;
+					    $(this).children().find('.templateValue').text = this.getAttribute('text').slice(0, this.getAttribute('text').indexOf("X"))
+					    $('#templateList li').removeClass( 'selectedListElement' );
+					    $(this).toggleClass('selectedListElement');
+				    }
 				    			    
 				    $("#columnAsemanticExplorer").hide();
 					$("#columnAlist").show();
@@ -814,7 +818,7 @@ function displayTemplates(data){
 	
 	$.each(listelements, function( index, value) {
 		listhtml = listhtml+ '<li class="list-group-item" id="'+value.template+'" text="'+value.text+'" permutations = "'+value.templatecount+
-		'" style="font-size:'+fontscale(value.templatecount)+'px;"><span class ="badge">'+value.templatecount+'</span>'+value.text+'</li>';
+		'" style="font-size:'+fontscale(value.templatecount)+'px;"><span class ="badge">'+value.templatecount+'</span><span class="templatevalue">'+value.text+'</span></li>';
 	});
 	list.append(listhtml);
 	
