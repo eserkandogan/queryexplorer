@@ -48,10 +48,8 @@ d3.csv("data/qsp1.csv", function(d) {
 				$("#loader").css( "display","none");	
 				$("#interface").css( "display","block");
 
-//				window.setTimeout(displayTemplates(data), 5000);
 				displayTemplates(data);
 				
-//				$(window).trigger('resize');
 				console.log("Displayed Templates")
 				
 				populateColumn(data, 'columnA')
@@ -64,7 +62,7 @@ d3.csv("data/qsp1.csv", function(d) {
 				    $('#templateList').hide();
 				    $('.templatetext').show();
 				    $('#selectedTemplate1').empty();
-				    $('#selectedTemplate1').append('<div><button id="clearTemplate" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span> Back to template list</button><div>'+
+				    $('#selectedTemplate1').append('<div><button id="backToTemplate" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span> Back to template list</button><div>'+
 				    		'<div>'+this.getAttribute('text').slice(0, this.getAttribute('text').indexOf("X"))+' </div>');
 
 				    $('#selectedTemplate2').empty();
@@ -73,13 +71,11 @@ d3.csv("data/qsp1.csv", function(d) {
 				    $('#selectedTemplate3').empty();
 				    $('#selectedTemplate3').append(selectedTemplateString.slice(selectedTemplateString.indexOf("Y")+1, selectedTemplateString.length-1));
 
-				    
-				    //				    $('#colAprompt').empty();
-//				    $('#colAprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+selectedTemplateID+'</b>');
-//				    
-//				    $('#colBprompt').empty();
-//				    $('#colBprompt').append('Select a semantic type from the list of <b>semantic types used in query template:'+selectedTemplateID+'</b>');
-//				    
+				    if($('#templateList li .selectedListElement')){//i am deselecting a template
+				    	selectedTemplateID= '';
+						displayTemplates(data);//recalculate query counts
+
+				    }
 				    $('#templateList li').removeClass( 'selectedListElement' );
 				    $(this).toggleClass('selectedListElement');
 				    			    
@@ -99,7 +95,7 @@ d3.csv("data/qsp1.csv", function(d) {
 						if(selectedColumnAID == this.getAttribute('uid')){
 							abstractionLevel = _.select(wordnet, function (obj) {
 								  return obj.uid === selectedColumnAID;
-							})[0].abstrationLevel;
+							})[0].abstractionLevel;
 							$('#columnAlist'+selectedColumnAID).css('background', 'rgba(70,130,180,'+ 1/abstractionLevel +	')');
 							$('#columnAlist'+selectedColumnAID+ ' .drilldown').empty();
 							$('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').empty();
@@ -110,7 +106,7 @@ d3.csv("data/qsp1.csv", function(d) {
 							if(selectedColumnAID!=""){
 								abstractionLevel = _.select(wordnet, function (obj) {
 									  return obj.uid === selectedColumnAID;
-								})[0].abstrationLevel;
+								})[0].abstractionLevel;
 								$('#columnAlist'+selectedColumnAID).css('background','rgba(70,130,180,'+ 1/abstractionLevel +	')');
 								$('#columnAlist'+selectedColumnAID+ ' .drilldown').empty();
 								$('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').empty();
@@ -123,6 +119,7 @@ d3.csv("data/qsp1.csv", function(d) {
 							$('#columnAlist'+selectedColumnAID).css('background', 'yellow');
 						}
 						displayQueries("columnA", selectedColumnAID);
+						displayTemplates(data);
 						populateColumn(data, 'columnB');
 						if(selectedColumnAID!=""){
 							semobject = _.select(wordnet, function (obj) {
@@ -152,20 +149,22 @@ d3.csv("data/qsp1.csv", function(d) {
 					displayQueries("columnB", selectedColumnBID);
 				})
 				$(document).on("click", "#columnBlist .semanticlistelement", function() {
+					//i'm just deselecting the element
 					if(selectedColumnBID == this.getAttribute('uid')){
 						abstractionLevel = _.select(wordnet, function (obj) {
 							  return obj.uid === selectedColumnBID;
-						})[0].abstrationLevel;
+						})[0].abstractionLevel;
 						$('#columnBlist'+selectedColumnBID).css('background', 'rgba(70,130,180,'+ 1/abstractionLevel +	')');
 						$('#columnBlist'+selectedColumnBID+ ' .drilldown').empty();
 						$('#columnBlist'+selectedColumnBID+ ' .doubledrilldown').empty();
 						selectedColumnBID = "";
 					}
+					//I clicked an element to select it
 					else{
 						if(selectedColumnBID!=""){
 							abstractionLevel = _.select(wordnet, function (obj) {
 								  return obj.uid === selectedColumnBID;
-							})[0].abstrationLevel;
+							})[0].abstractionLevel;
 							$('#columnBlist'+selectedColumnBID).css('background','rgba(70,130,180,'+ 1/abstractionLevel +	')');
 							$('#columnBlist'+selectedColumnBID+ ' .drilldown').empty();
 							$('#columnBlist'+selectedColumnBID+ ' .doubledrilldown').empty();
@@ -180,14 +179,14 @@ d3.csv("data/qsp1.csv", function(d) {
 
 						$('#columnBlist'+selectedColumnBID).css('background', 'yellow');
 					}
-									    
+
+				    populateColumn(data, 'columnA');		    
 				    if(selectedColumnAID!=""){
-					    populateColumn(data, 'columnA');
 					    $('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
 					    $('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
 						$('#columnAlist'+selectedColumnAID).css('background', 'yellow');
 					}
-				    
+					displayTemplates(data);
 				    displayQueries("columnB", selectedColumnBID);
 				    if(selectedColumnBID!=""){
 						semobject = _.select(wordnet, function (obj) {
@@ -214,18 +213,18 @@ d3.csv("data/qsp1.csv", function(d) {
 		            }).show();
 
 		        })
-				$(document).on("click", "#clearTemplate", function(){
+				$(document).on("click", "#backToTemplate", function(){
 //					$('#selectedTemplate').empty();
 //				    $('#selectedTemplate').append('You have not selected a template yet.');
 					$('#templateList').show();
 					$('.templatetext').hide();
-					$('#templateList li').removeClass( 'selectedListElement' );
-					selectedTemplateID = "";
-					selectedColumnAID = "";					
-					selectedColumnBID = "";
-
-					populateColumn(data, 'columnA');
-					populateColumn(data, 'columnB');
+//					$('#templateList li').removeClass( 'selectedListElement' );
+//					selectedTemplateID = "";
+//					selectedColumnAID = "";					
+//					selectedColumnBID = "";
+//
+//					populateColumn(data, 'columnA');
+//					populateColumn(data, 'columnB');
 				});
 
 				$(document).on("click", "#clearColA", function(){
@@ -458,17 +457,20 @@ function addToParsetData(semantic, column, topK ){
 		})[0].label;
 		$.each(listelements, function(key, value){
 			if(k<topK){
-				semanticYlabel = _.select(wordnet, function (obj) {
+				var filter = _.select(wordnet, function (obj) {
 					  return obj.uid === value.columnB.id;
-				})[0].label;
-				for(var ind= 0; ind<value.count; ind++){			
-					parsetelement = {}
-					parsetelement.ColumnX = semanticXlabel 
-					parsetelement.ColumnY = semanticYlabel;
-					if(column=="columnA")parsetAdata.push(parsetelement);
-					else if(column=="columnB")parsetBdata.push(parsetelement);
+				});
+				if(filter.length!=0){
+						semanticYlabel = filter[0].label;
+					for(var ind= 0; ind<value.count; ind++){			
+						parsetelement = {}
+						parsetelement.ColumnX = semanticXlabel 
+						parsetelement.ColumnY = semanticYlabel;
+						if(column=="columnA")parsetAdata.push(parsetelement);
+						else if(column=="columnB")parsetBdata.push(parsetelement);
+					}
+					k++
 				}
-			k++
 			}else {
 				return false;
 			}
@@ -630,6 +632,7 @@ function loadQTC(filename){
 }
 //Helper functions
 function populateColumn(data, column){
+	console.log("Populating column "+column)
 	$('#'+column+'container').empty();
 	$('#'+column+'container')
 	.append('<div style="padding-bottom:10px;">Abstraction: <br> '+
@@ -745,9 +748,7 @@ var minQueryCount= 0, maxQueryCount= 0;
 	});	
 	$('#'+column+'abstraction .ui-slider-range').css('background','linear-gradient(to right, rgba(70,130,180,1), rgba(70,130,180,'+1/8+'))');
 
-//	$('.ui-widget-content').css('background','gray');
-	console.log("Displayed "+column);
-//	$(window).trigger('resize');
+	console.log("Finished populating column "+column);
 
 }
 
@@ -771,6 +772,7 @@ function displayTemplates(data){
 			return item.template;
 		});
 	var list = $("#templateList");
+	list.empty();
 	var listelements = []
 	var minQueryCount= 0,maxQueryCount = 0;
 	$.each(uniqueEntities, function( index, value) {
@@ -778,7 +780,20 @@ function displayTemplates(data){
 		var template = value.template;
 		if(queryTemplates[template]!=undefined && (queryTemplates[template].text).indexOf('Ignore')==-1){
 			element.template = template;
-			element.templatecount = queryTemplates[template].count;
+			if(selectedColumnAID=='' && selectedColumnBID=='')
+				element.templatecount = queryTemplates[template].count;
+			else if (selectedColumnAID!='' && selectedColumnBID==''){
+				element.templatecount = fetchQC(selectedColumnAID,'columnA',template)
+			}
+			else if (selectedColumnAID=='' && selectedColumnBID!=''){
+				element.templatecount = fetchQC(selectedColumnBID,'columnB',template)
+			}
+			else if (selectedColumnAID!='' && selectedColumnBID!=''){
+				
+				element.templatecount = _.select(queryPermutations, function (obj) {
+					  return obj.columnA.id === selectedColumnAID && obj.columnB.id === selectedColumnBID;
+				})[0].count;
+			}
 			element.text = queryTemplates[template].text;
 			listelements.push(element);	
 
@@ -793,15 +808,17 @@ function displayTemplates(data){
 	
 	var listhtml= "";
 	var fontscale = d3.scale.linear()
-	.domain([minQueryCount, maxQueryCount])
-	.range([10, 30])
-	.clamp(true);
+		.domain([minQueryCount, maxQueryCount])
+		.range([10, 30])
+		.clamp(true);
 	
 	$.each(listelements, function( index, value) {
 		listhtml = listhtml+ '<li class="list-group-item" id="'+value.template+'" text="'+value.text+'" permutations = "'+value.templatecount+
 		'" style="font-size:'+fontscale(value.templatecount)+'px;"><span class ="badge">'+value.templatecount+'</span>'+value.text+'</li>';
 	});
 	list.append(listhtml);
+	
+	console.log("Displayed templates for selectedColumnAID= '"+selectedColumnAID+"' and selectedColumnBID='"+selectedColumnBID+"'")
 }
 
 
@@ -937,7 +954,7 @@ function displaySemanticIcicle(uid, column, fullIcicle){
 	
 	icicle.name= key;
 	icicle.uid=semanticobject[0].uid;
-	icicle.abstractionLevel = semanticobject[0].abstrationLevel;
+	icicle.abstractionLevel = semanticobject[0].abstractionLevel;
 	icicle.type="wordnet";
 	icicle.count = fetchQC(semanticobject[0].uid,column,selectedTemplateID);
 	icicle.children= [];
@@ -1102,7 +1119,7 @@ function processObject(parent, parentIcicle, column, fullicicle){
 					var object = {};
 					object.name = childSemantics.label;
 					object.uid = childSemantics.uid;
-					object.abstractionLevel = childSemantics.abstrationLevel;
+					object.abstractionLevel = childSemantics.abstractionLevel;
 					object.type = "wordnet";
 					object.count = fetchQC(childSemantics.uid,column,selectedTemplateID);
 						
@@ -1145,7 +1162,7 @@ function processObject(parent, parentIcicle, column, fullicicle){
 //			+'", with id="'+uid+'"</p>');
 //	icicle.name= key;
 //	icicle.uid=semanticobject[0].uid;
-//	icicle.abstractionLevel = semanticobject[0].abstrationLevel;
+//	icicle.abstractionLevel = semanticobject[0].abstractionLevel;
 //	icicle.children= [];
 //	processObject(semanticobject[0], icicle.children, column);
 //	
