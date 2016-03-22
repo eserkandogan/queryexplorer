@@ -311,7 +311,7 @@ function displayParsets(d, position, reset){
     
     var svg = d3.select("#"+position+"parset").append("svg")
 	.attr("id", "#"+position+"parsetsvg")
-	.attr("width", 400)
+	.attr("width", "90%")
 	.attr("height", 450);
     
     var margin = {top: 0, right: 25, bottom: 50, left: 0};
@@ -453,7 +453,9 @@ function addToParsetData(semantic, column, topK ){
 	
 	listelements = _.sortBy(filtereddata, function(element){ return - element.count;})
 	if(column == "columnA"){
-
+		semanticXlabel = _.select(wordnet, function (obj) {
+			  return obj.uid === semantic;
+		})[0].label;
 		$.each(listelements, function(key, value){
 			if(k<topK){
 				semanticYlabel = _.select(wordnet, function (obj) {

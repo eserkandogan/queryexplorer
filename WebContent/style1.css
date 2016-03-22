@@ -1,6 +1,6 @@
 #interface{
 	display:none;
-	width:1600px;	
+	width:100%;	
 }
 #loader{}
 
@@ -25,8 +25,10 @@
 	}
 .parsetholder{
 	float:left;
+	width: 50%
 }
-#examplequeriespanel{float:left;}
+#examplequeriespanel{float:left;
+width: 100%}
 
 .abstractionslider label {
   position: absolute;

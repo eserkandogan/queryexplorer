@@ -354,8 +354,10 @@
               });
           category.select("line")
               .attr("x2", function(d) { return d.dx; });
-          category.select("text")
-              .text(truncateText(function(d) { return d.name; }, function(d) { return d.dx; }));
+          category.select("text")              
+          .text(function(d) { return d.name; });
+
+//              .text(truncateText(function(d) { return d.name; }, function(d) { return d.dx; }));
         }
       });
     }
