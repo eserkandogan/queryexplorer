@@ -543,9 +543,9 @@ function populateSemanticsBrowser(){
 			'<div class="input-group" id="inputsemanticsbrowser"> '+
 			'<span class="input-group-addon">Filter</span>'+			
 	'<input id="semanticsbrowserfilter" type="text" class="form-control" placeholder="Type here...">	'+
-	'</div></div>'+'<table class = " table table-striped scrollable" id = "allsemanticstable"><thead><tr>'+
-	'<th>SemanticType</th><th>ColumnX Query Count</th><th>ColumnY Query Count</th> <th>Complete Query Count</th>'+
-	'</tr></thead><tbody class="searchable" id ="semanticsbrowsertable"></tbody></table>');
+	'</div></div>'+'<table class = " table table-striped " id = "allsemanticstable"><thead><tr>'+
+	'<th>Complete<br>Query Count</th><th>ColumnX<br>Query Count</th><th>ColumnY<br>Query Count</th> <th>SemanticType</th>'+
+	'</tr></thead><tbody class="searchable " id ="semanticsbrowsertable"></tbody></table>');
 	var tablebody = $('#semanticsbrowsertable')
 	$.each(wordnet, function( index, value) {
 		
@@ -553,7 +553,7 @@ function populateSemanticsBrowser(){
 		countsB =  countAllQueriesOfSemType(value, 2);
 		tablebody.append('<tr style="background:rgba(70,130,180,'+ 1/value.abstractionLevel +
 				'); " abstraction="'+
-				value.abstractionLevel+'"><td>'+value.label+' </td><td>'+countsA+'</td><td>'+countsB+'</td><td>'+(countsA+countsB)+'</td></tr>');
+				value.abstractionLevel+'"><td>'+(countsA+countsB)+'</td><td>'+countsA+'</td><td>'+countsB+'</td><td>'+value.label+' </td></tr>');
 	});
 	
 	
