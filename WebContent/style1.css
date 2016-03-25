@@ -30,6 +30,17 @@
 	float:left;
 	width: 50%;
 }
+#semanticsbrowserpanel{
+	float:left;
+	width: 100%;
+}
+#semanticsbrowser{
+		float:left;
+	width: 50%;
+}
+#semanticsbrowserdetails{
+	float:left;
+	width: 50%;}
 #examplequeriespanel{
 	float:left;
 	width: 100%;
@@ -104,7 +115,12 @@ line {
   color: #1181B8;
 }
 
-
+.partitiontooltip {
+ background-color:black; /*  rgba(242, 242, 242, .6); */
+ color: white;
+  position: absolute;
+  padding: 5px;
+}
 .inheritance-ico{
 	background:url(images/icon-inheritance-view.png); 
     width:16px; 
