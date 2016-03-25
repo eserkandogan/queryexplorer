@@ -52,10 +52,11 @@ d3.csv("data/qsp1.csv", function(d){
 				
 				console.log("Displayed Templates")
 				
-				populateColumn(data, 'columnA')
-				populateColumn(data, 'columnB')
-				    populateSemanticsBrowser();
-
+				populateColumn(data, 'columnA');
+				populateColumn(data, 'columnB');
+				populateSemanticsBrowser();
+				populateTagsBrowser();
+				
 				$('#templateList').on('click', 'li', function() {
 					
 				    if(selectedTemplateID == this.id){	//i am deselecting a template
@@ -222,7 +223,15 @@ d3.csv("data/qsp1.csv", function(d){
 		            }).show();
 
 		        })
-		        
+		          $(document).on("keyup","#tagsbrowserfilter", function () {
+
+		            var rex = new RegExp($(this).val(), 'i');
+		            $('#tagsbrowser .searchable tr').hide();
+		            $('#tagsbrowser .searchable tr').filter(function () {
+		                return rex.test($(this).text());
+		            }).show();
+
+		        })
 				$(document).on("click", "#backToTemplate", function(){
 					$('#templateList').show();
 					$('.templatetext').hide();
@@ -536,6 +545,28 @@ function countAllQueriesOfSemType(semtype, position){
 	return count;
 }
 
+function populateTagsBrowser(){
+	$('#tagsbrowser').empty();
+	$('#tagsbrowser').append('<div style="padding-bottom:10px;">'+
+			'<div class="input-group" id="inputtagsbrowser"> '+
+			'<span class="input-group-addon">Filter</span>'+			
+	'<input id="tagsbrowserfilter" type="text" class="form-control" placeholder="Type here...">	'+
+	'</div></div>'+'<table class = " table table-striped " id = "alltagstable"><thead><tr>'+
+	'<th>Complete<br>Query Count</th><th>ColumnX<br>Query Count</th><th>ColumnY<br>Query Count</th> <th>Tag</th>'+
+	'</tr></thead><tbody class="searchable " id ="tagsbrowsertable"></tbody></table>');
+	var tablebody = $('#tagsbrowsertable')
+	$.each(tags, function( index, value) {
+		
+		countsA =  countAllQueriesOfSemType(value, 1);
+		countsB =  countAllQueriesOfSemType(value, 2);
+		tablebody.append('<tr ><td>'+(countsA+countsB)+'</td><td>'+countsA+'</td><td>'+countsB+'</td><td>'+value.label+' </td></tr>');
+	});
+	
+	$(function(){
+		  $('#alltagstable').tablesorter({sortList: [[0,1]]} ); 
+		});
+}
+
 function populateSemanticsBrowser(){
 	$('#semanticsbrowser').empty();
 	$('#semanticsbrowser').append('<div style="padding-bottom:10px;">Abstraction: <br> '+
@@ -593,7 +624,7 @@ function populateSemanticsBrowser(){
 	});	
 	$('#semanticsbrowserabstraction .ui-slider-range').css('background','linear-gradient(to right, rgba(70,130,180,1), rgba(70,130,180,'+1/8+'))');
 	$(function(){
-		  $('#allsemanticstable').tablesorter(); 
+		  $('#allsemanticstable').tablesorter({sortList: [[0,1]]}); 
 		});
 }
 
