@@ -20,7 +20,7 @@
 	width:100%;
 	max-width:400px;
 }
-thead, tbody { display: block; }
+#allsemanticstable thead, tbody { display: block; }
 #allsemanticstable{
 	width:600px;
 }

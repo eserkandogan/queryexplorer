@@ -1,11 +1,12 @@
 var id=0;
 var queryPermutations= [];
+var allQueryPermutations = 0;
+
 var wordnet = [];
 var tags = [];
 var queryTemplates = {};
 var parsetAdata = [];
 var parsetBdata = [];
-
 var icicle;
 
 var selectedTemplateID = "",selectedColumnAID = "",selectedColumnBID= "";
@@ -26,6 +27,10 @@ d3.csv("data/qsp1.csv", function(d){
 		$("#loader").append("<br>- Loaded data/qsp1.csv")
 		$("#loader").append("<br>- Processed data/qsp1.csv")
 		queryPermutations = data;
+		
+		$.each(queryPermutations, function(ind, qp){
+			allQueryPermutations+=qp.count;
+		}) 
 		$.get("data/wordsemantics-2.20-json.txt",function(txt){
 			$("#loader").append("<br>- Loaded data/wordsemantics-2.20-json.txt")
 
@@ -120,6 +125,7 @@ d3.csv("data/qsp1.csv", function(d){
 						}
 						displayQueries("columnA", selectedColumnAID);
 						displayTemplates(data);
+						
 						populateColumn(data, 'columnB');
 						if(selectedColumnAID!=""){
 							semobject = _.select(wordnet, function (obj) {
@@ -168,8 +174,6 @@ d3.csv("data/qsp1.csv", function(d){
 							$('#columnBlist'+selectedColumnBID).css('background','rgba(70,130,180,'+ 1/abstractionLevel +	')');
 							$('#columnBlist'+selectedColumnBID+ ' .drilldown').empty();
 							$('#columnBlist'+selectedColumnBID+ ' .doubledrilldown').empty();
-
-
 						}
 						//update selected semantic
 						selectedColumnBID = this.getAttribute('uid');
@@ -584,7 +588,8 @@ function populateSemanticsBrowser(){
 		countsB =  countAllQueriesOfSemType(value, 2);
 		tablebody.append('<tr style="background:rgba(70,130,180,'+ 1/value.abstractionLevel +
 				'); " abstraction="'+
-				value.abstractionLevel+'"><td>'+(countsA+countsB)+'</td><td>'+countsA+'</td><td>'+countsB+'</td><td>'+value.label+' </td></tr>');
+				value.abstractionLevel+'"><td>'
+				+(((countsA+countsB) *100)/allQueryPermutations).toFixed(4)+' % </td><td>'+(countsA+countsB)+'</td><td>'+countsA+'</td><td>'+countsB+'</td><td>'+value.label+' </td></tr>');
 	});
 	
 	
@@ -642,44 +647,6 @@ function populateColumn(data, column){
 	
 	$('#'+column+'list').empty();
 	
-//	var filtereddata = data;
-//	
-//	if(selectedTemplateID!=""){
-//	 filtereddata = filtereddata.filter(function( obj ) {
-//	    return obj.template == selectedTemplateID;
-//		});
-//	}
-//	
-//	if(selectedColumnAID!=""){
-//		filtereddata = filtereddata.filter(function( obj ) {
-//	    return obj.columnA.id == selectedColumnAID;
-//		});
-//	}
-//	if(selectedColumnBID!=""){
-//		filtereddata = filtereddata.filter(function( obj ) {
-//	    return obj.columnB.id == selectedColumnBID;
-//		});
-//	}
-//	var uniqueEntities = _.uniq(filtereddata, function (item, key, a) {
-//		return item[column].label;}
-//	);
-//	var listelements = []
-//	var minQueryCount= 0, maxQueryCount= 0;
-//	//for every querysemantics that matches my filters
-//	$.each(uniqueEntities, function( index, value) {
-//		if(value[column].id!=undefined){
-//			var element = {};
-//			element.semobject = value;//get the querysemantics
-//			
-//			element.querycount = fetchQC(value[column].id,column, value.template)
-////			element.querycount = fetchQC(value[column].id,column, selectedTemplateID)
-//			listelements.push(element);	
-//			if(element.querycount<minQueryCount)minQueryCount = element.querycount;
-//			if(element.querycount>maxQueryCount)maxQueryCount = element.querycount;
-//
-//		}
-//	});
-	
 	var listelements = []
 	var minQueryCount= 0, maxQueryCount= 0;
 	$.each(wordnet, function( index, value) {
@@ -706,24 +673,9 @@ function populateColumn(data, column){
 	var columnlisthtml = "";
 	var fontscale = d3.scale.linear()
 	.domain([minQueryCount, maxQueryCount])
-	.range([10, 30])
-//	$.each(listelements, function( index, element) {
-//		if($.inArray(element.semobject[column].abstractionLevel, abstractions) == -1){
-//			abstractions.push(element.semobject[column].abstractionLevel);
-//		}
-//		thislabel= element.semobject[column].label;
-//		if(!isNaN(element.querycount)){
-//			columnlisthtml = columnlisthtml+'<tr id="'+column+'list'+element.semobject[column].id+'" uid="'+element.semobject[column].id+'" abstraction="'+
-//					element.semobject[column].abstractionLevel+'" qspCol="'+thislabel+
-//					'"  style="background:rgba(70,130,180,'+ 1/element.semobject[column].abstractionLevel +
-//					'); "><td column="'+column+'"><input type="checkbox" name="'+column+'parallelsets" value="'+element.semobject[column].id+'"> </td><td><span class="badge" >'+element.querycount+'</span></td><td uid="'+element.semobject[column].id+
-//					'" class="doubledrilldown"></td><td uid="'+element.semobject[column].id+
-//					'" class="drilldown"></td><td class=" semanticlistelement" uid="'+element.semobject[column].id+
-//					'"  style="font-size:'+fontscale(element.querycount)+'px;" >'+
-//		      thislabel+'</td></tr>';
-//		}
-//  	});
-		$.each(listelements, function( index, element) {
+	.range([10, 30]);
+	
+	$.each(listelements, function( index, element) {
 		if($.inArray(element.semobject.abstractionLevel, abstractions) == -1){
 			abstractions.push(element.semobject.abstractionLevel);
 		}
@@ -733,7 +685,8 @@ function populateColumn(data, column){
 					element.semobject.abstractionLevel+'" qspCol="'+thislabel+
 					'"  style="background:rgba(70,130,180,'+ 1/element.semobject.abstractionLevel +
 					'); "><td column="'+column+'"><input type="checkbox" name="'+column+'parallelsets" value="'+
-					element.semobject.uid+'"> </td><td><span class="badge" >'
+					element.semobject.uid+'"> </td><td>'
+					+((element.querycount *100)/allQueryPermutations).toFixed(4)+' % </td><td><span class="badge" >'
 					+element.querycount+'</span></td><td uid="'+element.semobject.uid+
 					'" class="doubledrilldown"></td><td uid="'+element.semobject.uid+
 					'" class="drilldown"></td><td class=" semanticlistelement" uid="'+element.semobject.uid+
