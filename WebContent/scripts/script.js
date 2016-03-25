@@ -1,7 +1,6 @@
 var id=0;
 var queryPermutations= [];
-var allQueryPermutations = 0;
-
+var allQueries = 0;
 var wordnet = [];
 var tags = [];
 var queryTemplates = {};
@@ -28,9 +27,7 @@ d3.csv("data/qsp1.csv", function(d){
 		$("#loader").append("<br>- Processed data/qsp1.csv")
 		queryPermutations = data;
 		
-		$.each(queryPermutations, function(ind, qp){
-			allQueryPermutations+=qp.count;
-		}) 
+	
 		$.get("data/wordsemantics-2.20-json.txt",function(txt){
 			$("#loader").append("<br>- Loaded data/wordsemantics-2.20-json.txt")
 
@@ -47,6 +44,8 @@ d3.csv("data/qsp1.csv", function(d){
 			    	queryTemplates[res[1]] = {}
 			    	queryTemplates[res[1]].count = res[0];
 			    	queryTemplates[res[1]].text = res[2];
+			    	
+			    	allQueries=allQueries+parseFloat(res[0]);
 			    }				
 				$("#loader").append("<br>- Processed data/templateQC.txt")
 				
@@ -589,7 +588,8 @@ function populateSemanticsBrowser(){
 		tablebody.append('<tr style="background:rgba(70,130,180,'+ 1/value.abstractionLevel +
 				'); " abstraction="'+
 				value.abstractionLevel+'"><td>'
-				+(((countsA+countsB) *100)/allQueryPermutations).toFixed(4)+' % </td><td>'+(countsA+countsB)+'</td><td>'+countsA+'</td><td>'+countsB+'</td><td>'+value.label+' </td></tr>');
+//				+(((countsA+countsB) *100)/totalNumOfQueries).toFixed(4)+' % </td><td>'
+				+(countsA+countsB)+'</td><td>'+countsA+'</td><td>'+countsB+'</td><td>'+value.label+' </td></tr>');
 	});
 	
 	
@@ -632,7 +632,12 @@ function populateSemanticsBrowser(){
 		  $('#allsemanticstable').tablesorter({sortList: [[0,1]]}); 
 		});
 }
-
+function totalNumOfQueries(selectedTemplateID){
+	if(selectedTemplateID!="")
+		return queryTemplates[selectedTemplateID].count;
+	else
+		return allQueries;
+}
 function populateColumn(data, column){
 	console.log("Populating column "+column)
 	$('#'+column+'container').empty();
@@ -686,7 +691,8 @@ function populateColumn(data, column){
 					'"  style="background:rgba(70,130,180,'+ 1/element.semobject.abstractionLevel +
 					'); "><td column="'+column+'"><input type="checkbox" name="'+column+'parallelsets" value="'+
 					element.semobject.uid+'"> </td><td>'
-					+((element.querycount *100)/allQueryPermutations).toFixed(4)+' % </td><td><span class="badge" >'
+					+((element.querycount *100)/totalNumOfQueries(selectedTemplateID)).toFixed(4)+' % </td><td>'
+					+'<span class="badge" >'
 					+element.querycount+'</span></td><td uid="'+element.semobject.uid+
 					'" class="doubledrilldown"></td><td uid="'+element.semobject.uid+
 					'" class="drilldown"></td><td class=" semanticlistelement" uid="'+element.semobject.uid+
