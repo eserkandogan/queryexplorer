@@ -23,11 +23,44 @@ d3.csv("data/qsp1.csv", function(d){
 	  };	
 	  return toReturn;
 	  }, function(data) {
+		  queryPermutations = data;
+		  
 		$("#loader").append("<br>- Loaded data/qsp1.csv")
 		$("#loader").append("<br>- Processed data/qsp1.csv")
-		queryPermutations = data;
 		
+		
+		d3.csv("data/qsp2.csv", function(d){
+			id= id+1;	
+			var toReturn =  {
+			qspid : id,
+		    count : +d.count,
+		    template : d.template,
+		    columnA : parseColumnSemantics( d.columnA, 1),
+		    columnB : parseColumnSemantics( d.columnB, 2)
+		  };	
+		  return toReturn;
+		  }, function(data2) {
+			  queryPermutations = queryPermutations.concat(data2);
+			  
+		$("#loader").append("<br>- Loaded data/qsp2.csv")
+		$("#loader").append("<br>- Processed data/qsp2.csv")
 	
+		d3.csv("data/qsp3.csv", function(d){
+			id= id+1;	
+			var toReturn =  {
+			qspid : id,
+		    count : +d.count,
+		    template : d.template,
+		    columnA : parseColumnSemantics( d.columnA, 1),
+		    columnB : parseColumnSemantics( d.columnB, 2)
+		  };	
+		  return toReturn;
+		  }, function(data3) {
+			  queryPermutations = queryPermutations.concat(data3);
+			  
+		$("#loader").append("<br>- Loaded data/qsp3.csv")
+		$("#loader").append("<br>- Processed data/qsp3.csv")
+		
 		$.get("data/wordsemantics-2.20-json.txt",function(txt){
 			$("#loader").append("<br>- Loaded data/wordsemantics-2.20-json.txt")
 
@@ -52,12 +85,12 @@ d3.csv("data/qsp1.csv", function(d){
 				$("#loader").css( "display","none");	
 				$("#interface").css( "display","block");
 
-				displayTemplates(data);
+				displayTemplates(queryPermutations);
 				
 				console.log("Displayed Templates")
 				
-				populateColumn(data, 'columnA');
-				populateColumn(data, 'columnB');
+				populateColumn(queryPermutations, 'columnA');
+				populateColumn(queryPermutations, 'columnB');
 				populateSemanticsBrowser();
 				populateTagsBrowser();
 				
@@ -66,7 +99,7 @@ d3.csv("data/qsp1.csv", function(d){
 				    if(selectedTemplateID == this.id){	//i am deselecting a template
 				    	selectedTemplateID= '';
 				    	$('.templatetext').hide();
-						displayTemplates(data);//recalculate query counts
+						displayTemplates(queryPermutations);//recalculate query counts
 				    }
 				    else{//i'm selecting a template that was not selected
 				    	selectedTemplateString = this.getAttribute('text');
@@ -88,8 +121,8 @@ d3.csv("data/qsp1.csv", function(d){
 				    $("#columnBsemanticExplorer").hide();
 					$("#columnBlist").show();
 					
-				    populateColumn(data, 'columnA');
-				    populateColumn(data, 'columnB');
+				    populateColumn(queryPermutations, 'columnA');
+				    populateColumn(queryPermutations, 'columnB');
 				    displayQueries("", "");
 				});
 				
@@ -123,9 +156,9 @@ d3.csv("data/qsp1.csv", function(d){
 							$('#columnAlist'+selectedColumnAID).css('background', 'yellow');
 						}
 						displayQueries("columnA", selectedColumnAID);
-						displayTemplates(data);
+						displayTemplates(queryPermutations);
 						
-						populateColumn(data, 'columnB');
+						populateColumn(queryPermutations, 'columnB');
 						if(selectedColumnAID!=""){
 							semobject = _.select(wordnet, function (obj) {
 								  return obj.uid === selectedColumnAID;
@@ -183,13 +216,13 @@ d3.csv("data/qsp1.csv", function(d){
 						$('#columnBlist'+selectedColumnBID).css('background', 'yellow');
 					}
 
-				    populateColumn(data, 'columnA');		    
+				    populateColumn(queryPermutations, 'columnA');		    
 				    if(selectedColumnAID!=""){
 					    $('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
 					    $('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
 						$('#columnAlist'+selectedColumnAID).css('background', 'yellow');
 					}
-					displayTemplates(data);
+					displayTemplates(queryPermutations);
 				    displayQueries("columnB", selectedColumnBID);
 				    if(selectedColumnBID!=""){
 						semobject = _.select(wordnet, function (obj) {
@@ -282,7 +315,9 @@ d3.csv("data/qsp1.csv", function(d){
 				});
 			});
 		});
-});//end loading data
+	});//end loading data3
+	});//end loading data2
+});//end loading data1
 
 function displayParsets(d, position, reset){
 	var semanticid = d.uid;
@@ -759,7 +794,7 @@ function parseColumnSemantics(data, num){
 }
 function displayTemplates(data){
 	var uniqueEntities = _.uniq(data, function (item, key, a) {
-		if((item.template).length<20 )//filter out dirty data
+		if(item.template!=undefined && (item.template).length<20 )//filter out dirty data
 			return item.template;
 		});
 	var list = $("#templateList");
