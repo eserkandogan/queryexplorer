@@ -124,6 +124,17 @@ d3.csv("data/qsp1.csv", function(d){
 				    populateColumn(queryPermutations, 'columnA');
 				    populateColumn(queryPermutations, 'columnB');
 				    displayQueries("", "");
+				    if(selectedColumnAID!=""){
+				    	$('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
+						$('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
+						
+				    	$('#columnAlist'+selectedColumnAID).css('background', 'yellow');
+					}
+				    if(selectedColumnBID!=""){
+				    	$('#columnBlist'+selectedColumnBID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
+						$('#columnBlist'+selectedColumnBID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
+						$('#columnBlist'+selectedColumnBID).css('background', 'yellow');
+					}
 				});
 				
 				$(document).on("click", "#columnAlist .semanticlistelement", function() {
@@ -159,12 +170,22 @@ d3.csv("data/qsp1.csv", function(d){
 						displayTemplates(queryPermutations);
 						
 						populateColumn(queryPermutations, 'columnB');
+						if(selectedColumnBID!=""){
+							$('#columnBlist'+selectedColumnBID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
+							$('#columnBlist'+selectedColumnBID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
+							
+							$('#columnBlist'+selectedColumnBID).css('background', 'yellow');
+
+						}
+						
 						if(selectedColumnAID!=""){
 							semobject = _.select(wordnet, function (obj) {
 								  return obj.uid === selectedColumnAID;
 							})[0];
 							displayParsets(semobject, "columnA", true);
 						}
+						if(selectedTemplateID !="")
+							$("li[id="+selectedTemplateID+"]").toggleClass('selectedListElement');
 				});
 				$(document).on("click", "#columnAlist .inspect", function(){
 					$('#colAprompt').append('<button id="backTocolumnA" class="btn btn-primary btn-xs" type="button"> <span class="glyphicon glyphicon-chevron-left"></span>  Back to semantics list </button>')
@@ -216,7 +237,8 @@ d3.csv("data/qsp1.csv", function(d){
 						$('#columnBlist'+selectedColumnBID).css('background', 'yellow');
 					}
 
-				    populateColumn(queryPermutations, 'columnA');		    
+				    populateColumn(queryPermutations, 'columnA');
+				    
 				    if(selectedColumnAID!=""){
 					    $('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
 					    $('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
@@ -230,6 +252,8 @@ d3.csv("data/qsp1.csv", function(d){
 							})[0];
 					    displayParsets(semobject, "columnB", true);
 				    }
+				    if(selectedTemplateID !="")
+						$("li[id="+selectedTemplateID+"]").toggleClass('selectedListElement');
 				});
 				$(document).on("keyup","#columnAfilter", function () {
 
@@ -433,8 +457,7 @@ function addToParsetDataFull(semantic, column, topK ){
 					  return obj.uid === value.columnB.id;
 				});
 				if(filter.length!=0){
-						semanticYlabel = filter[0].label;
-						
+					semanticYlabel = filter[0].label;
 						
 					for(var ind= 0; ind<value.count; ind++){			
 						parsetelement = {}
@@ -574,14 +597,7 @@ function loadQTC(filename){
 	    return qtc;
 	});	
 }
-function countAllQueriesOfSemType(semtype, position){
-	var count = 0;
-	$.each(semtype.queryStats, function(ind, val){
-		if(Object.keys(val)[0].endsWith(position))
-			count+=val[Object.keys(val)[0]]
-	});
-	return count;
-}
+
 
 function populateTagsBrowser(){
 	$('#tagsbrowser').empty();
@@ -689,18 +705,59 @@ function populateColumn(data, column){
 	
 	var listelements = []
 	var minQueryCount= 0, maxQueryCount= 0;
-	$.each(wordnet, function( index, value) {
+	
+	console.log("Start filtering Query Permutations to get candidate semantics for "+column)
+	var filtereddata = queryPermutations;
+	
+	if(selectedTemplateID!=""){
+		console.log("Remove all Query Permutations with selectedTemplateID !="+selectedTemplateID)
+
+	 filtereddata = filtereddata.filter(function( obj ) {
+
+	    return obj.template == selectedTemplateID;
+		});
+	}
+	
+	if(column=="columnB" && selectedColumnAID!=""){
+		console.log("Remove all Query Permutations with selectedColumnAID !="+selectedColumnAID)
+
+		filtereddata = filtereddata.filter(function( obj ) {
+	    return obj.columnA.id == selectedColumnAID;
+		});
+	}
+	else if(column=="columnA" && selectedColumnBID!=""){
+		console.log("Remove all Query Permutations with selectedColumnBID !="+selectedColumnBID)
+
+		filtereddata = filtereddata.filter(function( obj ) {
+		    return obj.columnB.id == selectedColumnBID;
+		});
+	}
+	
+	var tempArray = _.uniq(filtereddata, function (item, key, a) {
+		return item[column].label;}
+	);
+	console.log("start iterating over all semantic types to be displayed in "+ column+", and calculate query counts for each.")
+
+	$.each(tempArray, function( index, value) {
 		var element = {};
-		element.semobject = value;
-		if(selectedTemplateID!="")
-			element.querycount = fetchQC(value.uid,column, selectedTemplateID)
-		else{
-			if (column=="columnA")element.querycount  =  countAllQueriesOfSemType(value, 1)
-			else if (column=="columnB")element.querycount  =  countAllQueriesOfSemType(value, 2);
+		if(value[column].id!= undefined){
+			if((value[column].id).indexOf('wordnet')!==-1){
+				o = _.select(wordnet, function (obj) {
+					  return obj.uid === value[column].id;
+					})[0];
 			}
-		if(element.querycount<minQueryCount)minQueryCount = element.querycount;
-		if(element.querycount>maxQueryCount)maxQueryCount = element.querycount;
-		listelements.push(element)
+			else{//it's a tag!
+				o = _.select(tags, function (obj) {
+					  return obj.uid === value[column].id;
+					})[0];
+			}
+			element.semobject = o;
+			element.querycount = fetchQC(o.uid, column, selectedTemplateID, filtereddata)
+	
+			if(element.querycount<minQueryCount)minQueryCount = element.querycount;
+			if(element.querycount>maxQueryCount)maxQueryCount = element.querycount;
+			listelements.push(element);
+		}
 	});
 	
 	listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
@@ -801,6 +858,32 @@ function displayTemplates(data){
 	list.empty();
 	var listelements = []
 	var minQueryCount= 0,maxQueryCount = 0;
+var filtereddata = queryPermutations;
+	
+	if(selectedTemplateID!=""){
+		console.log("Remove all Query Permutations with selectedTemplateID !="+selectedTemplateID)
+
+		filtereddata = filtereddata.filter(function( obj ) {
+			return obj.template == selectedTemplateID;
+		});
+	}
+	
+	if(selectedColumnAID!=""){
+		console.log("Remove all Query Permutations with selectedColumnAID !="+selectedColumnAID)
+
+		filtereddata = filtereddata.filter(function( obj ) {
+			return obj.columnA.id == selectedColumnAID;
+		});
+	}
+	else if(selectedColumnBID!=""){
+		console.log("Remove all Query Permutations with selectedColumnBID !="+selectedColumnBID)
+
+		filtereddata = filtereddata.filter(function( obj ) {
+		    return obj.columnB.id == selectedColumnBID;
+		});
+	}
+	
+	
 	$.each(uniqueEntities, function( index, value) {
 		var element = {};
 		var template = value.template;
@@ -809,10 +892,10 @@ function displayTemplates(data){
 			if(selectedColumnAID=='' && selectedColumnBID=='')
 				element.templatecount = queryTemplates[template].count;
 			else if (selectedColumnAID!='' && selectedColumnBID==''){
-				element.templatecount = fetchQC(selectedColumnAID,'columnA',template)
+				element.templatecount = fetchQC(selectedColumnAID,'columnA',template, filtereddata)
 			}
 			else if (selectedColumnAID=='' && selectedColumnBID!=''){
-				element.templatecount = fetchQC(selectedColumnBID,'columnB',template)
+				element.templatecount = fetchQC(selectedColumnBID,'columnB',template, filtereddata)
 			}
 			else if (selectedColumnAID!='' && selectedColumnBID!=''){
 				
@@ -847,58 +930,110 @@ function displayTemplates(data){
 	console.log("Displayed templates for selectedColumnAID= '"+selectedColumnAID+"' and selectedColumnBID='"+selectedColumnBID+"'")
 }
 
+function countAllQueriesOfSemType(semtype, position){
+	var count = 0;
+	$.each(semtype.queryStats, function(ind, val){
+		if(Object.keys(val)[0].endsWith(position))
+			count+=val[Object.keys(val)[0]]
+	});
+	return count;
+}
 
-
-function fetchQC(uid,column,template){
+function fetchQC(uid,column,template, filteredQueryPermutations){
 	var o;
-totalcount = 0;
-var id;
-	if(template!==""){
-		if(column == "columnA")
-			id = template+"_1";
-		else if(column == "columnB")
-			id = template+"_2";
-		if(uid.indexOf('wordnet')!==-1){
-			o = _.select(wordnet, function (obj) {
-				  return obj.uid === uid;
-				})[0];
-		}
-		else{//it's a tag!
-			o = _.select(tags, function (obj) {
-				  return obj.uid === uid;
-				})[0];
-		}
-		
-		filteredQueryStats  = (_.uniq(o.queryStats, function (item) {
-			return Object.keys(item)[0]==id;
-			}));
-		if(filteredQueryStats[1]==undefined){
-//			console.log(uid+" "+column+" "+template);
-			return 0;
-		}
-		else{			
-			return filteredQueryStats[1][id];// NO IDEA WHY TWO ARE RETURNED!!!! :/
-		}	
-	}
-	else{
-		totalcount = 0;
-		if(uid.indexOf('wordnet')!==-1){
-			o = _.select(wordnet, function (obj) {
+	if(uid.indexOf('wordnet')!==-1){
+		o = _.select(wordnet, function (obj) {
 			  return obj.uid === uid;
 			})[0];
-		}
-		else{
-			o = _.select(tags, function (obj) {
-				  return obj.uid === uid;
-				})[0];
+	}
+	else{//it's a tag!
+		o = _.select(tags, function (obj) {
+			  return obj.uid === uid;
+			})[0];
+	}
+//	console.log(o.label);
+	totalcount = 0;
+	var id;
+	if(template!==""){//template is selected
+		if(column == "columnA" && selectedColumnBID == ""){//calculating count for colA with no selected colB (template-columnA_*)
+			id = template+"_1";
+			filteredQueryStats  = (_.uniq(o.queryStats, function (item) {//go through semantic object query stats 
+				return Object.keys(item)[0]==id;
+				}));
+			if(filteredQueryStats[1]==undefined){
+				return 0;
 			}
-		$.each(o.queryStats, function( index, value) {
-			totalcount = totalcount+value[Object.keys(value)[0]];
-		});
-		return totalcount;
+			else{			
+				return filteredQueryStats[1][id];
+			}	
+		}
+		else if(column == "columnB" && selectedColumnAID == ""){//calculating count for colB with no selected colA (template-*_columnB)
+			id = template+"_2";
+			filteredQueryStats  = (_.uniq(o.queryStats, function (item) {
+				return Object.keys(item)[0]==id;
+				}));
+			if(filteredQueryStats[1]==undefined){
+				return 0;
+			}
+			else{			
+				return filteredQueryStats[1][id];
+			}	
+		}
+		else if(column == "columnA" && selectedColumnBID != ""){//template-semA_semB
+			filteredqp = $.grep(filteredQueryPermutations, function (item) {//go through all query permutations 
+				return item.template == template && item.columnA.id == uid && item.columnB.id == selectedColumnBID;
+				});
+			if (filteredqp.length==2)
+				filteredqp[1].count;
+			else if(filteredqp.length==1 && filteredqp[0].template == template && filteredqp[0].columnA.id == uid && filteredqp[0].columnB.id == selectedColumnBID)
+				return filteredqp[0].count
+			else
+				return 0;
+		}
+		else if(selectedColumnAID != "" && column == "columnB"){//template-semA_semB
+			filteredqp = $.grep(filteredQueryPermutations, function (item) {//go through all query permutations 
+				return item.template == template && item.columnA.id == selectedColumnAID  && item.columnB.id == uid;
+				})
+				if (filteredqp.length==2)
+					filteredqp[1].count;
+				else if(filteredqp.length==1 && filteredqp[0].template == template && filteredqp[0].columnA.id == selectedColumnAID  && filteredqp[0].columnB.id == uid)
+					return filteredqp[0].count
+				else
+					return 0;
+		}
+	}
+	else if( template == ""){
+		if (column=="columnB" && selectedColumnAID == "")
+			return countAllQueriesOfSemType(o, 2);
+		
+		else if (column=="columnA" && selectedColumnBID == "")
+			return countAllQueriesOfSemType(o, 1)
+		
+		else if (column=="columnA" && selectedColumnBID != "")
+			return countsOfAllPermutationsWithAandB(uid, selectedColumnBID, filteredQueryPermutations)	
+		else if (column=="columnB" && selectedColumnAID != "")
+			return countsOfAllPermutationsWithAandB(selectedColumnAID, uid, filteredQueryPermutations)
+		
+		else{
+			totalcount = 0;
+			$.each(o.queryStats, function( index, value) {
+				totalcount = totalcount+value[Object.keys(value)[0]];
+			});
+			return totalcount;
+		}
 	}
 }	
 
+function countsOfAllPermutationsWithAandB(columnAuid, columnBuid, filteredQueryPermutations){
+	filteredqp = $.grep(filteredQueryPermutations, function (item) {//go through all query permutations 
+		return  item.columnA.id == columnAuid  && item.columnB.id == columnBuid;
+		})
+	totalcount = 0;
+	$.each(filteredqp, function( index, value) {
+		totalcount = totalcount+ value.count;
+	});
+	return totalcount;	
+}
 
 
 function processSemanticTxt(txt){
@@ -980,11 +1115,37 @@ function displaySemanticIcicle(uid, column, fullIcicle){
 	$("#"+column+"semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key
 			+'", with id="'+uid+'"</p>');
 	
+	var filtereddata = queryPermutations;
+	
+	if(selectedTemplateID!=""){
+		console.log("Remove all Query Permutations with selectedTemplateID !="+selectedTemplateID)
+
+	    filtereddata = filtereddata.filter(function( obj ) {
+	    	return obj.template == selectedTemplateID;
+		});
+	}
+	
+	if(column == "columnB" && selectedColumnAID!=""){
+		console.log("Remove all Query Permutations with selectedColumnAID !="+selectedColumnAID)
+
+		filtereddata = filtereddata.filter(function( obj ) {
+	    return obj.columnA.id == selectedColumnAID;
+		});
+	}
+	else if(column == "columnA" && selectedColumnBID!=""){
+		console.log("Remove all Query Permutations with selectedColumnBID !="+selectedColumnBID)
+
+		filtereddata = filtereddata.filter(function( obj ) {
+		    return obj.columnB.id == selectedColumnBID;
+		});
+	}
+	
+	
 	icicle.name= key;
 	icicle.uid=semanticobject[0].uid;
 	icicle.abstractionLevel = semanticobject[0].abstractionLevel;
 	icicle.type="wordnet";
-	icicle.count = fetchQC(semanticobject[0].uid,column,selectedTemplateID);
+	icicle.count = fetchQC(semanticobject[0].uid,column,selectedTemplateID, filtereddata);
 	icicle.children= [];
 	processObject(semanticobject[0], icicle.children, column, fullIcicle);
 	
@@ -1096,11 +1257,23 @@ function displaySemanticIcicle(uid, column, fullIcicle){
               if(column == "columnA"){
             	  selectedColumnAID = d.uid;
             	  populateColumn(queryPermutations, 'columnB');
+            	  if(selectedColumnBID!=""){
+				    	$('#columnBlist'+selectedColumnBID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
+						$('#columnBlist'+selectedColumnBID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
+						
+				    	$('#columnBlist'+selectedColumnBID).css('background', 'yellow');
+					}
               }
 
               else if(column == "columnB"){
             	  selectedColumnBID = d.uid
             	  populateColumn(queryPermutations, 'columnA');
+            	  if(selectedColumnAID!=""){
+				    	$('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
+						$('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
+						
+				    	$('#columnAlist'+selectedColumnAID).css('background', 'yellow');
+					}
               }
     	}
     	else{
@@ -1109,11 +1282,23 @@ function displaySemanticIcicle(uid, column, fullIcicle){
 	        if(column == "columnA"){
 	       	 	selectedColumnAID = d.uid;
 	       	 	populateColumn(queryPermutations, 'columnB');
+	       	 	if(selectedColumnBID!=""){
+			    	$('#columnBlist'+selectedColumnBID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
+					$('#columnBlist'+selectedColumnBID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
+					
+			    	$('#columnBlist'+selectedColumnBID).css('background', 'yellow');
+				}
 	        }
 	
 	        else if(column == "columnB"){
 	        	selectedColumnBID = d.uid
 	       		populateColumn(queryPermutations, 'columnA');
+	        	 if(selectedColumnAID!=""){
+				    	$('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
+						$('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
+						
+				    	$('#columnAlist'+selectedColumnAID).css('background', 'yellow');
+					}
 	        }  
 	        displayParsets(d, column, true);
     	}
@@ -1123,6 +1308,28 @@ function displaySemanticIcicle(uid, column, fullIcicle){
 
 
 function processObject(parent, parentIcicle, column, fullicicle){
+	var filtereddata = queryPermutations;
+	if(selectedTemplateID!=""){
+
+	 filtereddata = filtereddata.filter(function( obj ) {
+	    return obj.template == selectedTemplateID;
+		});
+	}
+	
+	if(column == "columnB" && selectedColumnAID!=""){
+
+		filtereddata = filtereddata.filter(function( obj ) {
+	    return obj.columnA.id == selectedColumnAID;
+		});
+	}
+	else if(column == "columnA" && selectedColumnBID!=""){
+
+		filtereddata = filtereddata.filter(function( obj ) {
+		    return obj.columnB.id == selectedColumnBID;
+		});
+	}
+	
+	
 //this version only goes down depth 1
 	$.each(parent.derivedFrom, function(index, value){
 		var o = _.select(wordnet, function (obj) {
@@ -1139,7 +1346,7 @@ function processObject(parent, parentIcicle, column, fullicicle){
 			object.name = childSemantics.label;
 			object.uid = childSemantics.uid;
 			object.type = "tag";
-			object.count = fetchQC(childSemantics.uid,column,selectedTemplateID);
+			object.count = fetchQC(childSemantics.uid,column,selectedTemplateID, filtereddata);
 			parentIcicle.push(object);
 		}
 		else{
@@ -1156,7 +1363,7 @@ function processObject(parent, parentIcicle, column, fullicicle){
 					object.uid = childSemantics.uid;
 					object.abstractionLevel = childSemantics.abstractionLevel;
 					object.type = "wordnet";
-					object.count = fetchQC(childSemantics.uid,column,selectedTemplateID);
+					object.count = fetchQC(childSemantics.uid,column,selectedTemplateID, filtereddata);
 						
 					if(fullicicle){
 						object.children= [];
