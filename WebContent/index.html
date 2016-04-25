@@ -27,22 +27,25 @@
 	</div>	
 	<table class="table" id="interface">
 		<thead>
-		<tr><th>Query template</th><th>Column X semantic types</th><th></th><th>Column Y semantic types</th><th></th></tr></thead>
-		<tbody>
 			<tr>
+				<th style="width:520px;">Query template</th>
+				<th style="width:560px;">Column X semantic types</th>
+				<th></th>
+				<th style="width:500px;">Column Y semantic types</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr id = "querySemanticsRow">
 				<td >
-					<div class="testlayout " id="templateDisplay">
-<!-- 						<div class="well well-lg" id = "selectedTemplate">You have not selected a template yet.</div> -->
-<!-- 						<div id = "selectedTemplate1"  class="templatetext"></div> -->
+					<div class="" id="templateDisplay">
 						<div class = "scrollable" style="height:600px">
 							<ul id="templateList" class="list-group"></ul>
 						</div>
 					</div>
 				</td>
 				<td>
-					<div class="testlayout" id="columnADisplay">
-<!-- 					<div class="well well-lg" id = "selectedSemTypeA">You have not selected a semantic type yet.</div> -->
-<!-- 						<div id="colAprompt">Select a semantic type from the list of <b>all semantic types</b> available in Column X.</div> -->
+					<div class="" id="columnADisplay">
 						<div id="colAprompt"></div>
 						<div id="columnAcontainer"></div>
 						<div id="columnAsemanticExplorer"></div>
@@ -50,16 +53,15 @@
 				</td>
 				<td align="center"><div id = "selectedTemplate2" class="templatetext"></div></td>
 				<td>
-					<div class="testlayout" id="columnBDisplay">
-<!-- 					<div class="well well-lg" id = "selectedSemTypeB">You have not selected a semantic type yet.</div> -->
-<!-- 						<div id="colBprompt">Select a semantic type from the list of <b>all semantic types</b> available in Column Y.</div> -->
+					<div class="" id="columnBDisplay">
 						<div id="colBprompt"></div>
-						<div  id="columnBcontainer">	
-						
-						</div><div id="columnBsemanticExplorer"></div>
+						<div  id="columnBcontainer"></div>
+						<div id="columnBsemanticExplorer"></div>
 					</div>
 				</td>
-				<td align="center"><div id = "selectedTemplate3"  class="templatetext"></div>	</td>
+				<td align="center">
+					<div id = "selectedTemplate3"  class="templatetext"></div>
+				</td>
 			</tr>
 		</tbody>
 	</table>

@@ -7,11 +7,12 @@ var queryTemplates = {};
 var parsetAdata = [];
 var parsetBdata = [];
 var icicle;
+var a,b; //variables used to measure execution time of code
 
-var selectedTemplateID = "",selectedColumnAID = "",selectedColumnBID= "";
-var columnAelements= [], columnBelements= []; 
+var selectedTemplateID = "", selectedColumnAID = "", selectedColumnBID = "";
+var columnAelements = [], columnBelements = []; 
 var displayParsetsOn = false; //start with parallel-sets functionality off
-
+a = performance.now();
 d3.csv("data/qsp1.csv", function(d){
 	id= id+1;	
 	var toReturn =  {
@@ -68,6 +69,9 @@ d3.csv("data/qsp1.csv", function(d){
 
 			$("#loader").append("<br>- Processed data/wordsemantics-2.20-json.txt")
 			$.get("data/templateQC.txt",function(txt){
+				b = performance.now();
+				colorTrace('It took ' + (b - a) + ' ms to load all the data', "pink");
+				
 				$("#loader").append("<br>- Loaded data/templateQC.txt")
 
 			    var lines = txt.split("\n");
@@ -94,40 +98,48 @@ d3.csv("data/qsp1.csv", function(d){
 				populateSemanticsBrowser();
 				populateTagsBrowser();
 				
+				/***************************************
+				 * event listener for template selection
+				 * *************************************/
 				$('#templateList').on('click', 'li', function() {
 					
-				    if(selectedTemplateID == this.id){	//i am deselecting a template
+					// releasing a template selection
+				    if(selectedTemplateID == this.id){	
 				    	selectedTemplateID= '';
 				    	$('.templatetext').hide();
 						displayTemplates(queryPermutations);//recalculate query counts
 				    }
-				    else{//i'm selecting a template that was not selected
+				    // selecting a template that was not selected
+				    else{ 
 				    	selectedTemplateString = this.getAttribute('text');
+				    	selectedTemplateID = this.id;
+				    	
+				    	// show selected template around placeholders (columns)
 					    $('.templatetext').show();
 					    $('#selectedTemplate2').empty();
 					    $('#selectedTemplate2').append(selectedTemplateString.slice(selectedTemplateString.indexOf("X")+1, selectedTemplateString.indexOf("Y")));
-					    
 					    $('#selectedTemplate3').empty();
 					    $('#selectedTemplate3').append(selectedTemplateString.slice(selectedTemplateString.indexOf("Y")+1, selectedTemplateString.length-1));
-
-					    selectedTemplateID = this.id;
-					    $(this).children().filter('.templatevalue').text(this.getAttribute('text').slice(0, this.getAttribute('text').indexOf("X")));
+					    $(this).children().filter('.templatevalue').html(this.getAttribute('text').slice(0, this.getAttribute('text').indexOf("<b>X")));
 					    $('#templateList li').removeClass( 'selectedListElement' );
 					    $(this).toggleClass('selectedListElement');
 				    }
-				    			    
+				    // make sure semantic explorers (icicle views) are hidden and semantic lists are visible			    
 				    $("#columnAsemanticExplorer").hide();
-					$("#columnAlist").show();
 				    $("#columnBsemanticExplorer").hide();
+					$("#columnAlist").show();
 					$("#columnBlist").show();
 					
+					// generate semantic lists based on template selection
 				    populateColumn(queryPermutations, 'columnA');
 				    populateColumn(queryPermutations, 'columnB');
+				    
 				    displayQueries("", "");
+				    
+				    // highlight semantics that were preselected
 				    if(selectedColumnAID!=""){
 				    	$('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
 						$('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
-						
 				    	$('#columnAlist'+selectedColumnAID).css('background', 'yellow');
 					}
 				    if(selectedColumnBID!=""){
@@ -689,7 +701,14 @@ function totalNumOfQueries(selectedTemplateID){
 	else
 		return allQueries;
 }
+
+/**************************************************** 
+ * based on user interaction generate list 
+ * of semantic types for specified column,
+ * calculate query counts and create browser elements
+*****************************************************/
 function populateColumn(data, column){
+	
 	console.log("Populating column "+column)
 	$('#'+column+'container').empty();
 	$('#'+column+'container')
@@ -707,37 +726,40 @@ function populateColumn(data, column){
 	var minQueryCount= 0, maxQueryCount= 0;
 	
 	console.log("Start filtering Query Permutations to get candidate semantics for "+column)
+	a = performance.now();
 	var filtereddata = queryPermutations;
 	
 	if(selectedTemplateID!=""){
 		console.log("Remove all Query Permutations with selectedTemplateID !="+selectedTemplateID)
-
 	 filtereddata = filtereddata.filter(function( obj ) {
-
 	    return obj.template == selectedTemplateID;
 		});
 	}
 	
 	if(column=="columnB" && selectedColumnAID!=""){
 		console.log("Remove all Query Permutations with selectedColumnAID !="+selectedColumnAID)
-
 		filtereddata = filtereddata.filter(function( obj ) {
 	    return obj.columnA.id == selectedColumnAID;
 		});
-	}
-	else if(column=="columnA" && selectedColumnBID!=""){
+	} else if(column=="columnA" && selectedColumnBID!=""){
 		console.log("Remove all Query Permutations with selectedColumnBID !="+selectedColumnBID)
-
 		filtereddata = filtereddata.filter(function( obj ) {
 		    return obj.columnB.id == selectedColumnBID;
 		});
 	}
+	b = performance.now();
+	colorTrace('It took ' + (b - a) + ' ms to filter out unrelated query permutations  '+ column, "blue");
 	
+	a = performance.now();
 	var tempArray = _.uniq(filtereddata, function (item, key, a) {
 		return item[column].label;}
 	);
+	b = performance.now();
+	colorTrace('It took ' + (b - a) + ' ms to get a unique list of semantic types '+ column, "blue");
+	
 	console.log("start iterating over all semantic types to be displayed in "+ column+", and calculate query counts for each.")
-
+	
+	a = performance.now();
 	$.each(tempArray, function( index, value) {
 		var element = {};
 		if(value[column].id!= undefined){
@@ -759,19 +781,25 @@ function populateColumn(data, column){
 			listelements.push(element);
 		}
 	});
+	b = performance.now();
+	colorTrace('It took ' + (b - a) + ' ms to calculate query counts for every item in '+ column, "blue");
 	
+	a = performance.now();
 	listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
-
+	b = performance.now();
+	colorTrace('It took ' + (b - a) + ' ms to sort items in '+ column, "blue");
+	
+	
 	if(column =="columnA"){columnAelements = listelements;}
 	else if(column == "columnB"){columnBelements = listelements;}
 	abstractions = [];
 	
 	var columnlist = $('#'+column+'list');
 	var columnlisthtml = "";
-	var fontscale = d3.scale.linear()
-	.domain([minQueryCount, maxQueryCount])
-	.range([10, 30]);
+	var fontscale = d3.scale.linear().domain([minQueryCount, maxQueryCount]).range([10, 30]);
 	
+	
+	a = performance.now();
 	$.each(listelements, function( index, element) {
 		if($.inArray(element.semobject.abstractionLevel, abstractions) == -1){
 			abstractions.push(element.semobject.abstractionLevel);
@@ -792,6 +820,9 @@ function populateColumn(data, column){
 		      thislabel+'</td></tr>';
 		}
   	});
+
+	b = performance.now();
+	colorTrace('It took ' + (b - a) + ' ms to create the elements in '+ column, "blue");
 	columnlist.append(columnlisthtml);
 	
 	
@@ -815,7 +846,7 @@ function populateColumn(data, column){
         }
 	})
 	.each(function() {
-		 // Add labels to slider whose values 
+		// Add labels to slider whose values 
 	    // are specified by min, max
 	    // Get the options for this slider (specified above)
 	    var opt = $(this).data().uiSlider.options;
@@ -832,7 +863,6 @@ function populateColumn(data, column){
 	$('#'+column+'abstraction .ui-slider-range').css('background','linear-gradient(to right, rgba(70,130,180,1), rgba(70,130,180,'+1/8+'))');
 
 	console.log("Finished populating column "+column);
-
 }
 
 
@@ -939,23 +969,24 @@ function countAllQueriesOfSemType(semtype, position){
 	return count;
 }
 
+/**
+ * Calculate query count of a semantic type given the
+ * semantic type, placeholder position, and selected template 
+ * and combination with other placeholders  **/
 function fetchQC(uid,column,template, filteredQueryPermutations){
 	var o;
 	if(uid.indexOf('wordnet')!==-1){
-		o = _.select(wordnet, function (obj) {
-			  return obj.uid === uid;
-			})[0];
+		o = _.select(wordnet, function (obj) {return obj.uid === uid;})[0];
+	}else{//it's a tag!
+		o = _.select(tags, function (obj) {  return obj.uid === uid;})[0];
 	}
-	else{//it's a tag!
-		o = _.select(tags, function (obj) {
-			  return obj.uid === uid;
-			})[0];
-	}
-//	console.log(o.label);
+	
 	totalcount = 0;
 	var id;
-	if(template!==""){//template is selected
-		if(column == "columnA" && selectedColumnBID == ""){//calculating count for colA with no selected colB (template-columnA_*)
+	// template is NOT blank
+	if(template!==""){
+		// calculating count for colA with no selected colB (template-columnA_*)
+		if(column == "columnA" && selectedColumnBID == ""){
 			id = template+"_1";
 			filteredQueryStats  = (_.uniq(o.queryStats, function (item) {//go through semantic object query stats 
 				return Object.keys(item)[0]==id;
@@ -967,7 +998,8 @@ function fetchQC(uid,column,template, filteredQueryPermutations){
 				return filteredQueryStats[1][id];
 			}	
 		}
-		else if(column == "columnB" && selectedColumnAID == ""){//calculating count for colB with no selected colA (template-*_columnB)
+		// calculating count for colB with no selected colA (template-*_columnB)
+		else if(column == "columnB" && selectedColumnAID == ""){
 			id = template+"_2";
 			filteredQueryStats  = (_.uniq(o.queryStats, function (item) {
 				return Object.keys(item)[0]==id;
@@ -979,7 +1011,8 @@ function fetchQC(uid,column,template, filteredQueryPermutations){
 				return filteredQueryStats[1][id];
 			}	
 		}
-		else if(column == "columnA" && selectedColumnBID != ""){//template-semA_semB
+		//template-semA_semB
+		else if(column == "columnA" && selectedColumnBID != ""){
 			filteredqp = $.grep(filteredQueryPermutations, function (item) {//go through all query permutations 
 				return item.template == template && item.columnA.id == uid && item.columnB.id == selectedColumnBID;
 				});
@@ -990,7 +1023,8 @@ function fetchQC(uid,column,template, filteredQueryPermutations){
 			else
 				return 0;
 		}
-		else if(selectedColumnAID != "" && column == "columnB"){//template-semA_semB
+		//template-semA_semB
+		else if(selectedColumnAID != "" && column == "columnB"){
 			filteredqp = $.grep(filteredQueryPermutations, function (item) {//go through all query permutations 
 				return item.template == template && item.columnA.id == selectedColumnAID  && item.columnB.id == uid;
 				})
@@ -1002,18 +1036,22 @@ function fetchQC(uid,column,template, filteredQueryPermutations){
 					return 0;
 		}
 	}
+	
+	//template is BLANK
 	else if( template == ""){
+		//remaining placeholder is empty
 		if (column=="columnB" && selectedColumnAID == "")
 			return countAllQueriesOfSemType(o, 2);
-		
 		else if (column=="columnA" && selectedColumnBID == "")
-			return countAllQueriesOfSemType(o, 1)
+			return countAllQueriesOfSemType(o, 1);
 		
+		// remaining placeholder has a value
 		else if (column=="columnA" && selectedColumnBID != "")
 			return countsOfAllPermutationsWithAandB(uid, selectedColumnBID, filteredQueryPermutations)	
 		else if (column=="columnB" && selectedColumnAID != "")
 			return countsOfAllPermutationsWithAandB(selectedColumnAID, uid, filteredQueryPermutations)
 		
+			// BOTH placeholders are BLANK 
 		else{
 			totalcount = 0;
 			$.each(o.queryStats, function( index, value) {
@@ -1024,6 +1062,10 @@ function fetchQC(uid,column,template, filteredQueryPermutations){
 	}
 }	
 
+/************************************************
+ * Calculate query count if template is blank and 
+ * both placeholders have selected values
+ * **********************************************/
 function countsOfAllPermutationsWithAandB(columnAuid, columnBuid, filteredQueryPermutations){
 	filteredqp = $.grep(filteredQueryPermutations, function (item) {//go through all query permutations 
 		return  item.columnA.id == columnAuid  && item.columnB.id == columnBuid;
@@ -1140,7 +1182,6 @@ function displaySemanticIcicle(uid, column, fullIcicle){
 		});
 	}
 	
-	
 	icicle.name= key;
 	icicle.uid=semanticobject[0].uid;
 	icicle.abstractionLevel = semanticobject[0].abstractionLevel;
@@ -1176,10 +1217,8 @@ function displaySemanticIcicle(uid, column, fullIcicle){
 		   		return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
 		   .on("click", clicked)
 		   .on("mouseover", function(d) { 
-
-			      var m = d3.mouse(body.node());
-			      partitiontooltip
-			          .show()
+			   var m = d3.mouse(body.node());
+			   partitiontooltip.show()
 			          .css("left", m[0] + 10 + "px")
 			          .css("top", m[1] - 10 + "px")
 			          .text(d.name +", "+d.count);
@@ -1209,9 +1248,7 @@ function displaySemanticIcicle(uid, column, fullIcicle){
     		return "selectedListElement";
     	else
     		return d.type=="wordnet" ? "parent" : "child"; 
-    	})
-
-    .style("opacity", function(d) { return d.type=="wordnet" && d.depth!=0 ? 1/d.abstractionLevel : 1;})
+    	}).style("opacity", function(d) { return d.type=="wordnet" && d.depth!=0 ? 1/d.abstractionLevel : 1;})
     ;
 
     g.append("svg:text")
@@ -1392,3 +1429,7 @@ function displayQueries(column, uid){
 	
 }
 
+
+function colorTrace(msg, color) {
+    console.log("%c" + msg, "color:" + color + ";font-weight:bold;");
+}
