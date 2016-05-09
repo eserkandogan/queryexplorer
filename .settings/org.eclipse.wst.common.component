@@ -2,7 +2,7 @@
     <wb-module deploy-name="QueryExplorer">
         <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
-        <property name="context-root" value="QueryExplorer"/>
         <property name="java-output-path" value="/QueryExplorer/build/classes"/>
+        <property name="context-root" value="QueryExplorer"/>
     </wb-module>
 </project-modules>

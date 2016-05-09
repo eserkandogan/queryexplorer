@@ -1,51 +1,189 @@
-.explorer{
-	height: 400px;
+@CHARSET "US-ASCII";
+
+#interface{
+	display:none;
+	width:100%;	
+	table-layout: auto;
+    border-collapse: collapse;
+}
+#loader{}
+#querySemanticsRow{
+	width:100%;
+}
+.scrollable{
+	overflow-y: scroll; 
+	overflow-x: scroll;
+	height:400px;
+	width:100%;
+	max-width:500px;
+}
+#allsemanticstable thead, tbody { 
+	display: block;
+	width:100%; 
+	}
+#allsemanticstable{
+/* 	width:600px; */
+	width:100%; 
+}
+#allsemanticstable thead, tbody{
+/* 	width:600px; */
+	width:100%; 
+	}
+#semanticsbrowsertable{
+	overflow-y: scroll; 
+	overflow-x: scroll;
+	height:600px;}
+#allsemanticstable td{
+	min-width:110px;
+}
+.abstractionslider{
+	margin-top:10px;
+	margin-left:10px;
+	margin-right:10px;
+	margin-bottom:40px;
+	}
+.parsetholder{
+	float:left;
+	width: 50%;
+}
+#semanticsbrowserpanel{
+	float:left;
+	width: 100%;
+}
+#semanticsbrowser{
+	float:left;
+	width: 50%;
+}
+#semanticsbrowserdetails{
+	float:left;
+	width: 50%;}
+#examplequeriespanel{
+	float:left;
+	width: 100%;
+	}
+
+.abstractionslider label {
+  position: absolute;
+  width: 20px;
+  margin-top: 20px;
+  margin-left: -10px;
+  text-align: center;
+}
+.semanticlist{
+	max-width:500px;
+}
+.semanticlistelement{
+	overflow-x: scroll;
+	width:350px;
+}
+.drilldown{width:20px;}
+
+
+::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 7px;
+}
+::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(0,0,0,.5);
+    -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
 }
 
-.explorer tr td {
-	padding: 10px;
+rect {
+  stroke: #eee;
+  fill: #aaa;
+  fill-opacity: .8;
 }
 
-article {
-	display: inline-block;
-	margin: 20px;
+rect.parent {
+  cursor: pointer;
+  fill: steelblue;
 }
-    .templatebrowser {
+
+pre {
+  font-size: 18px;
+}
+
+line {
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+
+
+.string, .regexp {
+  color: #f39;
+}
+
+.keyword {
+  color: #00c;
+}
+
+.comment {
+  color: #777;
+  font-style: oblique;
+}
+
+.number {
+  color: #369;
+}
+
+.class, .special {
+  color: #1181B8;
+}
+
+.partitiontooltip {
+ background-color:black; /*  rgba(242, 242, 242, .6); */
+ color: white;
+  position: absolute;
+  padding: 5px;
+}
+.inheritance-ico{
+	background:url(images/icon-inheritance-view.png); 
+    width:16px; 
+    height:16px;
+    display: block;
+    }
+    
+.templatetext{
+/* 	min-width: 150px; */
+	padding:5px;
+	position: relative;
+	display:none;
+	background-color:yellow;
+    top: 200px;
+   
+	align:center;
+	font-size: 25px;
+	}
+
+.templatebrowser {
       width: 400px;
-      height: 300px;
+/*       height: 600px; */
       border: 1px solid #ccc;
       margin: 20px;
-    }
-ul {
-	position: relative;
-	width: 330px;
-	height: 480px;
-	margin: 0;
-	padding: 0;
-	overflow-x: hidden;
-	overflow-y: scroll;
-	list-style: none;
-
-	-webkit-perspective: 400px;
-	   -moz-perspective: 400px;
-	    -ms-perspective: 400px;
-	     -o-perspective: 400px;
-	        perspective: 400px;
 }
-ul li {
-		position: relative;
-		padding: 16px;
-		background: #eee;
-		color: #252525;
-		font-size: 18px;
-		z-index: 2;
-
-		-webkit-transform: translateZ(0px);
-		   -moz-transform: translateZ(0px);
-		    -ms-transform: translateZ(0px);
-		     -o-transform: translateZ(0px);
-		        transform: translateZ(0px);
-	}
-ul li:nth-child(odd) {
-		background: #fff;
-	}
+#semanticExplorer{
+	padding:10px;
+	margin:10px;
+	display:none;
+}
+#iciclePrintout{
+	padding:10px;
+	margin:10px;
+}
+.inspect{
+	display: inline-block;
+	width: 18px;
+	vertical-align:middle;
+	float:right;
+	margin-right:10px;
+}
+.selectedListElement{
+	fill:yellow;
+	opacity:1;
+	background-color:yellow;
+	bgcolor:yellow;
+}
+/* #semanticExplorerPanel{ */
+/* 	display:none; */
+/* } */

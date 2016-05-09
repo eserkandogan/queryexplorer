@@ -1,7 +1,15 @@
+/**
+ * 
+ */
+	var client = new $.es.Client({
+		  host: 'http://localhost:9200',
+//		  log: 'trace'
+		});
+	
 var id=0;
-var queryPermutations= [];
+var queryPermutations = [];
 var allQueries = 0;
-var wordnet = [];
+var wordnet = [], senses = [];
 var tags = [];
 var queryTemplates = {};
 var parsetAdata = [];
@@ -12,95 +20,81 @@ var a,b; //variables used to measure execution time of code
 var selectedTemplateID = "", selectedColumnAID = "", selectedColumnBID = "";
 var columnAelements = [], columnBelements = []; 
 var displayParsetsOn = false; //start with parallel-sets functionality off
+/////////////////////////////////////////////////////////////////////////////
+
 a = performance.now();
-d3.csv("data/qsp1.csv", function(d){
-	id= id+1;	
-	var toReturn =  {
-		qspid : id,
-	    count : +d.count,
-	    template : d.template,
-	    columnA : parseColumnSemantics( d.columnA, 1),
-	    columnB : parseColumnSemantics( d.columnB, 2)
-	  };	
-	  return toReturn;
-	  }, function(data) {
-		  queryPermutations = data;
-		  
-		$("#loader").append("<br>- Loaded data/qsp1.csv")
-		$("#loader").append("<br>- Processed data/qsp1.csv")
-		
-		
-		d3.csv("data/qsp2.csv", function(d){
-			id= id+1;	
-			var toReturn =  {
-			qspid : id,
-		    count : +d.count,
-		    template : d.template,
-		    columnA : parseColumnSemantics( d.columnA, 1),
-		    columnB : parseColumnSemantics( d.columnB, 2)
-		  };	
-		  return toReturn;
-		  }, function(data2) {
-			  queryPermutations = queryPermutations.concat(data2);
-			  
-		$("#loader").append("<br>- Loaded data/qsp2.csv")
-		$("#loader").append("<br>- Processed data/qsp2.csv")
-	
-		d3.csv("data/qsp3.csv", function(d){
-			id= id+1;	
-			var toReturn =  {
-			qspid : id,
-		    count : +d.count,
-		    template : d.template,
-		    columnA : parseColumnSemantics( d.columnA, 1),
-		    columnB : parseColumnSemantics( d.columnB, 2)
-		  };	
-		  return toReturn;
-		  }, function(data3) {
-			  queryPermutations = queryPermutations.concat(data3);
-			  
-		$("#loader").append("<br>- Loaded data/qsp3.csv")
-		$("#loader").append("<br>- Processed data/qsp3.csv")
-		
-		$.get("data/wordsemantics-2.20-json.txt",function(txt){
-			$("#loader").append("<br>- Loaded data/wordsemantics-2.20-json.txt")
+$.getJSON( "data/QuerySemanticPermutations/qsp_1.json", function( data ) {
+queryPermutations = data;
+$.getJSON( "data/QuerySemanticPermutations/qsp_2.json", function( data2 ) {
+queryPermutations = queryPermutations.concat(data2);
+$.getJSON( "data/QuerySemanticPermutations/qsp_3.json", function( data3 ) {
+queryPermutations = queryPermutations.concat(data3);	  
+$.getJSON( "data/QuerySemanticPermutations/qsp_4.json", function( data4 ) {
+queryPermutations = queryPermutations.concat(data4);
+$.getJSON( "data/QuerySemanticPermutations/qsp_5.json", function( data5 ) {
+queryPermutations = queryPermutations.concat(data5);
+$.getJSON( "data/QuerySemanticPermutations/qsp_6.json", function( data6 ) {
+queryPermutations = queryPermutations.concat(data6);
+$.getJSON( "data/QuerySemanticPermutations/qsp_7.json", function( data7 ) {
+queryPermutations = queryPermutations.concat(data7);
+$.getJSON( "data/QuerySemanticPermutations/qsp_8.json", function( data8 ) {
+queryPermutations = queryPermutations.concat(data8);
+$.getJSON( "data/QuerySemanticPermutations/qsp_9.json", function( data9 ) {
+queryPermutations = queryPermutations.concat(data9);
+$.getJSON( "data/QuerySemanticPermutations/qsp_10.json", function( data10 ) {
+queryPermutations = queryPermutations.concat(data10);
+$.getJSON( "data/QuerySemanticPermutations/qsp_11.json", function( data11 ) {
+queryPermutations = queryPermutations.concat(data11);
+$.getJSON( "data/QuerySemanticPermutations/qsp_12.json", function( data12 ) {
+queryPermutations = queryPermutations.concat(data12);
+	$.getJSON( "data/QuerySemanticPermutations/qsp_13.json", function( data13 ) {
+		queryPermutations = queryPermutations.concat(data13);
 
-			processSemanticTxt(txt);
-
-			$("#loader").append("<br>- Processed data/wordsemantics-2.20-json.txt")
-			$.get("data/templateQC.txt",function(txt){
-				b = performance.now();
-				colorTrace('It took ' + (b - a) + ' ms to load all the data', "pink");
+		$.getJSON( "data/wordnet.json", function( wordnetdata ) {
+			wordnet = wordnetdata;
+			$.getJSON( "data/tags.json", function( tagdata ) {
+				tags = tagdata;
+				  $.get("data/templateQC.txt",function(txt){
+					  b = performance.now();
+					  colorTrace('It took ' + (b - a) + ' ms to load all the data', "pink");
+					  $("#loader").append("<br>- Loaded data/templateQC.txt")
 				
-				$("#loader").append("<br>- Loaded data/templateQC.txt")
-
-			    var lines = txt.split("\n");
-			    for (var i = 0, len = lines.length; i < len; i++) {
-			    	line = lines[i];
-			    	var res = line.split(",");
-			    	queryTemplates[res[1]] = {}
-			    	queryTemplates[res[1]].count = res[0];
-			    	queryTemplates[res[1]].text = res[2];
-			    	
-			    	allQueries=allQueries+parseFloat(res[0]);
-			    }				
-				$("#loader").append("<br>- Processed data/templateQC.txt")
+					  var lines = txt.split("\n");
+					  for (var i = 0, len = lines.length; i < len; i++) {
+					    	line = lines[i];
+					    	var res = line.split(",");
+					    	queryTemplates[res[1]] = {}
+					    	queryTemplates[res[1]].count = res[0];
+					    	queryTemplates[res[1]].text = res[2];
+					    	
+					    	allQueries=allQueries+parseFloat(res[0]);
+					  }				
+					  $("#loader").append("<br>- Processed data/templateQC.txt");
+				
+				
+				$.each(wordnet, function(index, value){
+					senses.push(value.uid);
+				})
+				
+				////////////// Data Loaded //////////
+				
+				
+				
+				
 				
 				$("#loader").css( "display","none");	
 				$("#interface").css( "display","block");
 
-				displayTemplates(queryPermutations);
+				displayTemplates();
 				
 				console.log("Displayed Templates")
 				
 				populateColumn(queryPermutations, 'columnA');
 				populateColumn(queryPermutations, 'columnB');
-				populateSemanticsBrowser();
-				populateTagsBrowser();
+//				populateSemanticsBrowser();
+//				populateTagsBrowser();
 				
-				/***************************************
-				 * event listener for template selection
-				 * *************************************/
+				// event listener for template selection
 				$('#templateList').on('click', 'li', function() {
 					
 					// releasing a template selection
@@ -351,9 +345,9 @@ d3.csv("data/qsp1.csv", function(d){
 				});
 			});
 		});
-	});//end loading data3
-	});//end loading data2
-});//end loading data1
+	});
+});
+});});});});});});});});});});});});
 
 function displayParsets(d, position, reset){
 	var semanticid = d.uid;
@@ -702,6 +696,221 @@ function totalNumOfQueries(selectedTemplateID){
 		return allQueries;
 }
 
+
+/****************************************************
+ * Generate list of templates ranked by query counts
+ * *************************************************/
+function displayTemplates(){
+
+	var listelements = [];
+	
+	var list = $("#templateList");
+	list.empty();
+	var minQueryCount= 0,maxQueryCount = 0;
+	//No filters have been applied
+	if(selectedTemplateID=="" && selectedColumnAID=="" && selectedColumnBID==""){
+		$.each(queryTemplates, function( index, value) {
+		var element = {};
+		element.template = index;
+		element.text = value.text;
+		element.templatecount = value.count;
+		listelements.push(element);
+		
+		if(element.templatecount<=minQueryCount)
+			minQueryCount = element.templatecount;
+		if(element.templatecount>=maxQueryCount)
+			maxQueryCount = element.templatecount;			
+		});
+	}
+	// there is a filter on one or more query attributes
+	else if (selectedColumnAID!="" || selectedColumnBID!=""){		
+		$.each(queryPermutations, function(index, value){
+			if(selectedColumnAID!="" && selectedColumnBID!="" &&
+					value.columnA.id == selectedColumnAID && value.columnB.id == selectedColumnBID){
+				elementindex= 0;
+				var exists = _.find(listelements, function(item, index){
+					if(item.template==value.template)
+						elementindex = index;
+					return item.template==value.template
+					});
+				if(exists!== undefined){
+					listelements[elementindex].templatecount = exists.templatecount + value.count;
+				}else{
+					var element = {};
+					element.template = value.template;
+					element.text = queryTemplates[value.template].text;
+					element.templatecount = value.count;
+					listelements.push(element);
+				}
+			}else if (selectedColumnAID=="" && selectedColumnBID!=""&&
+					value.columnB.id == selectedColumnBID){
+				elementindex= 0;
+				var exists = _.find(listelements, function(item, index){
+					if(item.template==value.template)elementindex = index;
+					return item.template==value.template
+					});
+				if(exists!== undefined){
+					listelements[elementindex].templatecount = exists.templatecount + value.count;
+				}else{
+					var element = {};
+					element.template = value.template;
+					element.text = queryTemplates[value.template].text;
+					element.templatecount = value.count;
+					listelements.push(element);
+				}
+			}
+			else if (selectedColumnAID!="" && selectedColumnBID=="" &&
+					value.columnA.id == selectedColumnAID){
+				elementindex= 0;
+				var exists = _.find(listelements, function(item, index){
+					if(item.template==value.template)elementindex = index;
+					return item.template==value.template
+					});
+				if(exists!== undefined){
+					listelements[elementindex].templatecount = exists.templatecount + value.count;
+				}else{
+					var element = {};
+					element.template = value.template;
+					element.text = queryTemplates[value.template].text;
+					element.templatecount = value.count;
+					listelements.push(element);
+				}
+			}
+		});
+
+		minQueryCount = (_.min(listelements, function(item){return item.templatecount;})).templatecount;
+		maxQueryCount = (_.max(listelements, function(item){return item.templatecount;})).templatecount;
+	}
+	//sort templates by template count
+	listelements = _.sortBy(listelements, function(element){ return - element.templatecount;})
+	
+	maxQueryCount = listelements[0].templatecount;
+	var fontscale = d3.scale.linear()
+		.domain([minQueryCount, maxQueryCount])
+		.range([10, 30])
+		.clamp(true);
+	
+	// create and append template list to browser
+	var listhtml= "";
+	$.each(listelements, function( index, value) {
+		listhtml = listhtml+ '<li class="list-group-item" id="'+value.template+'" text="'+value.text+'" permutations = "'+value.templatecount+
+		'" style="font-size:'+fontscale(value.templatecount)+'px;"><span class ="badge">'+value.templatecount+'</span><span class="templatevalue">'+value.text+'</span></li>';
+	});
+	list.append(listhtml);
+	
+	console.log("Displayed templates for selectedColumnAID= '"+selectedColumnAID+"' and selectedColumnBID='"+selectedColumnBID+"'")
+}
+
+function calculateQueryCount(template){
+	var querycount = 0;
+	//build query
+	var query, mustarray=[];
+	var term;
+	term = {term: {"template":template}};
+	mustarray.push(term);
+	if (selectedColumnAID!="") {
+		term = {term: {"columnA.id":selectedColumnAID}};
+		mustarray.push(term);
+		}
+	if (selectedColumnBID!="") {
+		term = {term: {"columnB.id":selectedColumnBID}};
+		mustarray.push(term);
+		}
+	query = {query: { filtered: {filter: {bool:{must:mustarray}}}}};
+
+	client.search({index:'viqs',type:'querysemantics',body:query}).then(function (resp) {
+			querycount = resp.hits.total;
+	    	console.log(querycount);
+		}, function (err) {
+		    console.trace(err.message);
+		});
+	return querycount;
+
+	
+}
+
+/******************************************************************
+ * Return query count for an attribute in a given position
+ * e.g., * - <wordnet_123>-* OR * - *-<wordnet_123>
+ * ***************************************************************/
+// this is a duplicate function of countAllQueriesOfSemType. TODO replace everywhere with countQueriesOfWordInPosition
+function countQueriesOfWordInPosition(word, column){
+	
+	if(column == "columnA") position = 1;
+	else if(column == "columnB") position = 2; 
+	
+	var count = 0;
+	$.each(word.queryStats, function(ind, val){
+		if(Object.keys(val)[0].endsWith(position))
+			count+=val[Object.keys(val)[0]]
+	});
+	return count;
+}
+/******************************************************************
+ * Return query count for a known template and one known attribute
+ * e.g., compare_2 - <wordnet_123>-*  OR  compare_2 - *-<wordnet_123>
+ * ***************************************************************/
+function countQueriesOfWordInPositionWithTemplate(word, column){
+	if(column == "columnA") position = 1;
+	else if(column == "columnB") position = 2; 
+	
+	id = selectedTemplateID+"_"+position;
+	filteredQueryStats  = (_.uniq(word.queryStats, function (item) {//go through semantic object query stats 
+		return Object.keys(item)[0]==id;
+		}));
+	
+	if(filteredQueryStats[1]==undefined){
+		return 0;
+	}
+	else{			
+		return filteredQueryStats[1][id];
+	}	
+}
+/**
+ * add query counts from all <template_id> - <wordnet_123> - <wordnet_456>
+ * e.g., * - <wordnet_123> - <wordnet_456>:<see query permutations file>
+ * */
+function countQueriesGivenTwoAttributes(columnAuid, columnBuid){
+	
+	filteredqp = $.grep(queryPermutations, function (item) {//go through all query permutations 
+		return  item.columnA.id == columnAuid  && item.columnB.id == columnBuid;
+		})
+	totalcount = 0;
+	$.each(filteredqp, function( index, value) {
+		totalcount = totalcount+ value.count;
+	});
+	return totalcount;	
+}
+
+/**************************************************************************************
+ * Sends selected template and a selected attribute with it's position in the query
+ * to the server, expects back a json array (listelements)
+ * with the wordnet senses and their query counts
+ * ************************************************************************************/
+function getQueryCountsPerSenseGivenAttribute(selectedTemplateID, column, selectedColumnID){
+	var referencedColumn; 
+	if(column== "columnA")referencedColumn= "columnB";
+	else if(column== "columnB")referencedColumn= "columnA";
+	
+	$.ajax({
+	     url: 'controller?action=CALC_QUERY_COUNTS&selectedTemplateID='+selectedTemplateID+
+	     											'&referencedColumn='+referencedColumn+
+	     											'&referencedColumnID='+selectedColumnID,
+	     type: 'post', 
+	     dataType: 'json',
+         contentType: "application/json; charset=utf-8",
+         mimeType: 'application/json',
+	     data: JSON.stringify(senses),
+	     success: function(result) {
+	       console.log('Successfully sent '+fileindex);
+	     },
+	     error:function(result) {
+	       alert('ERROR');
+	     }
+	});
+}
+
+
 /**************************************************** 
  * based on user interaction generate list 
  * of semantic types for specified column,
@@ -724,65 +933,139 @@ function populateColumn(data, column){
 	
 	var listelements = []
 	var minQueryCount= 0, maxQueryCount= 0;
-	
-	console.log("Start filtering Query Permutations to get candidate semantics for "+column)
+	var filteredqp;
 	a = performance.now();
-	var filtereddata = queryPermutations;
-	
-	if(selectedTemplateID!=""){
-		console.log("Remove all Query Permutations with selectedTemplateID !="+selectedTemplateID)
-	 filtereddata = filtereddata.filter(function( obj ) {
-	    return obj.template == selectedTemplateID;
-		});
-	}
-	
-	if(column=="columnB" && selectedColumnAID!=""){
-		console.log("Remove all Query Permutations with selectedColumnAID !="+selectedColumnAID)
-		filtereddata = filtereddata.filter(function( obj ) {
-	    return obj.columnA.id == selectedColumnAID;
-		});
-	} else if(column=="columnA" && selectedColumnBID!=""){
-		console.log("Remove all Query Permutations with selectedColumnBID !="+selectedColumnBID)
-		filtereddata = filtereddata.filter(function( obj ) {
-		    return obj.columnB.id == selectedColumnBID;
-		});
-	}
-	b = performance.now();
-	colorTrace('It took ' + (b - a) + ' ms to filter out unrelated query permutations  '+ column, "blue");
-	
-	a = performance.now();
-	var tempArray = _.uniq(filtereddata, function (item, key, a) {
-		return item[column].label;}
-	);
-	b = performance.now();
-	colorTrace('It took ' + (b - a) + ' ms to get a unique list of semantic types '+ column, "blue");
-	
-	console.log("start iterating over all semantic types to be displayed in "+ column+", and calculate query counts for each.")
-	
-	a = performance.now();
-	$.each(tempArray, function( index, value) {
-		var element = {};
-		if(value[column].id!= undefined){
-			if((value[column].id).indexOf('wordnet')!==-1){
-				o = _.select(wordnet, function (obj) {
-					  return obj.uid === value[column].id;
-					})[0];
+
+	if(		(column == "columnA" && selectedColumnBID != "") ||
+			(column == "columnB" && selectedColumnAID != "")){
+		if(selectedTemplateID == ""){
+			if(column == "columnA" && selectedColumnBID != ""){
+//		 	getQueryCountsPerSenseGivenAttribute(selectedTemplateID, column, selectedColumnBID);
+				
+				$.each(queryPermutations, function(index, value){
+					if(value.columnB.id == selectedColumnBID){
+						elementindex= 0;
+						//todo: if already contains this semobject update (add) querycounts
+						var exists = _.find(listelements, function(item, index){
+							if(item.semobject.uid==value.columnA.id)elementindex = index;
+							return item.semobject.uid==value.columnA.id});
+						
+						if(exists!== undefined){
+							listelements[elementindex].querycount = exists.querycount + value.count;
+						}else{
+							var element = {};
+							
+							element.semobject = {
+									uid:value.columnA.id,
+									label:value.columnA.label,
+									abstractionLevel: value.columnA.abstractionLevel
+								}	
+							element.querycount = value.count;
+							listelements.push(element);
+						}
+					}
+				});
+				minQueryCount = (_.min(listelements, function(item){return item.querycount})).querycount;
+				maxQueryCount = (_.max(listelements, function(item){return item.querycount})).querycount;
 			}
-			else{//it's a tag!
-				o = _.select(tags, function (obj) {
-					  return obj.uid === value[column].id;
-					})[0];
+			else if(selectedTemplateID == "" && column == "columnB" && selectedColumnAID != ""){
+				//	 	getQueryCountsPerSenseGivenAttribute(selectedTemplateID, column, selectedColumnAID);
+
+				$.each(queryPermutations, function(index, value){
+					if(value.columnA.id == selectedColumnAID){
+						var exists = _.find(listelements, function(item, index){
+							if(item.semobject.uid==value.columnB.id)elementindex = index;
+							return item.semobject.uid==value.columnB.id});
+						if(exists!== undefined){
+							listelements[elementindex].querycount = exists.querycount+ value.count;
+						}else{
+							var element = {};
+							
+							element.semobject = {
+									uid:value.columnB.id,
+									label:value.columnB.label,
+									abstractionLevel: value.columnB.abstractionLevel
+								}	
+							element.querycount = value.count;
+							listelements.push(element);
+							}
+						}
+					});
+				
+				minQueryCount = (_.min(listelements, function(item){return item.querycount})).querycount;
+				maxQueryCount = (_.max(listelements, function(item){return item.querycount})).querycount;
+			
 			}
-			element.semobject = o;
-			element.querycount = fetchQC(o.uid, column, selectedTemplateID, filtereddata)
-	
-			if(element.querycount<minQueryCount)minQueryCount = element.querycount;
-			if(element.querycount>maxQueryCount)maxQueryCount = element.querycount;
-			listelements.push(element);
 		}
-	});
+		else if(selectedTemplateID != ""){
+			if(column == "columnA" && selectedColumnBID != ""){
+		
+	//	 	getQueryCountsPerSenseGivenAttribute(selectedTemplateID, column, selectedColumnBID);
+//			filteredqp = $.grep(queryPermutations, function (item) {//go through all query permutations 
+//				return item.columnB.id == selectedColumnBID && item.template == selectedTemplateID;
+//				});
+				$.each(queryPermutations, function(index, value){
+					if(value.columnB.id == selectedColumnBID && value.template == selectedTemplateID){
+						var element = {};
+						element.semobject = {
+								uid:value.columnA.id,
+								label:value.columnA.label,
+								abstractionLevel: value.columnA.abstractionLevel
+							}
+						element.querycount = value.count;
+						listelements.push(element);
+						if(element.querycount<minQueryCount)minQueryCount = element.querycount;
+						else if(element.querycount>maxQueryCount)maxQueryCount = element.querycount;
+					}
+				});
+			}
+			else if(column == "columnB" && selectedColumnAID != ""){
+		//	 	getQueryCountsPerSenseGivenAttribute(selectedTemplateID, column, selectedColumnAID);
+//				filteredqp = $.grep(queryPermutations, function (item) {//go through all query permutations 
+//					return item.columnA.id == selectedColumnAID && item.template == selectedTemplateID;
+//				});
+				$.each(queryPermutations, function(index, value){
+					if(value.columnA.id == selectedColumnAID && value.template == selectedTemplateID){
+						var element = {};
+						element.semobject = {
+								uid:value.columnB.id,
+								label:value.columnB.label,
+								abstractionLevel: value.columnB.abstractionLevel
+							}
+						element.querycount = value.count;
+						listelements.push(element);
+						if(element.querycount<minQueryCount)minQueryCount = element.querycount;
+						else if(element.querycount>maxQueryCount)maxQueryCount = element.querycount;
+					}
+				});
+			}
+		}
+	}
+	else if((column == "columnA" && selectedColumnBID == "") ||
+			(column == "columnB" && selectedColumnAID == "")){		
+		$.each(wordnet, function( index, value) {
+			var element = {};
+			element.semobject = value;
+			
+				if(selectedTemplateID == ""){
+					element.querycount = countQueriesOfWordInPosition(value, column);
+				}
+				else if(selectedTemplateID != ""){
+					element.querycount = countQueriesOfWordInPositionWithTemplate(value, column);
+				}
+			
+			if(element.querycount<minQueryCount)minQueryCount = element.querycount;
+			else if(element.querycount>maxQueryCount)maxQueryCount = element.querycount;
+			
+			// if this semantic type really does participate in queries, add it to the list
+			if(element.querycount!=0)
+				listelements.push(element);
+		});
+	}
+
 	b = performance.now();
-	colorTrace('It took ' + (b - a) + ' ms to calculate query counts for every item in '+ column, "blue");
+	colorTrace('It took ' + (b - a) + ' ms to list semantic types AND calculate query counts for  '+ column +'', "blue");
+
 	
 	a = performance.now();
 	listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
@@ -822,7 +1105,7 @@ function populateColumn(data, column){
   	});
 
 	b = performance.now();
-	colorTrace('It took ' + (b - a) + ' ms to create the elements in '+ column, "blue");
+	colorTrace('It took ' + (b - a) + ' ms to create the interface elements in '+ column, "blue");
 	columnlist.append(columnlisthtml);
 	
 	
@@ -868,98 +1151,75 @@ function populateColumn(data, column){
 
 function parseColumnSemantics(data, num){
 	
-	var columnObject = [];
+	var columnObject = {};
 	
 	if(data!==undefined){	
 		var objectElements = data.split(/[[\]]{1,2}/);	
-		columnObject["label"] = objectElements[0];
-		columnObject["id"]= objectElements[1];
-		columnObject["abstractionLevel"]= objectElements[2];
-		columnObject["columnCount"]= +objectElements[3];
+		columnObject.label = objectElements[0];
+		columnObject.id= objectElements[1];
+		columnObject.abstractionLevel= objectElements[2];
+		columnObject.columnCount = + objectElements[3];
 	}
 	return columnObject;
 }
-function displayTemplates(data){
-	var uniqueEntities = _.uniq(data, function (item, key, a) {
-		if(item.template!=undefined && (item.template).length<20 )//filter out dirty data
-			return item.template;
+function saveQSP(){
+	startindex = 0; 
+	increment = 100000;
+	fileindex = 1;
+	while(startindex<queryPermutations.length){
+		if(startindex+increment>=queryPermutations.length)
+			endindex = queryPermutations.length-1;
+		else endindex = startindex+increment;
+		
+	  $.ajax({
+		     url: 'controller?action=SAVE_QSP&filename=qsp_'+fileindex,
+		     type: 'post', 
+		     dataType: 'json',
+	         contentType: "application/json; charset=utf-8",
+	         mimeType: 'application/json',
+		     data: JSON.stringify(queryPermutations.slice(startindex,endindex)),
+		     success: function(result) {
+		       console.log('Successfully saved qsp_'+fileindex);
+		     },
+		     error:function(result) {
+		       alert('ERROR');
+		     }
 		});
-	var list = $("#templateList");
-	list.empty();
-	var listelements = []
-	var minQueryCount= 0,maxQueryCount = 0;
-var filtereddata = queryPermutations;
-	
-	if(selectedTemplateID!=""){
-		console.log("Remove all Query Permutations with selectedTemplateID !="+selectedTemplateID)
-
-		filtereddata = filtereddata.filter(function( obj ) {
-			return obj.template == selectedTemplateID;
+	  var bulkstring = "";
+	  $.each(queryPermutations.slice(startindex,endindex), function(index, item){
+		  var indexjson = {};
+		  indexjson.index = {};
+		  indexjson.index._index= "viqs";
+		  indexjson.index._type= "querysemantics";
+		  indexjson.index._id= item.qspid;
+		  
+		  bulkstring = bulkstring+ JSON.stringify(indexjson)+ "\n";
+		  bulkstring = bulkstring+ JSON.stringify(item)+ "\n";
+	  });
+	  $.ajax({
+		     url: 'controller?action=SAVE_QSP_BULK&filename=qsp_bulk_'+fileindex,
+		     type: 'post', 
+		     dataType: 'text',
+		     data: bulkstring,
+		     success: function(result) {
+		       console.log('Successfully saved qsp_bulk_'+fileindex);
+		     },
+		     error:function(result) {
+		       alert('ERROR');
+		     }
 		});
+	  
+	  
+	  
+	  fileindex++;
+	  startindex = startindex+1 + increment;
 	}
 	
-	if(selectedColumnAID!=""){
-		console.log("Remove all Query Permutations with selectedColumnAID !="+selectedColumnAID)
-
-		filtereddata = filtereddata.filter(function( obj ) {
-			return obj.columnA.id == selectedColumnAID;
-		});
-	}
-	else if(selectedColumnBID!=""){
-		console.log("Remove all Query Permutations with selectedColumnBID !="+selectedColumnBID)
-
-		filtereddata = filtereddata.filter(function( obj ) {
-		    return obj.columnB.id == selectedColumnBID;
-		});
-	}
 	
 	
-	$.each(uniqueEntities, function( index, value) {
-		var element = {};
-		var template = value.template;
-		if(queryTemplates[template]!=undefined && (queryTemplates[template].text).indexOf('Ignore')==-1){
-			element.template = template;
-			if(selectedColumnAID=='' && selectedColumnBID=='')
-				element.templatecount = queryTemplates[template].count;
-			else if (selectedColumnAID!='' && selectedColumnBID==''){
-				element.templatecount = fetchQC(selectedColumnAID,'columnA',template, filtereddata)
-			}
-			else if (selectedColumnAID=='' && selectedColumnBID!=''){
-				element.templatecount = fetchQC(selectedColumnBID,'columnB',template, filtereddata)
-			}
-			else if (selectedColumnAID!='' && selectedColumnBID!=''){
-				
-				element.templatecount = _.select(queryPermutations, function (obj) {
-					  return obj.columnA.id === selectedColumnAID && obj.columnB.id === selectedColumnBID;
-				})[0].count;
-			}
-			element.text = queryTemplates[template].text;
-			listelements.push(element);	
-
-			if(element.templatecount<=minQueryCount)
-				minQueryCount = element.templatecount;
-			if(element.templatecount>=maxQueryCount)
-				maxQueryCount = element.templatecount;
-		}
-	});
-	listelements = _.sortBy(listelements, function(element){ return - element.templatecount;})
-	maxQueryCount = listelements[0].templatecount;
-	
-	var listhtml= "";
-	var fontscale = d3.scale.linear()
-		.domain([minQueryCount, maxQueryCount])
-		.range([10, 30])
-		.clamp(true);
-	
-	$.each(listelements, function( index, value) {
-		listhtml = listhtml+ '<li class="list-group-item" id="'+value.template+'" text="'+value.text+'" permutations = "'+value.templatecount+
-		'" style="font-size:'+fontscale(value.templatecount)+'px;"><span class ="badge">'+value.templatecount+'</span><span class="templatevalue">'+value.text+'</span></li>';
-	});
-	list.append(listhtml);
-	
-	console.log("Displayed templates for selectedColumnAID= '"+selectedColumnAID+"' and selectedColumnBID='"+selectedColumnBID+"'")
 }
 
+//THIS IS A DUPLICATE FUNCTION
 function countAllQueriesOfSemType(semtype, position){
 	var count = 0;
 	$.each(semtype.queryStats, function(ind, val){
