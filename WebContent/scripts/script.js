@@ -1,11 +1,11 @@
 /**
  * 
  */
-	var client = new $.es.Client({
-		  host: 'http://localhost:9200',
-//		  log: 'trace'
-		});
-	
+//	var client = new $.es.Client({
+//		  host: 'http://localhost:9200',
+////		  log: 'trace'
+//		});
+var elasticsearch = true;	
 var id=0;
 var queryPermutations = [];
 var allQueries = 0;
@@ -89,8 +89,8 @@ queryPermutations = queryPermutations.concat(data12);
 				
 				console.log("Displayed Templates")
 				
-				populateColumn(queryPermutations, 'columnA');
-				populateColumn(queryPermutations, 'columnB');
+				populateColumn('columnA');
+				populateColumn('columnB');
 //				populateSemanticsBrowser();
 //				populateTagsBrowser();
 				
@@ -125,8 +125,8 @@ queryPermutations = queryPermutations.concat(data12);
 					$("#columnBlist").show();
 					
 					// generate semantic lists based on template selection
-				    populateColumn(queryPermutations, 'columnA');
-				    populateColumn(queryPermutations, 'columnB');
+				    populateColumn('columnA');
+				    populateColumn('columnB');
 				    
 				    displayQueries("", "");
 				    
@@ -175,7 +175,7 @@ queryPermutations = queryPermutations.concat(data12);
 						displayQueries("columnA", selectedColumnAID);
 						displayTemplates(queryPermutations);
 						
-						populateColumn(queryPermutations, 'columnB');
+						populateColumn('columnB');
 						if(selectedColumnBID!=""){
 							$('#columnBlist'+selectedColumnBID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
 							$('#columnBlist'+selectedColumnBID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
@@ -243,7 +243,7 @@ queryPermutations = queryPermutations.concat(data12);
 						$('#columnBlist'+selectedColumnBID).css('background', 'yellow');
 					}
 
-				    populateColumn(queryPermutations, 'columnA');
+				    populateColumn('columnA');
 				    
 				    if(selectedColumnAID!=""){
 					    $('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
@@ -706,36 +706,31 @@ function displayTemplates(){
 	
 	var list = $("#templateList");
 	list.empty();
-	var minQueryCount= 0,maxQueryCount = 0;
+	var minQueryCount=0,maxQueryCount=0;
 	//No filters have been applied
 	if(selectedTemplateID=="" && selectedColumnAID=="" && selectedColumnBID==""){
 		$.each(queryTemplates, function( index, value) {
-		var element = {};
-		element.template = index;
-		element.text = value.text;
-		element.templatecount = value.count;
-		listelements.push(element);
-		
-		if(element.templatecount<=minQueryCount)
-			minQueryCount = element.templatecount;
-		if(element.templatecount>=maxQueryCount)
-			maxQueryCount = element.templatecount;			
+			var element = {};
+			element.template = index;
+			element.text = value.text;
+			element.templatecount = value.count;
+			listelements.push(element);			
 		});
 	}
 	// there is a filter on one or more query attributes
 	else if (selectedColumnAID!="" || selectedColumnBID!=""){		
 		$.each(queryPermutations, function(index, value){
 			if(selectedColumnAID!="" && selectedColumnBID!="" &&
-					value.columnA.id == selectedColumnAID && value.columnB.id == selectedColumnBID){
+			value.columnA.id == selectedColumnAID && value.columnB.id == selectedColumnBID){
 				elementindex= 0;
 				var exists = _.find(listelements, function(item, index){
 					if(item.template==value.template)
 						elementindex = index;
 					return item.template==value.template
-					});
+				});
 				if(exists!== undefined){
 					listelements[elementindex].templatecount = exists.templatecount + value.count;
-				}else{
+				}else if(queryTemplates[value.template]!==undefined){
 					var element = {};
 					element.template = value.template;
 					element.text = queryTemplates[value.template].text;
@@ -751,7 +746,7 @@ function displayTemplates(){
 					});
 				if(exists!== undefined){
 					listelements[elementindex].templatecount = exists.templatecount + value.count;
-				}else{
+				}else if(queryTemplates[value.template]!==undefined){
 					var element = {};
 					element.template = value.template;
 					element.text = queryTemplates[value.template].text;
@@ -768,7 +763,7 @@ function displayTemplates(){
 					});
 				if(exists!== undefined){
 					listelements[elementindex].templatecount = exists.templatecount + value.count;
-				}else{
+				}else if(queryTemplates[value.template]!==undefined){
 					var element = {};
 					element.template = value.template;
 					element.text = queryTemplates[value.template].text;
@@ -777,13 +772,11 @@ function displayTemplates(){
 				}
 			}
 		});
-
-		minQueryCount = (_.min(listelements, function(item){return item.templatecount;})).templatecount;
-		maxQueryCount = (_.max(listelements, function(item){return item.templatecount;})).templatecount;
 	}
 	//sort templates by template count
-	listelements = _.sortBy(listelements, function(element){ return - element.templatecount;})
+	listelements = _.sortBy(listelements, function(element){ return - element.templatecount;});
 	
+	minQueryCount = listelements[listelements.length - 1].templatecount
 	maxQueryCount = listelements[0].templatecount;
 	var fontscale = d3.scale.linear()
 		.domain([minQueryCount, maxQueryCount])
@@ -800,109 +793,31 @@ function displayTemplates(){
 	
 	console.log("Displayed templates for selectedColumnAID= '"+selectedColumnAID+"' and selectedColumnBID='"+selectedColumnBID+"'")
 }
-
-function calculateQueryCount(template){
-	var querycount = 0;
-	//build query
-	var query, mustarray=[];
-	var term;
-	term = {term: {"template":template}};
-	mustarray.push(term);
-	if (selectedColumnAID!="") {
-		term = {term: {"columnA.id":selectedColumnAID}};
-		mustarray.push(term);
-		}
-	if (selectedColumnBID!="") {
-		term = {term: {"columnB.id":selectedColumnBID}};
-		mustarray.push(term);
-		}
-	query = {query: { filtered: {filter: {bool:{must:mustarray}}}}};
-
-	client.search({index:'viqs',type:'querysemantics',body:query}).then(function (resp) {
-			querycount = resp.hits.total;
-	    	console.log(querycount);
-		}, function (err) {
-		    console.trace(err.message);
-		});
-	return querycount;
-
-	
+function populateColumn(column){
+	if(elasticsearch)
+		populateColumnServerside(column);
+	else 
+		populateColumnLocaly(column);
 }
 
-/******************************************************************
- * Return query count for an attribute in a given position
- * e.g., * - <wordnet_123>-* OR * - *-<wordnet_123>
- * ***************************************************************/
-// this is a duplicate function of countAllQueriesOfSemType. TODO replace everywhere with countQueriesOfWordInPosition
-function countQueriesOfWordInPosition(word, column){
-	
-	if(column == "columnA") position = 1;
-	else if(column == "columnB") position = 2; 
-	
-	var count = 0;
-	$.each(word.queryStats, function(ind, val){
-		if(Object.keys(val)[0].endsWith(position))
-			count+=val[Object.keys(val)[0]]
-	});
-	return count;
-}
-/******************************************************************
- * Return query count for a known template and one known attribute
- * e.g., compare_2 - <wordnet_123>-*  OR  compare_2 - *-<wordnet_123>
- * ***************************************************************/
-function countQueriesOfWordInPositionWithTemplate(word, column){
-	if(column == "columnA") position = 1;
-	else if(column == "columnB") position = 2; 
-	
-	id = selectedTemplateID+"_"+position;
-	filteredQueryStats  = (_.uniq(word.queryStats, function (item) {//go through semantic object query stats 
-		return Object.keys(item)[0]==id;
-		}));
-	
-	if(filteredQueryStats[1]==undefined){
-		return 0;
-	}
-	else{			
-		return filteredQueryStats[1][id];
-	}	
-}
-/**
- * add query counts from all <template_id> - <wordnet_123> - <wordnet_456>
- * e.g., * - <wordnet_123> - <wordnet_456>:<see query permutations file>
- * */
-function countQueriesGivenTwoAttributes(columnAuid, columnBuid){
-	
-	filteredqp = $.grep(queryPermutations, function (item) {//go through all query permutations 
-		return  item.columnA.id == columnAuid  && item.columnB.id == columnBuid;
-		})
-	totalcount = 0;
-	$.each(filteredqp, function( index, value) {
-		totalcount = totalcount+ value.count;
-	});
-	return totalcount;	
-}
-
-/**************************************************************************************
- * Sends selected template and a selected attribute with it's position in the query
- * to the server, expects back a json array (listelements)
- * with the wordnet senses and their query counts
- * ************************************************************************************/
-function getQueryCountsPerSenseGivenAttribute(selectedTemplateID, column, selectedColumnID){
-	var referencedColumn; 
-	if(column== "columnA")referencedColumn= "columnB";
-	else if(column== "columnB")referencedColumn= "columnA";
+/********************************************************************
+ * Server side creation of sense listings (for columnA or columnB)
+ * ranked by query count using rest services and elastic search
+ * *****************************************************************/
+function populateColumnServerside(column){
 	
 	$.ajax({
-	     url: 'controller?action=CALC_QUERY_COUNTS&selectedTemplateID='+selectedTemplateID+
-	     											'&referencedColumn='+referencedColumn+
-	     											'&referencedColumnID='+selectedColumnID,
+	     url: 'controller?action=GET_SENSE_LIST&selectedTemplateID='+selectedTemplateID+
+	     											'&selectedColumnAID='+selectedColumnAID+
+	     											'&selectedColumnBID='+selectedColumnBID+
+	     											'&column='+column,
 	     type: 'post', 
 	     dataType: 'json',
          contentType: "application/json; charset=utf-8",
          mimeType: 'application/json',
-	     data: JSON.stringify(senses),
-	     success: function(result) {
-	       console.log('Successfully sent '+fileindex);
+	     success: function(listelements) {
+	       console.log('populateColumnServerside successful');
+	       createRankedSenseListElement(listelements, column);
 	     },
 	     error:function(result) {
 	       alert('ERROR');
@@ -911,41 +826,28 @@ function getQueryCountsPerSenseGivenAttribute(selectedTemplateID, column, select
 }
 
 
-/**************************************************** 
- * based on user interaction generate list 
- * of semantic types for specified column,
- * calculate query counts and create browser elements
-*****************************************************/
-function populateColumn(data, column){
+
+/**********************************************************************
+ * Client side creation of sense listings (for columnA or columnB)
+ * ranked by query count, iterating through JSONArrays of data
+***********************************************************************/
+function populateColumnLocaly(column){
+
 	
 	console.log("Populating column "+column)
-	$('#'+column+'container').empty();
-	$('#'+column+'container')
-	.append('<div style="padding-bottom:10px;">Abstraction: <br> '+
-			'<div id="'+column+'abstraction" class= "abstractionslider" name ="Abstraction"></div>'+
-			'<div class="input-group" id="input'+column+'"> '+
-			'<span class="input-group-addon">Filter</span>'+			
-	'<input id="'+column+'filter" type="text" class="form-control" placeholder="Type here...">	</div></div>'+
-	'<div class = "scrollable"><table class="table table-striped semanticlist" id="'+column+
-	'table" ><tbody class="searchable" id="'+column+'list"></tbody></table></div>');
 	
-	$('#'+column+'list').empty();
 	
 	var listelements = []
-	var minQueryCount= 0, maxQueryCount= 0;
 	var filteredqp;
 	a = performance.now();
 
 	if(		(column == "columnA" && selectedColumnBID != "") ||
 			(column == "columnB" && selectedColumnAID != "")){
 		if(selectedTemplateID == ""){
-			if(column == "columnA" && selectedColumnBID != ""){
-//		 	getQueryCountsPerSenseGivenAttribute(selectedTemplateID, column, selectedColumnBID);
-				
+			if(column == "columnA" && selectedColumnBID != ""){				
 				$.each(queryPermutations, function(index, value){
 					if(value.columnB.id == selectedColumnBID){
 						elementindex= 0;
-						//todo: if already contains this semobject update (add) querycounts
 						var exists = _.find(listelements, function(item, index){
 							if(item.semobject.uid==value.columnA.id)elementindex = index;
 							return item.semobject.uid==value.columnA.id});
@@ -965,12 +867,8 @@ function populateColumn(data, column){
 						}
 					}
 				});
-				minQueryCount = (_.min(listelements, function(item){return item.querycount})).querycount;
-				maxQueryCount = (_.max(listelements, function(item){return item.querycount})).querycount;
 			}
 			else if(selectedTemplateID == "" && column == "columnB" && selectedColumnAID != ""){
-				//	 	getQueryCountsPerSenseGivenAttribute(selectedTemplateID, column, selectedColumnAID);
-
 				$.each(queryPermutations, function(index, value){
 					if(value.columnA.id == selectedColumnAID){
 						var exists = _.find(listelements, function(item, index){
@@ -980,7 +878,6 @@ function populateColumn(data, column){
 							listelements[elementindex].querycount = exists.querycount+ value.count;
 						}else{
 							var element = {};
-							
 							element.semobject = {
 									uid:value.columnB.id,
 									label:value.columnB.label,
@@ -988,22 +885,13 @@ function populateColumn(data, column){
 								}	
 							element.querycount = value.count;
 							listelements.push(element);
-							}
 						}
-					});
-				
-				minQueryCount = (_.min(listelements, function(item){return item.querycount})).querycount;
-				maxQueryCount = (_.max(listelements, function(item){return item.querycount})).querycount;
-			
+					}
+				});
 			}
 		}
 		else if(selectedTemplateID != ""){
 			if(column == "columnA" && selectedColumnBID != ""){
-		
-	//	 	getQueryCountsPerSenseGivenAttribute(selectedTemplateID, column, selectedColumnBID);
-//			filteredqp = $.grep(queryPermutations, function (item) {//go through all query permutations 
-//				return item.columnB.id == selectedColumnBID && item.template == selectedTemplateID;
-//				});
 				$.each(queryPermutations, function(index, value){
 					if(value.columnB.id == selectedColumnBID && value.template == selectedTemplateID){
 						var element = {};
@@ -1014,16 +902,10 @@ function populateColumn(data, column){
 							}
 						element.querycount = value.count;
 						listelements.push(element);
-						if(element.querycount<minQueryCount)minQueryCount = element.querycount;
-						else if(element.querycount>maxQueryCount)maxQueryCount = element.querycount;
-					}
+						}
 				});
 			}
 			else if(column == "columnB" && selectedColumnAID != ""){
-		//	 	getQueryCountsPerSenseGivenAttribute(selectedTemplateID, column, selectedColumnAID);
-//				filteredqp = $.grep(queryPermutations, function (item) {//go through all query permutations 
-//					return item.columnA.id == selectedColumnAID && item.template == selectedTemplateID;
-//				});
 				$.each(queryPermutations, function(index, value){
 					if(value.columnA.id == selectedColumnAID && value.template == selectedTemplateID){
 						var element = {};
@@ -1034,8 +916,6 @@ function populateColumn(data, column){
 							}
 						element.querycount = value.count;
 						listelements.push(element);
-						if(element.querycount<minQueryCount)minQueryCount = element.querycount;
-						else if(element.querycount>maxQueryCount)maxQueryCount = element.querycount;
 					}
 				});
 			}
@@ -1046,26 +926,42 @@ function populateColumn(data, column){
 		$.each(wordnet, function( index, value) {
 			var element = {};
 			element.semobject = value;
-			
-				if(selectedTemplateID == ""){
-					element.querycount = countQueriesOfWordInPosition(value, column);
-				}
-				else if(selectedTemplateID != ""){
-					element.querycount = countQueriesOfWordInPositionWithTemplate(value, column);
-				}
-			
-			if(element.querycount<minQueryCount)minQueryCount = element.querycount;
-			else if(element.querycount>maxQueryCount)maxQueryCount = element.querycount;
-			
+			if(selectedTemplateID == ""){
+				element.querycount = countQueriesOfWordInPosition(value, column);
+			}
+			else if(selectedTemplateID != ""){
+				element.querycount = countQueriesOfWordInPositionWithTemplate(value, column);
+			}
 			// if this semantic type really does participate in queries, add it to the list
-			if(element.querycount!=0)
-				listelements.push(element);
+			if(element.querycount!=0)listelements.push(element);
 		});
 	}
 
 	b = performance.now();
 	colorTrace('It took ' + (b - a) + ' ms to list semantic types AND calculate query counts for  '+ column +'', "blue");
+	createRankedSenseListElement(listelements, column);
+	console.log("Finished populating column "+column);
+}
 
+/***********************************************
+ * Given a list of senses and their query counts
+ * create the list element and add to dom
+ * *********************************************/
+function createRankedSenseListElement(listelements, column){
+	$('#'+column+'container').empty();
+	$('#'+column+'container')
+	.append('<div style="padding-bottom:10px;">Abstraction: <br> '+
+			'<div id="'+column+'abstraction" class= "abstractionslider" name ="Abstraction"></div>'+
+			'<div class="input-group" id="input'+column+'"> '+
+			'<span class="input-group-addon">Filter</span>'+			
+	'<input id="'+column+'filter" type="text" class="form-control" placeholder="Type here...">	</div></div>'+
+	'<div class = "scrollable"><table class="table table-striped semanticlist" id="'+column+
+	'table" ><tbody class="searchable" id="'+column+'list"></tbody></table></div>');
+	
+	$('#'+column+'list').empty();
+	
+	var minQueryCount = (_.min(listelements, function(item){return item.querycount})).querycount;
+	var maxQueryCount = (_.max(listelements, function(item){return item.querycount})).querycount;
 	
 	a = performance.now();
 	listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
@@ -1080,7 +976,6 @@ function populateColumn(data, column){
 	var columnlist = $('#'+column+'list');
 	var columnlisthtml = "";
 	var fontscale = d3.scale.linear().domain([minQueryCount, maxQueryCount]).range([10, 30]);
-	
 	
 	a = performance.now();
 	$.each(listelements, function( index, element) {
@@ -1145,8 +1040,98 @@ function populateColumn(data, column){
 	});	
 	$('#'+column+'abstraction .ui-slider-range').css('background','linear-gradient(to right, rgba(70,130,180,1), rgba(70,130,180,'+1/8+'))');
 
-	console.log("Finished populating column "+column);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+function calculateQueryCount(template){
+	var querycount = 0;
+	//build query
+	var query, mustarray=[];
+	var term;
+	term = {term: {"template":template}};
+	mustarray.push(term);
+	if (selectedColumnAID!="") {
+		term = {term: {"columnA.id":selectedColumnAID}};
+		mustarray.push(term);
+		}
+	if (selectedColumnBID!="") {
+		term = {term: {"columnB.id":selectedColumnBID}};
+		mustarray.push(term);
+		}
+	query = {query: { filtered: {filter: {bool:{must:mustarray}}}}};
+
+	client.search({index:'viqs',type:'querysemantics',body:query}).then(function (resp) {
+			querycount = resp.hits.total;
+	    	console.log(querycount);
+		}, function (err) {
+		    console.trace(err.message);
+		});
+	return querycount;	
+}
+
+/******************************************************************
+ * Return query count for an attribute in a given position
+ * e.g., * - <wordnet_123>-* OR * - *-<wordnet_123>
+ * ***************************************************************/
+// this is a duplicate function of countAllQueriesOfSemType. TODO replace everywhere with countQueriesOfWordInPosition
+function countQueriesOfWordInPosition(word, column){	
+	if(column == "columnA") position = 1;
+	else if(column == "columnB") position = 2; 
+	
+	var count = 0;
+	$.each(word.queryStats, function(ind, val){
+		if(Object.keys(val)[0].endsWith(position))
+			count+=val[Object.keys(val)[0]]
+	});
+	return count;
+}
+
+/******************************************************************
+ * Return query count for a known template and one known attribute
+ * e.g., compare_2 - <wordnet_123>-*  OR  compare_2 - *-<wordnet_123>
+ * ***************************************************************/
+function countQueriesOfWordInPositionWithTemplate(word, column){
+	if(column == "columnA") position = 1;
+	else if(column == "columnB") position = 2; 
+	
+	id = selectedTemplateID+"_"+position;
+	filteredQueryStats  = (_.uniq(word.queryStats, function (item) {//go through semantic object query stats 
+		return Object.keys(item)[0]==id;
+		}));
+	
+	if(filteredQueryStats[1]==undefined){
+		return 0;
+	}
+	else{			
+		return filteredQueryStats[1][id];
+	}	
+}
+/**********************************************************************
+ * add query counts from all <template_id> - <wordnet_123> - <wordnet_456>
+ * e.g., * - <wordnet_123> - <wordnet_456>:<see query permutations file>
+ * *********************************************************************/
+function countQueriesGivenTwoAttributes(columnAuid, columnBuid){
+	filteredqp = $.grep(queryPermutations, function (item) {//go through all query permutations 
+		return  item.columnA.id == columnAuid  && item.columnB.id == columnBuid;
+		})
+	totalcount = 0;
+	$.each(filteredqp, function( index, value) {
+		totalcount = totalcount+ value.count;
+	});
+	return totalcount;	
+}
+
 
 
 function parseColumnSemantics(data, num){
@@ -1553,7 +1538,7 @@ function displaySemanticIcicle(uid, column, fullIcicle){
               
               if(column == "columnA"){
             	  selectedColumnAID = d.uid;
-            	  populateColumn(queryPermutations, 'columnB');
+            	  populateColumn('columnB');
             	  if(selectedColumnBID!=""){
 				    	$('#columnBlist'+selectedColumnBID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
 						$('#columnBlist'+selectedColumnBID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
@@ -1564,7 +1549,7 @@ function displaySemanticIcicle(uid, column, fullIcicle){
 
               else if(column == "columnB"){
             	  selectedColumnBID = d.uid
-            	  populateColumn(queryPermutations, 'columnA');
+            	  populateColumn('columnA');
             	  if(selectedColumnAID!=""){
 				    	$('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
 						$('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
@@ -1578,7 +1563,7 @@ function displaySemanticIcicle(uid, column, fullIcicle){
 	    	d3.event.stopPropagation();
 	        if(column == "columnA"){
 	       	 	selectedColumnAID = d.uid;
-	       	 	populateColumn(queryPermutations, 'columnB');
+	       	 	populateColumn('columnB');
 	       	 	if(selectedColumnBID!=""){
 			    	$('#columnBlist'+selectedColumnBID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
 					$('#columnBlist'+selectedColumnBID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');
@@ -1589,7 +1574,7 @@ function displaySemanticIcicle(uid, column, fullIcicle){
 	
 	        else if(column == "columnB"){
 	        	selectedColumnBID = d.uid
-	       		populateColumn(queryPermutations, 'columnA');
+	       		populateColumn('columnA');
 	        	 if(selectedColumnAID!=""){
 				    	$('#columnAlist'+selectedColumnAID+ ' .drilldown').append('<span class="inspect glyphicon glyphicon-step-forward" label="inspect children"></span>');
 						$('#columnAlist'+selectedColumnAID+ ' .doubledrilldown').append('<span class="showicicles glyphicon glyphicon-fast-forward" label="inspect children"></span>');

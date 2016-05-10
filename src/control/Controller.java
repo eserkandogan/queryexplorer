@@ -7,13 +7,13 @@ import javax.servlet.http.*;
 
 public class Controller extends HttpServlet {
 
-    /** The HashMap events is used to hold the action/event definitions: */
+    /** The��HashMap��events��is��used��to��hold��the��action/event��definitions:��*/
     protected HashMap actions = new HashMap();
 
     /**
-     * The init() method reads the events from a properties file and inserts them 
-     * into the event handler table. An action/event definition consists of an 
-     * action/event name and the corresponding handler class: 
+     * The��init()��method��reads��the��events��from��a��properties��file��and��inserts��them��
+     * into��the��event��handler��table.��An��action/event��definition��consists��of��an��
+     * action/event��name��and��the��corresponding��handler��class:��
      *
      * @throws javax.servlet.ServletException
      */
@@ -25,9 +25,12 @@ public class Controller extends HttpServlet {
         actions.put("SAVE_QSP", "actions.SaveQuerySemanticPermutations");
         actions.put("SAVE_QSP_BULK", "actions.SaveQSPBulk");
         actions.put("SAVE_WORDNET_BULK", "actions.SaveWordnetBulk");
-        actions.put("CALC_QUERY_COUNTS", "actions.CalculateQueryCounts");
-        		
         actions.put("CREATE_QSP_BULK", "actions.CreateQSPBulk");
+
+        
+        //REST services for querying query permutations:
+        actions.put("GET_SENSE_LIST", "actions.GetSenseList");
+        		
     }
 
     /** 
