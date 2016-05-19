@@ -5,7 +5,9 @@
 //		  host: 'http://localhost:9200',
 ////		  log: 'trace'
 //		});
-var elasticsearch = true;	
+var elasticsearch = false;	
+//var elasticsearch = true;	
+
 var id=0;
 var queryPermutations = [];
 var allQueries = 0;
@@ -574,6 +576,9 @@ function addToParsetData(semantic, column, topK ){
 	
 	}
 }
+/**
+ * Shortens text to an acceptable width, leaving trailing dots.
+ * */
 function truncateText(text, width) {
     return function(d, i) {
       var t = this.textContent = text(d, i),
@@ -590,7 +595,8 @@ function truncateText(text, width) {
       }
       return lo > 1 ? t.substr(0, lo - 2) + "…" : "";
     };
-  }
+}
+
 function loadQTC(filename){
 	var qtc = {}; 
 	$.get(filename,function(txt){
@@ -778,6 +784,7 @@ function displayTemplates(){
 	
 	minQueryCount = listelements[listelements.length - 1].templatecount
 	maxQueryCount = listelements[0].templatecount;
+	
 	var fontscale = d3.scale.linear()
 		.domain([minQueryCount, maxQueryCount])
 		.range([10, 30])
@@ -1273,12 +1280,12 @@ function fetchQC(uid,column,template, filteredQueryPermutations){
 			filteredqp = $.grep(filteredQueryPermutations, function (item) {//go through all query permutations 
 				return item.template == template && item.columnA.id == selectedColumnAID  && item.columnB.id == uid;
 				})
-				if (filteredqp.length==2)
-					filteredqp[1].count;
-				else if(filteredqp.length==1 && filteredqp[0].template == template && filteredqp[0].columnA.id == selectedColumnAID  && filteredqp[0].columnB.id == uid)
-					return filteredqp[0].count
-				else
-					return 0;
+			if (filteredqp.length==2)
+				filteredqp[1].count;
+			else if(filteredqp.length==1 && filteredqp[0].template == template && filteredqp[0].columnA.id == selectedColumnAID  && filteredqp[0].columnB.id == uid)
+				return filteredqp[0].count
+			else
+				return 0;
 		}
 	}
 	
@@ -1323,56 +1330,6 @@ function countsOfAllPermutationsWithAandB(columnAuid, columnBuid, filteredQueryP
 }
 
 
-function processSemanticTxt(txt){
-
-    var lines = txt.split("\n");
-    console.log(lines.length);
-    for (var i = 0, len = lines.length; i < len; i++) {
-    	line = lines[i];
-    	if(line.length>1){
-    	// check string ending
-    	if(/\[\]/.test(line.substr(line.length-3, line.length-2))){
-    		line = line+"}"
-    	}
-    	else{
-    	
-	    	lastindex = line.lastIndexOf('\}')
-	    	//mallformed:  {[{"trend_3_3":0}, {"trend_2_1":1}
-	    	if(/[0-9]+\}/.test(line.substring(lastindex-1, lastindex+1))){
-	    		line = line.slice(0, -2)+'}]}';   
-	    	}
-	    	
-	    	else if( line.substring(lastindex-2, lastindex+1) !=='[]}'){
-	    		line = line.slice(0, -3)+'}]}';      		
-	    	}
-    	}
-    	
-    	//check internally
-    	index0 = line.indexOf('derivedFrom');
-		if(index0!=-1){
-			index = line.indexOf('\]',index0);
-    		if(index!=-1 && line[index-1]!=='['){
-    			line = line.substr(0, index) + '"' + line.substr(index);
-    		}
-		}
-		
-		groupindex = 0;
-		while(line.indexOf("\{grouping", groupindex)!==-1){
-			groupindex = line.indexOf("\{grouping", groupindex);
-			line = line.substr(0, groupindex+1) + '"' + line.substr(groupindex+1);
-		}
-    	jsonSemantics = $.parseJSON(line);
-    	if((jsonSemantics.uid).indexOf('wordnet')!==-1)
-    		wordnet.push(jsonSemantics);
-    	else
-    		tags.push(jsonSemantics);
-		}
-    }
-
-
- wordnet = _.sortBy(wordnet, function(o){ return - o.columnCount;})
-	
-}
 function createLabelList(wordsemantics){
 	$.each(wordsemantics, function(key, value){
 		if((value.uid).indexOf('wordnet')!==-1)
@@ -1382,59 +1339,94 @@ function createLabelList(wordsemantics){
 		}
 	});
 }
+
+/**
+ * Creates an icicle data structure starting from uid as the root. 
+ * If fullIcicle == true then extend leaves until lowest abstraction available 
+ * */
 function displaySemanticIcicle(uid, column, fullIcicle){
 	var body = d3.select("body");
 	var partitiontooltip = $("#partitiontooltip");
 	 $("#"+column+"container").hide();
 	 $("#"+column+"semanticExplorer").empty();
 	 $("#"+column+"semanticExplorer").show();
+	 $("#"+column+"semanticExplorer").html(	'<img alt="" src="images/progress_bar.gif">');
+	 $("#"+column+"Display").hide().show(0);
 	var fullIcicle = fullIcicle;
 	var w = 600,h = 600;
 	var x = d3.scale.linear().range([0, w]);
 	var y = d3.scale.linear().range([0, h]);
 
-	//create data for zoomable partition
-	icicle = {}
+	var filtereddata = queryPermutations;
+	// remove query permutations that are irrelevant to look into
+	 filtereddata = filtereddata.filter(function( obj ) {
+		 if((selectedTemplateID!="")&&
+				 ((column == "columnB" && selectedColumnAID=="") || (column == "columnA" && selectedColumnBID=="")) )
+	    	return obj.template == selectedTemplateID;
+		 
+		 else if((selectedTemplateID!="") &&
+				 (column == "columnB" && selectedColumnAID!="") )
+			 return obj.template == selectedTemplateID && obj.columnA.id == selectedColumnAID;
+		 else if((selectedTemplateID!="") &&
+				 (column == "columnA" && selectedColumnBID!=""))
+			 return obj.template == selectedTemplateID && obj.columnB.id == selectedColumnBID;
+		 
+		 else if((selectedTemplateID=="") &&
+				 (column == "columnB" && selectedColumnAID!="") )
+			 return obj.columnA.id == selectedColumnAID;
+		 else if((selectedTemplateID=="") &&
+				 (column == "columnA" && selectedColumnBID!=""))
+			 return  obj.columnB.id == selectedColumnBID;
+
+		});
+	
+	
+//	if(selectedTemplateID!=""){
+//		console.log("Remove all Query Permutations with selectedTemplateID !="+selectedTemplateID)
+//
+//	    filtereddata = filtereddata.filter(function( obj ) {
+//	    	return obj.template == selectedTemplateID;
+//		});
+//	}
+//	if(column == "columnB" && selectedColumnAID!=""){
+//		console.log("Remove all Query Permutations with selectedColumnAID !="+selectedColumnAID)
+//
+//		filtereddata = filtereddata.filter(function( obj ) {
+//	    return obj.columnA.id == selectedColumnAID;
+//		});
+//	}
+//	else if(column == "columnA" && selectedColumnBID!=""){
+//		console.log("Remove all Query Permutations with selectedColumnBID !="+selectedColumnBID)
+//
+//		filtereddata = filtereddata.filter(function( obj ) {
+//		    return obj.columnB.id == selectedColumnBID;
+//		});
+//	}
+	
+	// find the sense in wordnet with the selected UID for which to show the icicle
 	var semanticobject = _.select(wordnet, function (obj) {
 		  return obj.uid === uid;
 		});
+	
+	//initialize icicle data structure
+	icicle = {}
 	var key = semanticobject[0].label;
-	$("#"+column+"semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key
-			+'", with id="'+uid+'"</p>');
-	
-	var filtereddata = queryPermutations;
-	
-	if(selectedTemplateID!=""){
-		console.log("Remove all Query Permutations with selectedTemplateID !="+selectedTemplateID)
-
-	    filtereddata = filtereddata.filter(function( obj ) {
-	    	return obj.template == selectedTemplateID;
-		});
-	}
-	
-	if(column == "columnB" && selectedColumnAID!=""){
-		console.log("Remove all Query Permutations with selectedColumnAID !="+selectedColumnAID)
-
-		filtereddata = filtereddata.filter(function( obj ) {
-	    return obj.columnA.id == selectedColumnAID;
-		});
-	}
-	else if(column == "columnA" && selectedColumnBID!=""){
-		console.log("Remove all Query Permutations with selectedColumnBID !="+selectedColumnBID)
-
-		filtereddata = filtereddata.filter(function( obj ) {
-		    return obj.columnB.id == selectedColumnBID;
-		});
-	}
-	
 	icicle.name= key;
 	icicle.uid=semanticobject[0].uid;
 	icicle.abstractionLevel = semanticobject[0].abstractionLevel;
 	icicle.type="wordnet";
 	icicle.count = fetchQC(semanticobject[0].uid,column,selectedTemplateID, filtereddata);
 	icicle.children= [];
-	processObject(semanticobject[0], icicle.children, column, fullIcicle);
 	
+	// fill in icicle structure with all the branches
+	var before = performance.now();
+	processObject(semanticobject[0], icicle.children, column, fullIcicle, filtereddata);
+	var after = performance.now();
+	colorTrace('It took ' + (after - before) + ' ms to create the icicle for  '+ key, "blue");
+
+	$("#"+column+"semanticExplorer").empty();
+	$("#"+column+"semanticExplorer").append('<p>Displaying zoomable partition for semantic type = "'+key
+			+'", with id="'+uid+'"</p>');
 	var partition = d3.layout.partition()
    .value(function(d) { return d.count; });
 	
@@ -1467,19 +1459,14 @@ function displaySemanticIcicle(uid, column, fullIcicle){
 			          .css("left", m[0] + 10 + "px")
 			          .css("top", m[1] - 10 + "px")
 			          .text(d.name +", "+d.count);
-			      
-//			   	if (displayParsetsOn== false)
-//			   		return;
-//			   	if (!d.children) 
-//			   		return;
+//			   	if (displayParsetsOn== false)return;
+//			   	if (!d.children)return;
 //			   	displayParsets(d, column, true);
 			   	})
 		   .on("mouseout",function(){
 			   partitiontooltip.hide();
-
-//			   	if (displayParsetsOn== false)
-//			   		return;
-//			   	d3.selectAll("#"+column+"parset").remove()
+//			   	if (displayParsetsOn== false){return;}
+//			   	d3.selectAll("#"+column+"parset").remove();
 		   		});
 	
 	var kx = w / root.dx, ky = h / 1;
@@ -1585,34 +1572,15 @@ function displaySemanticIcicle(uid, column, fullIcicle){
 	        displayParsets(d, column, true);
     	}
     }	
+    $("#"+column+"Display").hide().show(0);
 }
 
 
-
-function processObject(parent, parentIcicle, column, fullicicle){
-	var filtereddata = queryPermutations;
-	if(selectedTemplateID!=""){
-
-	 filtereddata = filtereddata.filter(function( obj ) {
-	    return obj.template == selectedTemplateID;
-		});
-	}
+/**
+ * Recursive function for extending branches of an icicle.
+ * */
+function processObject(parent, parentIcicle, column, fullicicle, filtereddata){
 	
-	if(column == "columnB" && selectedColumnAID!=""){
-
-		filtereddata = filtereddata.filter(function( obj ) {
-	    return obj.columnA.id == selectedColumnAID;
-		});
-	}
-	else if(column == "columnA" && selectedColumnBID!=""){
-
-		filtereddata = filtereddata.filter(function( obj ) {
-		    return obj.columnB.id == selectedColumnBID;
-		});
-	}
-	
-	
-//this version only goes down depth 1
 	$.each(parent.derivedFrom, function(index, value){
 		var o = _.select(wordnet, function (obj) {
 			  return obj.uid === value;
@@ -1652,29 +1620,81 @@ function processObject(parent, parentIcicle, column, fullicicle){
 					}
 					parentIcicle.push(object);
 				}
-			if(fullicicle){
-				var arrobj = _.filter(parentIcicle, function(value){ 
-			    if (value.name == childSemantics.label){ 
-			      return value;
-			    } 
-			 })[0];
-			
-			processObject(childSemantics, arrobj.children, column, fullicicle);
-				
+			if(fullicicle){//go on with recursion
+				var arrobj = _.filter(parentIcicle, 
+						function(value){ 
+						    if (value.name == childSemantics.label){ 
+						      return value;
+						    } 
+						})[0];
+				// keep extending the branches
+				processObject(childSemantics, arrobj.children, column, fullicicle, filtereddata);
 			}
 
 		}
 	});
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function displayQueries(column, uid){
 	var examplequeries = $("#examplequeries");
 	examplequeries.empty();
-	examplequeries.append(selectedTemplateID+": "+column+", "+ uid);
-	
+	examplequeries.append(selectedTemplateID+": "+column+", "+ uid);	
 }
 
 
 function colorTrace(msg, color) {
     console.log("%c" + msg, "color:" + color + ";font-weight:bold;");
+}
+
+
+function processSemanticTxt(txt){
+
+    var lines = txt.split("\n");
+    console.log(lines.length);
+    for (var i = 0, len = lines.length; i < len; i++) {
+    	line = lines[i];
+    	if(line.length>1){
+    	// check string ending
+    	if(/\[\]/.test(line.substr(line.length-3, line.length-2))){
+    		line = line+"}"
+    	}
+    	else{
+    	
+	    	lastindex = line.lastIndexOf('\}')
+	    	//mallformed:  {[{"trend_3_3":0}, {"trend_2_1":1}
+	    	if(/[0-9]+\}/.test(line.substring(lastindex-1, lastindex+1))){
+	    		line = line.slice(0, -2)+'}]}';   
+	    	}
+	    	
+	    	else if( line.substring(lastindex-2, lastindex+1) !=='[]}'){
+	    		line = line.slice(0, -3)+'}]}';      		
+	    	}
+    	}
+    	
+    	//check internally
+    	index0 = line.indexOf('derivedFrom');
+		if(index0!=-1){
+			index = line.indexOf('\]',index0);
+    		if(index!=-1 && line[index-1]!=='['){
+    			line = line.substr(0, index) + '"' + line.substr(index);
+    		}
+		}
+		
+		groupindex = 0;
+		while(line.indexOf("\{grouping", groupindex)!==-1){
+			groupindex = line.indexOf("\{grouping", groupindex);
+			line = line.substr(0, groupindex+1) + '"' + line.substr(groupindex+1);
+		}
+    	jsonSemantics = $.parseJSON(line);
+    	if((jsonSemantics.uid).indexOf('wordnet')!==-1)
+    		wordnet.push(jsonSemantics);
+    	else
+    		tags.push(jsonSemantics);
+		}
+    }
+
+
+ wordnet = _.sortBy(wordnet, function(o){ return - o.columnCount;})
+	
 }

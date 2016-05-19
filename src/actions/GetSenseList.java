@@ -35,6 +35,8 @@ import okhttp3.Response;
 
 public class GetSenseList implements Action {
 	 private static final String INDEX_NAME = "viqs";
+	 private static final String RESULT_SIZE = "1000";
+
 	 long totalquerytime = 0;
 	 
 	@Override
@@ -71,7 +73,7 @@ public class GetSenseList implements Action {
         String url = "http://localhost:9200/";
         
         if(scroll_id.equals("")){ 
-        	url = url+INDEX_NAME+"/"+typename+"/_search?scroll=1m&size=1000";
+        	url = url+INDEX_NAME+"/"+typename+"/_search?scroll=1m&size="+RESULT_SIZE;
         	query = "{\"query\":{\"match_all\" : {}}}";
         	}
         else{
@@ -327,7 +329,7 @@ public class GetSenseList implements Action {
        String url = "http://localhost:9200/";
        
        if(scroll_id.equals("")){ 
-       		url = url+INDEX_NAME+"/"+typename+"/_search?scroll=1m&size=1000";
+       		url = url+INDEX_NAME+"/"+typename+"/_search?scroll=1m&size="+RESULT_SIZE;
        		query = queryString.toString();
        	}
        else{
