@@ -12,9 +12,6 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
     <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.min.css">

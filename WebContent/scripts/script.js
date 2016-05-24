@@ -1359,49 +1359,34 @@ function displaySemanticIcicle(uid, column, fullIcicle){
 
 	var filtereddata = queryPermutations;
 	// remove query permutations that are irrelevant to look into
-	 filtereddata = filtereddata.filter(function( obj ) {
-		 if((selectedTemplateID!="")&&
-				 ((column == "columnB" && selectedColumnAID=="") || (column == "columnA" && selectedColumnBID=="")) )
-	    	return obj.template == selectedTemplateID;
-		 
-		 else if((selectedTemplateID!="") &&
-				 (column == "columnB" && selectedColumnAID!="") )
-			 return obj.template == selectedTemplateID && obj.columnA.id == selectedColumnAID;
-		 else if((selectedTemplateID!="") &&
-				 (column == "columnA" && selectedColumnBID!=""))
-			 return obj.template == selectedTemplateID && obj.columnB.id == selectedColumnBID;
-		 
-		 else if((selectedTemplateID=="") &&
-				 (column == "columnB" && selectedColumnAID!="") )
-			 return obj.columnA.id == selectedColumnAID;
-		 else if((selectedTemplateID=="") &&
-				 (column == "columnA" && selectedColumnBID!=""))
-			 return  obj.columnB.id == selectedColumnBID;
-
+	if((selectedTemplateID!="")&&
+			 ((column == "columnB" && selectedColumnAID=="") || (column == "columnA" && selectedColumnBID=="")) )
+		filtereddata = filtereddata.filter(function( obj ) {
+			return obj.template == selectedTemplateID;
 		});
+		 
+	else if((selectedTemplateID!="") &&
+				 (column == "columnB" && selectedColumnAID!="") )
+		filtereddata = filtereddata.filter(function( obj ) {
+			return obj.template == selectedTemplateID && obj.columnA.id == selectedColumnAID;
+			});
 	
-	
-//	if(selectedTemplateID!=""){
-//		console.log("Remove all Query Permutations with selectedTemplateID !="+selectedTemplateID)
-//
-//	    filtereddata = filtereddata.filter(function( obj ) {
-//	    	return obj.template == selectedTemplateID;
-//		});
-//	}
-//	if(column == "columnB" && selectedColumnAID!=""){
-//		console.log("Remove all Query Permutations with selectedColumnAID !="+selectedColumnAID)
-//
-//		filtereddata = filtereddata.filter(function( obj ) {
-//	    return obj.columnA.id == selectedColumnAID;
-//		});
-//	}
-//	else if(column == "columnA" && selectedColumnBID!=""){
-//		console.log("Remove all Query Permutations with selectedColumnBID !="+selectedColumnBID)
-//
-//		filtereddata = filtereddata.filter(function( obj ) {
-//		    return obj.columnB.id == selectedColumnBID;
-//		});
-//	}
+	else if((selectedTemplateID!="") &&
+				 (column == "columnA" && selectedColumnBID!=""))
+		filtereddata = filtereddata.filter(function( obj ) {	 
+			return obj.template == selectedTemplateID && obj.columnB.id == selectedColumnBID;
+		});
+		 
+	else if((selectedTemplateID=="") &&
+				 (column == "columnB" && selectedColumnAID!="") )
+		filtereddata = filtereddata.filter(function( obj ) {
+			 return obj.columnA.id == selectedColumnAID;
+		});
+	else if((selectedTemplateID=="") &&
+				 (column == "columnA" && selectedColumnBID!=""))
+		filtereddata = filtereddata.filter(function( obj ) {	 
+			return  obj.columnB.id == selectedColumnBID;
+		});
 	
 	// find the sense in wordnet with the selected UID for which to show the icicle
 	var semanticobject = _.select(wordnet, function (obj) {
