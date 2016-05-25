@@ -74,14 +74,15 @@ public class GetSenseList implements Action {
         
         if(scroll_id.equals("")){ 
         	url = url+INDEX_NAME+"/"+typename+"/_search?scroll=1m&size="+RESULT_SIZE;
-        	query = "{\"query\":{\"match_all\" : {}}}";
+        	query = "{\"_source\":[\"queryStats\"]," //queryStats is not a leaf node
+        			+ "\"fields\":[\"uid\",\"label\",\"abstractionLevel\" ],"
+        			+ "\"query\":{\"match_all\" : {}}}";
         	}
         else{
         	url = url+"_search/scroll";
         	query = "{\"scroll\":\"1m\",\"scroll_id\":\""+scroll_id+"\"}";
         	}
         System.out.println(query.toString());
-
 		okhttp3.RequestBody body = okhttp3.RequestBody.create(JSON, query.toString());
         Request request = new Request.Builder()
                 .url(url)
@@ -159,8 +160,10 @@ public class GetSenseList implements Action {
 		
 					for(Object o : hits){
 						long querycount = 0;
-						JSONObject sense = (JSONObject)((JSONObject)o).get("_source");
-						JSONArray queryStats = (JSONArray)sense.get("queryStats");
+						JSONObject source = (JSONObject)((JSONObject)o).get("_source");
+
+						JSONObject sense = (JSONObject)((JSONObject)o).get("fields");
+						JSONArray queryStats = (JSONArray)source.get("queryStats");
 						for(Object querystat:queryStats){
 							Object[] keys = (((JSONObject)querystat).keySet()).toArray();
 							if(keys[0].toString().endsWith(position))
@@ -169,9 +172,9 @@ public class GetSenseList implements Action {
 						if(querycount!=0){
 							listelement = new JSONObject();
 							JSONObject semobject = new JSONObject();
-							semobject.put("uid", sense.get("uid"));
-							semobject.put("label", sense.get("label"));
-							semobject.put("abstractionLevel", sense.get("abstractionLevel"));
+							semobject.put("uid", (String)((JSONArray)sense.get("uid")).get(0));
+							semobject.put("label", (String)((JSONArray)sense.get("label")).get(0));
+							semobject.put("abstractionLevel", (long)((JSONArray)sense.get("abstractionLevel")).get(0));
 			
 							listelement.put("semobject", semobject);
 							listelement.put("querycount", querycount);

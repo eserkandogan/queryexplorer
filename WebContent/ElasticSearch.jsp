@@ -6,12 +6,23 @@
 <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
 <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.min.css">
+<style>
+	.response {
+	max-height:400px;
+	overflow:scroll;
+	margin:20px;
+	}
+	.api{
+		padding-left:10px;
+	}
+
+</style>
 <title>Elasticsearch VIQS API</title>
 
 
 </head>
 <body>
-	<div>
+	<div class="api">
 		<form id="rank-templates" action="#">
 		<h3>Rank Templates</h3>
 			<label for="rank-template-concept1">Concept Value in Column 1</label>
@@ -22,63 +33,103 @@
 			<br>
 			<input type="submit"/>
 		</form>
-		<pre id="rank-templates-response"></pre>
+		<pre id="rank-templates-response" class="response"></pre>
 	</div>
 	<hr>
-	<div>
-		<form id="rank-column1">
-		<h3>Rank Concepts in Column 1</h3>
-		
-			<label for="rank-column1-template">Template Value</label>
-			<input id="rank-column1-template" name="rank-column1-template" type="text" value="compare_3"/>
+	<div class="api">
+		<form id="rank-concepts">
+		<h3>Rank Concepts</h3>
+			<label for="rank-concepts-template">Template Value</label>
+			<input id="rank-concepts-template" name="rank-concepts-template" type="text" value="compare_3"/>
 			<br>
-			<label for="rank-column1-concept2">Concept Value in Column 2</label>
-			<input id="rank-column1-concept2" name="rank-column1-concept2" type="text" value="wordnet_14914858"/>
+			<label for="rank-concepts-referencecolumn">Reference position</label>
+			<select id="rank-concepts-referencecolumn" name="rank-concepts-referencecolumn">
+				<option value="column 1" selected>Column 1</option>
+				<option value="column 2">Column 2</option>
+			</select>
+			<br>
+			<label for="rank-concepts-fixedvalue">Selected concept in <span id="fixedColumn">Column 2</span></label>
+			<input id="rank-concepts-fixedvalue" name="rank-concepts-fixedvalue" type="text" value="wordnet_14914858"/><!-- wordnet_32028 -->
 			<br>
 			<input type="submit"/>
 		</form>
-		<pre id="rank-column1-response"></pre>
+		<pre id="rank-concepts-response" class="response"></pre>
 	</div>
 	<hr>
-	<div>
-		<form id="rank-column2">
-		<h3>Rank Concepts in Column 2</h3>
-		
-			<label for="rank-column2-template">Template Value</label>
-			<input id="rank-column2-template" name="rank-column2-template"type="text" value="compare_3"/>
-			<br>
-			<label for="rank-column2-concept1">Concept Value in Column 1</label>
-			<input id="rank-column2-concept1" name="rank-column2-concept1" type="text"/>
-			<br>
+	<div class="api">
+		<form id="">
+		<h3>Rank Itemsets (template, concept)</h3>
 			<input type="submit"/>
 		</form>
-		<pre id="rank-column2-response"></pre>
+		<pre id="rank-concepts-response" class="response"></pre>
 	</div>
+	<hr>
+	<div class="api">
+		<form id="">
+		<h3>Rank Itemsets (concept, concept)</h3>
+			<input type="submit"/>
+		</form>
+		<pre id="rank-concepts-response" class="response"></pre>
+	</div>
+	<hr>
+	<div class="api">
+		<form id="">
+		<h3>Rank Itemsets (template, concept, concept)</h3>
+			<input type="submit"/>
+		</form>
+		<pre id="rank-concepts-response" class="response"></pre>
+	</div>
+	<hr>
+	
 	
 	
 	<script src="https://d3js.org/d3.v3.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 	<script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+    <script src="underscore/underscore-min.js"></script>
+	
 	<script>
-	$( "#rank-templates" ).submit(function( event ) {
+	$("#rank-concepts-referencecolumn").change(function(){
+		if($("#rank-concepts-referencecolumn").val()=="Column 1")
+			$("#fixedColumn").text("Column 2");
+		else 
+			$("#fixedColumn").text("Column 1");
+	});
+	
+	$("#rank-templates").submit(function( event ) {
 		  alert( "Handler for .submit() called." );
 		  event.preventDefault();
-		});
-	$( "#rank-column1" ).submit(function( event ) {
-	  alert( "Handler for .submit() called." );
+	});
+	
+	$( "#rank-concepts" ).submit(function( event ) {
+		$("#rank-concepts-response").empty();
+
+		$('#rank-concepts-response').html('<img alt="" src="images/progress_bar.gif">');
+		var columnParams;
+		if($( "#rank-concepts-referencecolumn :selected").text()=="Column 1"){
+			columnParams = '&selectedColumnAID='+''+
+			'&selectedColumnBID='+$( "#rank-concepts-fixedvalue" ).val()+'&column=columnA';
+			console.log(columnParams);
+		}
+		else{ 
+			columnParams = '&selectedColumnAID='+$( "#rank-concepts-fixedvalue" ).val()+
+			'&selectedColumnBID='+'&column=columnB';
+			console.log(columnParams);
+		}
+		var template=$( "#rank-concepts-template").val();
+		console.log(template);
+		var url = 'controller?action=GET_SENSE_LIST&selectedTemplateID='+template+columnParams;
 		$.ajax({
-		     url: 'controller?action=GET_SENSE_LIST&selectedTemplateID='+$( "#rank-column1-template" ).val()+
-		     											'&selectedColumnAID='+''+
-		     											'&selectedColumnBID='+$( "#rank-column1-concept2" ).val()+
-		     											'&column=columnA',
+		     url: url,
 		     type: 'post', 
 		     dataType: 'json',
 	         contentType: "application/json; charset=utf-8",
 	         mimeType: 'application/json',
 		     success: function(listelements) {
-		       console.log('populateColumnServerside successful');
-// 		       $( "#rank-column1-response" ).append(listelements);
-		       document.getElementById("rank-column1-response").innerHTML = JSON.stringify(listelements, undefined, 2);
+		    		listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
+
+				$("#rank-concepts-response").empty();
+		    	document.getElementById("rank-concepts-response").innerHTML = JSON.stringify(listelements, undefined, 2);
 		     },
 		     error:function(result) {
 		       alert('ERROR');
@@ -88,10 +139,7 @@
 	  event.preventDefault();
 	  
 	});
-	$( "#rank-column2" ).submit(function( event ) {
-	  alert( "Handler for .submit() called." );
-	  event.preventDefault();
-	});
+
 
 	</script>
 </body>
