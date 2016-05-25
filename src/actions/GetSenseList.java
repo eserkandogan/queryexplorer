@@ -62,7 +62,7 @@ public class GetSenseList implements Action {
         aPrint.print(elements.toString());
         return true;
 	}
-	private JSONObject runQuery(String typename, String scroll_id){
+	private JSONObject runQuery(String typename, String scroll_id, String template){
 		JSONParser parser = new JSONParser();
 		JSONObject queryString = null;
 		JSONObject queryterm;
@@ -74,7 +74,12 @@ public class GetSenseList implements Action {
         
         if(scroll_id.equals("")){ 
         	url = url+INDEX_NAME+"/"+typename+"/_search?scroll=1m&size="+RESULT_SIZE;
-        	query = "{\"_source\":[\"queryStats\"]," //queryStats is not a leaf node
+        	if(template!=null && !template.equals(""))
+        		query = "{\"fields\":[\"uid\",\"label\",\"abstractionLevel\",\""+template+"\" ],"
+    			+ "\"query\":{\"match_all\" : {}},"
+    			+ "\"sort\": { \""+template+"\": { \"order\": \"desc\" }}}";
+        	else
+        		query = "{\"_source\":[\"queryStats\"]," //queryStats is not a leaf node
         			+ "\"fields\":[\"uid\",\"label\",\"abstractionLevel\" ],"
         			+ "\"query\":{\"match_all\" : {}}}";
         	}
@@ -151,7 +156,7 @@ public class GetSenseList implements Action {
 					||(column.equals("columnB") && (selectedColumnAID.equals("") || selectedColumnAID== null)) ){
 				String typename  = "wordnet";
 				String scroll_id = "";
-				JSONObject responseJson = runQuery(typename, scroll_id);
+				JSONObject responseJson = runQuery(typename, scroll_id, "");
 				JSONArray hits = (JSONArray) ((JSONObject)(responseJson).get("hits")).get("hits");
 				System.out.println(hits.size());
 				long startProcessResultsTime = System.nanoTime();
@@ -182,7 +187,7 @@ public class GetSenseList implements Action {
 						}
 						
 					}
-					responseJson = runQuery(typename, scroll_id);
+					responseJson = runQuery(typename, scroll_id, "");
 					hits = (JSONArray) ((JSONObject)(responseJson).get("hits")).get("hits");
 					System.out.println(hits.size());
 				}
@@ -199,38 +204,30 @@ public class GetSenseList implements Action {
 
 				String typename  = "wordnet";
 				String scroll_id = "";
-				JSONObject responseJson = runQuery(typename, scroll_id);
+				JSONObject responseJson = runQuery(typename, scroll_id, templateAndposition);
 				JSONArray hits = (JSONArray) ((JSONObject)(responseJson).get("hits")).get("hits");
 				System.out.println(hits.size());
 				long startProcessResultsTime = System.nanoTime();
 				while(hits.size()>0){
 					scroll_id = (String)((JSONObject)responseJson).get("_scroll_id");
-					
-		
 					for(Object o : hits){
-						long querycount = 0;
-						JSONObject sense = (JSONObject)((JSONObject)o).get("_source");
-						JSONArray queryStats = (JSONArray)sense.get("queryStats");
-						
-						for(Object querystat:queryStats){
-							Object[] keys = (((JSONObject)querystat).keySet()).toArray();
-							if(keys[0].toString().equals(templateAndposition))
-							querycount = (long) ((JSONObject)querystat).get(keys[0].toString()); 
-						}
-						if(querycount!=0){
+						JSONObject sense = (JSONObject)((JSONObject)o).get("fields");
+
+						JSONArray queryStats = (JSONArray)sense.get(templateAndposition);
+
+						if((long)queryStats.get(0)!=0){
 							listelement = new JSONObject();
 							JSONObject semobject = new JSONObject();
-							semobject.put("uid", sense.get("uid"));
-							semobject.put("label", sense.get("label"));
-							semobject.put("abstractionLevel", sense.get("abstractionLevel"));
-			
+							semobject.put("uid", (String)((JSONArray)sense.get("uid")).get(0));
+							semobject.put("label", (String)((JSONArray)sense.get("label")).get(0));
+							semobject.put("abstractionLevel", (long)((JSONArray)sense.get("abstractionLevel")).get(0));
 							listelement.put("semobject", semobject);
-							listelement.put("querycount", querycount);
+							listelement.put("querycount", (long)queryStats.get(0));
 							elements.add(listelement);
 						}
 						
 					}
-					responseJson = runQuery(typename, scroll_id);
+					responseJson = runQuery(typename, scroll_id, templateAndposition);
 					hits = (JSONArray) ((JSONObject)(responseJson).get("hits")).get("hits");
 					System.out.println(hits.size());
 					
