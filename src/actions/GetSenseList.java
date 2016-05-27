@@ -62,81 +62,7 @@ public class GetSenseList implements Action {
         aPrint.print(elements.toString());
         return true;
 	}
-	private JSONObject runQuery(String typename, String scroll_id, String template){
-		JSONParser parser = new JSONParser();
-		JSONObject queryString = null;
-		JSONObject queryterm;
-		JSONObject responseJson = null;
-		MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        OkHttpClient client = new OkHttpClient();
-        String query;
-        String url = "http://localhost:9200/";
-        
-        if(scroll_id.equals("")){ 
-        	url = url+INDEX_NAME+"/"+typename+"/_search?scroll=1m&size="+RESULT_SIZE;
-        	if(template!=null && !template.equals(""))
-        		query = "{\"fields\":[\"uid\",\"label\",\"abstractionLevel\",\""+template+"\" ],"
-    			+ "\"query\":{\"match_all\" : {}},"
-    			+ "\"sort\": { \""+template+"\": { \"order\": \"desc\" }}}";
-        	else
-        		query = "{\"_source\":[\"queryStats\"]," //queryStats is not a leaf node
-        			+ "\"fields\":[\"uid\",\"label\",\"abstractionLevel\" ],"
-        			+ "\"query\":{\"match_all\" : {}}}";
-        	}
-        else{
-        	url = url+"_search/scroll";
-        	query = "{\"scroll\":\"1m\",\"scroll_id\":\""+scroll_id+"\"}";
-        	}
-        System.out.println(query.toString());
-		okhttp3.RequestBody body = okhttp3.RequestBody.create(JSON, query.toString());
-        Request request = new Request.Builder()
-                .url(url)
-                .post(body)
-                .build();
-        Response response;
-		
-		long startExecuteQueryTime = System.nanoTime();
-		try {
-			response = client.newCall(request).execute();
-		
-			long executeQueryTime = (System.nanoTime() - startExecuteQueryTime) / 1000000;
-			System.out.println("executeQueryTime = "+executeQueryTime+ "ms");
-			totalquerytime = totalquerytime+executeQueryTime;
-			String responseString = response.body().string();
-			System.out.println(responseString);
-			responseJson = (JSONObject) parser.parse(responseString);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return responseJson;
-	}
-	private void clearScroll(String scroll_id){
-		MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        OkHttpClient client = new OkHttpClient();
-        String query= "";
-        String url = "http://localhost:9200/";
-        
-        if(!scroll_id.equals("")){
-        	url = url+"_search/scroll";
-        	query = "{\"scroll_id\":\""+scroll_id+"\"}";
-        }
-        
-		okhttp3.RequestBody body = okhttp3.RequestBody.create(JSON, query.toString());
-        Request request = new Request.Builder()
-                .url(url)
-                .post(body)
-                .build();
-        Response response;
-		
-		try {
-			response = client.newCall(request).execute();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+	
 	
 	private JSONArray getQueryCount(String templateid, String selectedColumnAID, String selectedColumnBID, String column){
 		JSONArray elements = new JSONArray();
@@ -151,12 +77,12 @@ public class GetSenseList implements Action {
 			// template unknown, rank all senses given a position they are referenced in in a query
 			// query counts per sense are sum of query counts of each template in the position of interest
 
-			if((templateid.equals("") || templateid== null) &&
+			if((templateid.equals("") || templateid== null) &&(
 					  (column.equals("columnA") && (selectedColumnBID.equals("") || selectedColumnBID== null))
-					||(column.equals("columnB") && (selectedColumnAID.equals("") || selectedColumnAID== null)) ){
+					||(column.equals("columnB") && (selectedColumnAID.equals("") || selectedColumnAID== null)) )){
 				String typename  = "wordnet";
 				String scroll_id = "";
-				JSONObject responseJson = runQuery(typename, scroll_id, "");
+				JSONObject responseJson = runQuerySum(typename, scroll_id, position);
 				JSONArray hits = (JSONArray) ((JSONObject)(responseJson).get("hits")).get("hits");
 				System.out.println(hits.size());
 				long startProcessResultsTime = System.nanoTime();
@@ -168,13 +94,13 @@ public class GetSenseList implements Action {
 						JSONObject source = (JSONObject)((JSONObject)o).get("_source");
 
 						JSONObject sense = (JSONObject)((JSONObject)o).get("fields");
-						JSONArray queryStats = (JSONArray)source.get("queryStats");
-						for(Object querystat:queryStats){
-							Object[] keys = (((JSONObject)querystat).keySet()).toArray();
-							if(keys[0].toString().endsWith(position))
-							querycount = querycount + (long) ((JSONObject)querystat).get(keys[0].toString()); 
-						}
-						if(querycount!=0){
+//						JSONArray queryStats = (JSONArray)source.get("queryStats");
+//						for(Object querystat:queryStats){
+//							Object[] keys = (((JSONObject)querystat).keySet()).toArray();
+//							if(keys[0].toString().endsWith(position))
+//								querycount = querycount + (long) ((JSONObject)querystat).get(keys[0].toString()); 
+//						}
+//						if(querycount!=0){
 							listelement = new JSONObject();
 							JSONObject semobject = new JSONObject();
 							semobject.put("uid", (String)((JSONArray)sense.get("uid")).get(0));
@@ -182,12 +108,12 @@ public class GetSenseList implements Action {
 							semobject.put("abstractionLevel", (long)((JSONArray)sense.get("abstractionLevel")).get(0));
 			
 							listelement.put("semobject", semobject);
-							listelement.put("querycount", querycount);
+							listelement.put("querycount", (long)((JSONArray)sense.get("queryCount")).get(0));
 							elements.add(listelement);
-						}
+//						}
 						
 					}
-					responseJson = runQuery(typename, scroll_id, "");
+					responseJson = runQuerySum(typename, scroll_id, position);
 					hits = (JSONArray) ((JSONObject)(responseJson).get("hits")).get("hits");
 					System.out.println(hits.size());
 				}
@@ -284,7 +210,138 @@ public class GetSenseList implements Action {
 		
 		return elements;
 	}
+	private JSONObject runQuery(String typename, String scroll_id, String template){
+		JSONParser parser = new JSONParser();
+		JSONObject queryString = null;
+		JSONObject queryterm;
+		JSONObject responseJson = null;
+		MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        OkHttpClient client = new OkHttpClient();
+        String query;
+        String url = "http://localhost:9200/";
+        
+        if(scroll_id.equals("")){ 
+        	url = url+INDEX_NAME+"/"+typename+"/_search?scroll=1m&size="+RESULT_SIZE;
+        	if(template!=null && !template.equals(""))
+        		query = "{\"fields\":[\"uid\",\"label\",\"abstractionLevel\",\""+template+"\" ],"
+    			+ "\"query\":{\"bool\": {\"must\": [{\"range\": {\""+template+"\": {\"gte\":0}}}]}},"//make sure the querycount is above 0, otherwise dont return it
+    			+ "\"sort\": { \""+template+"\": { \"order\": \"desc\" }}}";
+        	else
+        		query = "{\"_source\":[\"queryStats\"]," //queryStats is not a leaf node
+        			+ "\"fields\":[\"uid\",\"label\",\"abstractionLevel\" ],"
+        			+ "\"query\":{\"match_all\" : {}}}";
+        	}
+        else{
+        	url = url+"_search/scroll";
+        	query = "{\"scroll\":\"1m\",\"scroll_id\":\""+scroll_id+"\"}";
+        	}
+        System.out.println(query.toString());
+		okhttp3.RequestBody body = okhttp3.RequestBody.create(JSON, query.toString());
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        Response response;
+		
+		long startExecuteQueryTime = System.nanoTime();
+		try {
+			response = client.newCall(request).execute();
+		
+			long executeQueryTime = (System.nanoTime() - startExecuteQueryTime) / 1000000;
+			System.out.println("executeQueryTime = "+executeQueryTime+ "ms");
+			totalquerytime = totalquerytime+executeQueryTime;
+			String responseString = response.body().string();
+			System.out.println(responseString);
+			responseJson = (JSONObject) parser.parse(responseString);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return responseJson;
+	}
 	
+	private JSONObject runQuerySum(String typename, String scroll_id, String position){
+		JSONParser parser = new JSONParser();
+		JSONObject queryString = null;
+		JSONObject queryterm;
+		JSONObject responseJson = null;
+		MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        OkHttpClient client = new OkHttpClient();
+        String query;
+        String url = "http://localhost:9200/";
+       
+        if(scroll_id.equals("")){ 
+        	url = url+INDEX_NAME+"/"+typename+"/_search?scroll=1m&size="+RESULT_SIZE;
+        	query = "{\"fields\":[\"uid\",\"label\",\"abstractionLevel\" ],"
+        			+ "\"script_fields\" : "
+        			+ "	{\"queryCount\" : "
+        			+ "		{\"script\" : \"_source.queryStats.findAll{ (it.keySet()[0]).endsWith('_"+position+"') }.collect{it.values()}.flatten().sum()\"}"
+        			+ "	},"
+        			+ "\"filter\" : {"//make sure the querycount is above 0, otherwise don't bother returning it
+        			+ "	\"script\" : {"
+        			+ "		\"script\" : \"_source.queryStats.findAll{ (it.keySet()[0]).endsWith('_"+position+"') }.collect{it.values()}.flatten().sum() > 0\""
+        					+ "}"
+            		+ "},"
+            		+ "\"query\":{\"match_all\" : {}}"
+            		+ "}";
+        	
+        }
+        else{
+        	url = url+"_search/scroll";
+        	query = "{\"scroll\":\"1m\",\"scroll_id\":\""+scroll_id+"\"}";
+        	}
+        System.out.println(query.toString());
+		okhttp3.RequestBody body = okhttp3.RequestBody.create(JSON, query.toString());
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        Response response;
+		
+		long startExecuteQueryTime = System.nanoTime();
+		try {
+			response = client.newCall(request).execute();
+		
+			long executeQueryTime = (System.nanoTime() - startExecuteQueryTime) / 1000000;
+			System.out.println("executeQueryTime = "+executeQueryTime+ "ms");
+			totalquerytime = totalquerytime+executeQueryTime;
+			String responseString = response.body().string();
+			System.out.println(responseString);
+			responseJson = (JSONObject) parser.parse(responseString);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return responseJson;
+	}
+	
+	private void clearScroll(String scroll_id){
+		MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        OkHttpClient client = new OkHttpClient();
+        String query= "";
+        String url = "http://localhost:9200/";
+        
+        if(!scroll_id.equals("")){
+        	url = url+"_search/scroll";
+        	query = "{\"scroll_id\":\""+scroll_id+"\"}";
+        }
+        
+		okhttp3.RequestBody body = okhttp3.RequestBody.create(JSON, query.toString());
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        Response response;
+		
+		try {
+			response = client.newCall(request).execute();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	private JSONObject runQuerySemanticsQuery(String typename, String scroll_id,String templateid, String selectedColumnAID, String selectedColumnBID, String column){
 		JSONParser parser = new JSONParser();
 		JSONObject queryString = null;
@@ -308,17 +365,15 @@ public class GetSenseList implements Action {
 
 	       if(templateid!=null && !templateid.equals("") ){
 				queryterm = (JSONObject) parser.parse("{\"term\":{\"template\":\""+templateid+"\"}}");
+				must.add(queryterm);	
+			}
+	       if(selectedColumnAID!=null && !selectedColumnAID.equals("")){
+				queryterm = (JSONObject) parser.parse("{\"term\":{\"columnA.id\":\""+selectedColumnAID+"\"}}");
 				must.add(queryterm);
-				
-				if(selectedColumnAID!=null && !selectedColumnAID.equals("")){
-					queryterm = (JSONObject) parser.parse("{\"term\":{\"columnA.id\":\""+selectedColumnAID+"\"}}");
-					must.add(queryterm);
-				}
-				if(selectedColumnBID!=null && !selectedColumnBID.equals("")){
-					queryterm = (JSONObject) parser.parse("{\"term\":{\"columnB.id\":\""+selectedColumnBID+"\"}}");
-					must.add(queryterm);
-				}
-				
+			}
+			if(selectedColumnBID!=null && !selectedColumnBID.equals("")){
+				queryterm = (JSONObject) parser.parse("{\"term\":{\"columnB.id\":\""+selectedColumnBID+"\"}}");
+				must.add(queryterm);
 			}
 		} catch (ParseException e1) {
 			// TODO Auto-generated catch block
