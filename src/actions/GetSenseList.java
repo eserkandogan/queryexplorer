@@ -94,24 +94,16 @@ public class GetSenseList implements Action {
 						JSONObject source = (JSONObject)((JSONObject)o).get("_source");
 
 						JSONObject sense = (JSONObject)((JSONObject)o).get("fields");
-//						JSONArray queryStats = (JSONArray)source.get("queryStats");
-//						for(Object querystat:queryStats){
-//							Object[] keys = (((JSONObject)querystat).keySet()).toArray();
-//							if(keys[0].toString().endsWith(position))
-//								querycount = querycount + (long) ((JSONObject)querystat).get(keys[0].toString()); 
-//						}
-//						if(querycount!=0){
-							listelement = new JSONObject();
-							JSONObject semobject = new JSONObject();
-							semobject.put("uid", (String)((JSONArray)sense.get("uid")).get(0));
-							semobject.put("label", (String)((JSONArray)sense.get("label")).get(0));
-							semobject.put("abstractionLevel", (long)((JSONArray)sense.get("abstractionLevel")).get(0));
-			
-							listelement.put("semobject", semobject);
-							listelement.put("querycount", (long)((JSONArray)sense.get("queryCount")).get(0));
-							elements.add(listelement);
-//						}
-						
+
+						listelement = new JSONObject();
+						JSONObject semobject = new JSONObject();
+						semobject.put("uid", (String)((JSONArray)sense.get("uid")).get(0));
+						semobject.put("label", (String)((JSONArray)sense.get("label")).get(0));
+						semobject.put("abstractionLevel", (long)((JSONArray)sense.get("abstractionLevel")).get(0));
+		
+						listelement.put("semobject", semobject);
+						listelement.put("querycount", (long)((JSONArray)sense.get("queryCount")).get(0));
+						elements.add(listelement);	
 					}
 					responseJson = runQuerySum(typename, scroll_id, position);
 					hits = (JSONArray) ((JSONObject)(responseJson).get("hits")).get("hits");

@@ -729,20 +729,20 @@ function displayTemplates(){
 			if(selectedColumnAID!="" && selectedColumnBID!="" &&
 			value.columnA.id == selectedColumnAID && value.columnB.id == selectedColumnBID){
 				elementindex= 0;
-				var exists = _.find(listelements, function(item, index){
-					if(item.template==value.template)
-						elementindex = index;
-					return item.template==value.template
-				});
-				if(exists!== undefined){
-					listelements[elementindex].templatecount = exists.templatecount + value.count;
-				}else if(queryTemplates[value.template]!==undefined){
+//				var exists = _.find(listelements, function(item, index){
+//					if(item.template==value.template)
+//						elementindex = index;
+//					return item.template==value.template
+//				});
+//				if(exists!== undefined){
+//					listelements[elementindex].templatecount = exists.templatecount + value.count;
+//				}else if(queryTemplates[value.template]!==undefined){
 					var element = {};
 					element.template = value.template;
 					element.text = queryTemplates[value.template].text;
 					element.templatecount = value.count;
 					listelements.push(element);
-				}
+//				}
 			}else if (selectedColumnAID=="" && selectedColumnBID!=""&&
 					value.columnB.id == selectedColumnBID){
 				elementindex= 0;

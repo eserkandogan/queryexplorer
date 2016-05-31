@@ -97,8 +97,30 @@
 	});
 	
 	$("#rank-templates").submit(function( event ) {
-		  alert( "Handler for .submit() called." );
-		  event.preventDefault();
+		$("#rank-templates-response").empty();
+		$('#rank-templates-response').html('<img alt="" src="images/progress_bar.gif">');
+		
+		var columnParams = '&selectedColumnAID='+$( "#rank-template-concept1" ).val()+
+							'&selectedColumnBID='+$( "#rank-template-concept2" ).val();
+		var url = 'controller?action=GET_TEMPLATE_LIST&'+columnParams;
+		$.ajax({
+		     url: url,
+		     type: 'post', 
+		     dataType: 'json',
+	         contentType: "application/json; charset=utf-8",
+	         mimeType: 'application/json',
+		     success: function(listelements) {
+		    		listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
+
+				$("#rank-templates-response").empty();
+		    	document.getElementById("rank-templates-response").innerHTML = JSON.stringify(listelements, undefined, 2);
+		     },
+		     error:function(result) {
+		       alert('ERROR');
+		     }
+		});
+		
+		event.preventDefault();
 	});
 	
 	$( "#rank-concepts" ).submit(function( event ) {

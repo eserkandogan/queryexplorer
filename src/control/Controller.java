@@ -30,7 +30,7 @@ public class Controller extends HttpServlet {
         
         //REST services for querying query permutations:
         actions.put("GET_SENSE_LIST", "actions.GetSenseList");
-        		
+        actions.put("GET_TEMPLATE_LIST", "actions.GetTemplateList");		
     }
 
     /** 
