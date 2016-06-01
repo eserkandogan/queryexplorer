@@ -57,19 +57,24 @@
 	</div>
 	<hr>
 	<div class="api">
-		<form id="">
+		<form id="rank-templateconcept">
 		<h3>Rank Itemsets (template, concept)</h3>
+		<select id="rank-templateconcept-referencecolumn" name="rank-templateconcept-referencecolumn">
+				<option value="column 1" selected>Column 1</option>
+				<option value="column 2">Column 2</option>
+			</select>
 			<input type="submit"/>
 		</form>
-		<pre id="rank-concepts-response" class="response"></pre>
+		<pre id="rank-templateconcept-response" class="response"></pre>
 	</div>
 	<hr>
 	<div class="api">
-		<form id="">
+		<form id="rank-conceptcombo">
 		<h3>Rank Itemsets (concept, concept)</h3>
+		Show top 100 combinations of 
 			<input type="submit"/>
 		</form>
-		<pre id="rank-concepts-response" class="response"></pre>
+		<pre id="rank-conceptcombo-response" class="response"></pre>
 	</div>
 	<hr>
 	<div class="api">
@@ -161,8 +166,55 @@
 	  event.preventDefault();
 	  
 	});
+	$("#rank-templateconcept").submit(function( event ) {
+		$("#rank-templateconcept-response").empty();
+		$('#rank-templateconcept-response').html('<img alt="" src="images/progress_bar.gif">');
+		if($( "#rank-templateconcept-referencecolumn :selected").text()=="Column 1"){
+			column="columnA";
+		}else {			column= "columnB";
+}
 
-
+		var url = 'controller?action=GET_TEMPLATECONCEPT_LIST&column='+column;
+		$.ajax({
+		     url: url,
+		     type: 'post', 
+		     dataType: 'json',
+	         contentType: "application/json; charset=utf-8",
+	         mimeType: 'application/json',
+		     success: function(listelements) {
+		    			listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
+						$("#rank-templateconcept-response").empty();
+		    			document.getElementById("rank-templateconcept-response").innerHTML = JSON.stringify(listelements, undefined, 2);
+		     },
+		     error:function(result) {
+		       alert('ERROR');
+		     }
+		});
+		
+		event.preventDefault();
+	});
+	$("#rank-conceptcombo").submit(function( event ) {
+		$("#rank-conceptcombo-response").empty();
+		$('#rank-conceptcombo-response').html('<img alt="" src="images/progress_bar.gif">');
+		var url = 'controller?action=GET_CONCEPTCOMBO_LIST';
+		$.ajax({
+		     url: url,
+		     type: 'post', 
+		     dataType: 'json',
+	         contentType: "application/json; charset=utf-8",
+	         mimeType: 'application/json',
+		     success: function(listelements) {
+		    			listelements = _.sortBy(listelements, function(element){ return - element.querycount;})
+						$("#rank-conceptcombo-response").empty();
+		    			document.getElementById("rank-conceptcombo-response").innerHTML = JSON.stringify(listelements, undefined, 2);
+		     },
+		     error:function(result) {
+		       alert('ERROR');
+		     }
+		});
+		
+		event.preventDefault();
+	});
 	</script>
 </body>
 </html>
